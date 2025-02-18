@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "122725272901",
+    "project_id": "waste-sort-app-487aa",
+    "storage_bucket": "waste-sort-app-487aa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:122725272901:android:911db13c3eba65487dc22c",
+        "android_client_info": {
+          "package_name": "com.example.wastesortapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4Au_f_jGOW1DhDk8jKt63FFAMnvyBhYY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
