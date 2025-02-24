@@ -41,3 +41,6 @@ flutter:
     - family: Domine
       fonts:
         - asset: lib/assets/fonts/domine.ttf
+    - family: Madisonian
+      fonts:
+        - asset: lib/assets/fonts/abc.ttf
