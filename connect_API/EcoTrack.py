@@ -4,13 +4,17 @@ import torch
 import clip
 from PIL import Image
 import io
+model = None
 
 app = Flask(__name__)
 CORS(app)
 
 # Load CLIP model
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model, preprocess = clip.load("ViT-B/32", device=device)
+def load_model():
+    global model
+    if model is None:
+        model, preprocess = clip.load("ViT-B/32", device=device)
 
 # Define waste categories
 categories = ["Organic", "Recyclables", "General Waste", "Hazardous"]
