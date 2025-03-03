@@ -1,6 +1,3 @@
-flask
-flask-cors
-torch
-torchvision
-openai-clip
-Pillow
+Flask
+requests
+gunicorn
