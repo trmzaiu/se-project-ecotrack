@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const primary = Color(0xFF4CAF50);  // Màu xanh lá
-  static const secondary = Color(0xFF2196F3); // Màu xanh dương
-  static const background = Color(0xFFF5F5F5);
-  static const textPrimary = Color(0xFF212121);
-  static const textSecondary = Color(0xFF757575);
+  static const primary = Color(0xFF2C6E49);
+  static const secondary = Color(0xFF7C3F3E);
+  static const background = Color(0xFFF7EEE7);
+  static const tertiary = Color(0xFF9C9385);
+  static const surface = Color(0xFFFFFCFB);
+  static const accent = Color(0xFFD9D9D9);
 }

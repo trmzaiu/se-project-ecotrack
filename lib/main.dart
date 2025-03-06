@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
+import 'package:wastesortapp/theme/colors.dart';
+
 import 'ScanAI/scanUI.dart';
 import 'frontend/screen/home/splash_screen.dart';
+import 'frontend/screen/home/virtual_tree_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -11,11 +16,162 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Waste Sorting App',
+      title: 'EcoTrack',
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: ImageClassifier(), // Màn hình khởi động
+      home: SplashScreen(),
+    );
+  }
+}
+
+class MainScreen extends StatefulWidget {
+  @override
+  _MainScreenState createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _pages = [
+    HomeScreen(),
+    Center(child: Text('Guide Page', style: TextStyle(fontSize: 24))),
+    ImageClassifier(),
+    VirtualTreeScreen(),
+    Center(child: Text('Profile Page', style: TextStyle(fontSize: 24))),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            height: 65,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30),
+                topRight: Radius.circular(30),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 30,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem('lib/assets/icons/ic_home.svg', 'Home', 0),
+                  _buildNavItem('lib/assets/icons/ic_guide.svg', 'Guide', 1),
+                  SizedBox(width: 50),
+                  _buildNavItem('lib/assets/icons/ic_virtual_tree.svg', 'Virtual Tree', 3),
+                  _buildNavItem('lib/assets/icons/ic_profile.svg', 'Profile', 4),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 10,
+            left: MediaQuery.of(context).size.width / 2 - 52,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 85,
+                  height: 85/2,
+                  decoration: BoxDecoration(
+                    color: Color(0xFFFFFCFB),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 30,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 85,
+                  height: 85,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: Color(0x4CE7E0DA),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                FloatingActionButton(
+                  backgroundColor: Color(0x66E7E0DA),
+                  hoverColor: Colors.transparent,
+                  hoverElevation: 0,
+                  focusColor: Colors.transparent,
+                  focusElevation: 0,
+                  highlightElevation: 0,
+                  splashColor: Colors.transparent,
+                  disabledElevation: 0,
+                  elevation: 0,
+                  shape: CircleBorder(),
+                  onPressed: () => _onItemTapped(2),
+                  child: SvgPicture.asset(
+                    'lib/assets/icons/ic_camera.svg',
+                    width: 30,
+                    height: 30,
+                    color: AppColors.accent,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(String iconPath, String label, int index) {
+    return GestureDetector(
+      onTap: () => _onItemTapped(index),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 4,
+        children: [
+          SvgPicture.asset(
+            iconPath,
+            width: 25,
+            height: 25,
+            color: _selectedIndex == index ? AppColors.primary : AppColors.accent,
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _selectedIndex == index ? AppColors.primary : AppColors.accent,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

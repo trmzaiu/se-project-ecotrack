@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import 'package:wastesortapp/main.dart';
+import 'package:wastesortapp/theme/colors.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -13,7 +14,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => MainScreen()),
       );
     });
   }
@@ -21,10 +22,10 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green, // Màu nền của splash
+      backgroundColor: AppColors.primary,
       body: Center(
         child: Text(
-          'EcoTrack', // Tên app
+          'EcoTrack',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
