@@ -3,21 +3,33 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# Hugging Face API URL (Replace with your real HF Space URL)
-HF_API_URL = "https://huggingface.co/spaces/wasteapp/CLIP_classifier/predict"
+# Increase max upload size (e.g., 50MB)
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
-@app.route("/predict", methods=["POST"])
-def predict():
+@app.route("/")
+def home():
+    return "Waste Classification API is running!"
+
+@app.route("/classify", methods=["POST"])
+def classify():
     try:
-        # Receive image from Flutter app
-        file = request.files["image"]
-        files = {"file": (file.filename, file, file.content_type)}
+        if "file" not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
 
-        # Send image to Hugging Face API
+        file = request.files["file"]
+        files = {"file": (file.filename, file.stream, file.mimetype)}
+
+        HF_API_URL = "https://wasteapp-clip-classifier.hf.space/run/predict"
         response = requests.post(HF_API_URL, files=files)
-        return response.json()  # Return Hugging Face response
+
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            return jsonify({"error": f"Failed to classify image: {response.text}"}), 500
+
     except Exception as e:
-        return jsonify({"error": str(e)})
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)
+

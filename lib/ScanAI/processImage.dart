@@ -1,12 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
 
 class ApiService {
-  static const String apiUrl = "https://se-project-waste-sort-app.onrender.com/classify";
+  static const String apiUrl = "https://wastesortapp.onrender.com/classify"; // Render API URL
 
-  // Function to upload an image and get a prediction
   static Future<String?> classifyImage(File imageFile) async {
     try {
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
