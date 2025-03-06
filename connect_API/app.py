@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Get Hugging Face API URL from environment variable or use default
-HUGGINGFACE_API_URL = os.environ.get('HUGGINGFACE_API_URL', 'https://wasteapp-clip-classifier.hf.space/api/classify')
+HUGGINGFACE_API_URL = os.environ.get('HUGGINGFACE_API_URL', 'https://wasteapp-clip-classifier.hf.space')
 
 @app.route('/health', methods=['GET'])
 def health_check():
