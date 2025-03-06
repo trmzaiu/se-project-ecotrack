@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 # Hugging Face API URL
-HF_API_URL = "https://wasteapp-clip-classifier.hf.space/"
+HF_API_URL = "https://wasteapp-clip-classifier.hf.space"
 
 @app.route("/")
 def home():
