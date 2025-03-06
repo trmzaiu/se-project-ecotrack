@@ -2,3 +2,4 @@ flask
 requests
 gunicorn
 python-multipart
+gradio_client
