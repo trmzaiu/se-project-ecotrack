@@ -3,8 +3,7 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# Corrected Hugging Face API URL
-HF_API_URL = "https://wasteapp-clip-classifier.hf.space/api/predict"
+HF_API_URL = "https://wasteapp-clip-classifier.hf.space"
 
 @app.route("/")
 def home():
@@ -19,15 +18,18 @@ def classify():
     files = {"file": (file.filename, file.stream, file.mimetype)}
 
     try:
-        response = requests.post(HF_API_URL, files=files)
+        # Forward the request to Hugging Face API
+        response = requests.post(HF_API_URL + "/api/predict", files=files)
 
         if response.status_code == 200:
             return jsonify(response.json())
         else:
-            return jsonify({"error": f"Failed to classify image. HF Response: {response.text}"}), 500
+            return jsonify({"error": f"Failed to classify image. HF Status Code: {response.status_code}"}), 500
 
-    except requests.exceptions.RequestException as e:
-        return jsonify({"error": f"Request failed: {e}"}), 500
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()  # Get full error details
+        return jsonify({"error": "Internal Server Error", "details": error_details}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
