@@ -1,2 +1,8 @@
-flask
-requests
+Flask
+gunicorn
+openai-clip
+torch
+torchvision
+Pillow
+numpy
+gradio
