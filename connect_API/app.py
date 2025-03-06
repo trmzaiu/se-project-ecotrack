@@ -19,7 +19,7 @@ def classify():
     files = {"file": (file.filename, file.stream, file.mimetype)}
 
     # Forward the request to Hugging Face
-    response = requests.post(HF_API_URL + "/api/predict", files=files)
+    response = requests.post(HF_API_URL + "/run/predict", files=files)
 
     if response.status_code == 200:
         return jsonify(response.json())
