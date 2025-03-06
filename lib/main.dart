@@ -15,7 +15,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: ImageClassifier(), // Màn hình khởi động
+      home: SplashScreen(), // Màn hình khởi động
     );
   }
 }
+

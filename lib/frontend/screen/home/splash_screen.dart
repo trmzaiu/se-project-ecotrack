@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
 import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -6,29 +8,118 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds: 2), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 1),
+    )..forward();
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
+
+    Future.delayed(Duration(seconds: 3), () {
+      if (mounted) {
+        debugPrint('Navigating to HomeScreen');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
+      }
     });
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    debugPrint('SplashScreen built');
+
     return Scaffold(
-      backgroundColor: Colors.green, // Màu nền của splash
+      backgroundColor: Color(0xFFF7EEE7),
       body: Center(
-        child: Text(
-          'EcoTrack', // Tên app
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'lib/assets/picture/logo.png',
+                height: 200,
+              ),
+              SizedBox(height: 10),
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Text(
+                    'EcoTrack',
+                    style: GoogleFonts.aDLaMDisplay(
+                      fontSize: 40,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 2,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                          color: Color(0xFF7C3F3E).withOpacity(0.60),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Chữ nền (mờ)
+                  Text(
+                    'EcoTrack',
+                    style: GoogleFonts.aDLaMDisplay(
+                      fontSize: 40,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 2,
+                      foreground: Paint()
+                        ..style = PaintingStyle.stroke
+                        ..strokeWidth = 2
+                        ..color = Color(0XFFF7EEE7),
+                    ),
+                  ),
+
+                  // Chữ chính (nổi bật)
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Eco',
+                          style: GoogleFonts.aDLaMDisplay(
+                            color: Color(0xFF2C6E49),
+                            fontSize: 40,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'Track',
+                          style: GoogleFonts.aDLaMDisplay(
+                            color: Color(0xFF7C3F3E),
+                            fontSize: 40,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            ],
           ),
         ),
       ),
