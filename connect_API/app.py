@@ -3,21 +3,28 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# Hugging Face API URL (Replace with your real HF Space URL)
-HF_API_URL = "https://huggingface.co/spaces/wasteapp/CLIP_classifier/predict"
+# Hugging Face API URL
+HF_API_URL = "https://wasteapp-clip-classifier.hf.space/"
 
-@app.route("/predict", methods=["POST"])
-def predict():
-    try:
-        # Receive image from Flutter app
-        file = request.files["image"]
-        files = {"file": (file.filename, file, file.content_type)}
+@app.route("/")
+def home():
+    return "Waste Classification API is running!"
 
-        # Send image to Hugging Face API
-        response = requests.post(HF_API_URL, files=files)
-        return response.json()  # Return Hugging Face response
-    except Exception as e:
-        return jsonify({"error": str(e)})
+@app.route("/classify", methods=["POST"])
+def classify():
+    if "file" not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+
+    file = request.files["file"]
+    files = {"file": (file.filename, file.stream, file.mimetype)}
+
+    # Forward the request to Hugging Face
+    response = requests.post(HF_API_URL + "/api/predict", files=files)
+
+    if response.status_code == 200:
+        return jsonify(response.json())
+    else:
+        return jsonify({"error": "Failed to classify image"}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)
