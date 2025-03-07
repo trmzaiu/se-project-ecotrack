@@ -142,6 +142,7 @@ class _CameraScreenState extends State<CameraScreen> {
               ),
             ),
           ),
+
           Column(
             children: [
               Spacer(),
