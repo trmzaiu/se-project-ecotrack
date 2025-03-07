@@ -38,7 +38,7 @@ class _MainScreenState extends State<MainScreen> {
     HomeScreen(),
     Center(child: Text('Guide Page', style: TextStyle(fontSize: 24))),
     VirtualTreeScreen(),
-    Center(child: Text('Profile Page', style: TextStyle(fontSize: 24))),
+    Center(child: Text('Login Page', style: TextStyle(fontSize: 24))),
   ];
 
   void _onItemTapped(int index) {
