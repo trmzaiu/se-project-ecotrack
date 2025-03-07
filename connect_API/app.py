@@ -1,10 +1,8 @@
-from flask import Flask, request, jsonify
 import requests
+from flask import Flask, request, jsonify
+from gradio_client import Client, handle_file
 
 app = Flask(__name__)
-
-# Increase max upload size (e.g., 50MB)
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
 @app.route("/")
 def home():
@@ -17,21 +15,23 @@ def classify():
             return jsonify({"error": "No file uploaded"}), 400
 
         file = request.files["file"]
+        file_path = f"/tmp/{file.filename}"
+        file.save(file_path)  # Save file temporarily
 
-        # Read file fully into memory before sending
-        file_content = file.read()
+        print(f"Received file: {file.filename}, Size: {file.content_length} bytes")
+        print(f"File saved at: {file_path}")
 
-        files = {"file": (file.filename, file_content, file.mimetype)}
+        # Correctly send image data to Hugging Face
+        client = Client("wasteapp/CLIP_classifier")  # Replace with your Hugging Face Space ID
+        result = client.predict(
+            image=handle_file(file_path),  #Convert file to required format
+            api_name="/predict"
+        )
 
-        HF_API_URL = "https://wasteapp-clip-classifier.hf.space/run/predict"
-        response = requests.post(HF_API_URL, files=files, timeout=30)
-
-        if response.status_code == 200:
-            return jsonify(response.json())
-        else:
-            return jsonify({"error": f"Failed to classify image: {response.text}"}), 500
+        return jsonify({"prediction": result})
 
     except Exception as e:
+        print(f"Exception: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
