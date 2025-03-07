@@ -10,7 +10,9 @@ class LoginScreen extends StatelessWidget {
   final passwordController = TextEditingController();
 
   // sign user in method
-  void signUserIn() {}
+  void signUserIn() {
+    // Implement login logic here
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +47,7 @@ class LoginScreen extends StatelessWidget {
               ),
 
               SizedBox(height: 24),
+              
 
               // Login Form
               Padding(
@@ -52,36 +55,72 @@ class LoginScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Email Input
-                    TextField(
-                      controller: usernameController,
-                      decoration: InputDecoration(
-                        labelText: "Email",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
+                    // Email Label
+                    Text(
+                      'Email',
+                      style: TextStyle(
+                        color: Color(0xFF9C9385),
+                        fontSize: 14,
+                        fontFamily: 'Urbanist',
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    SizedBox(height: 19),
+                    SizedBox(height: 8),
 
-                    // Password Input
-                    TextField(
-                      controller: passwordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: "Password",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    // Email Input Field
+                    Container(
+                      width: 330,
+                      height: 49,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFFCFB),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: TextField(
+                        controller: usernameController,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 20),
+                          border: InputBorder.none,
+                          hintText: "Enter your email",
+                          hintStyle: TextStyle(color: Colors.grey),
                         ),
-                        filled: true,
-                        fillColor: Colors.white,
                       ),
                     ),
-
                     SizedBox(height: 15),
 
+                    // Password Label
+                    Text(
+                      'Password',
+                      style: TextStyle(
+                        color: Color(0xFF9C9385),
+                        fontSize: 14,
+                        fontFamily: 'Urbanist',
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+
+                    // Password Input Field
+                    Container(
+                      width: 330,
+                      height: 49,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFFCFB),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: TextField(
+                        controller: passwordController,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 20),
+                          border: InputBorder.none,
+                          hintText: "Password",
+                          hintStyle: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 15),
+
+                    // Forgot Password
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
@@ -92,10 +131,10 @@ class LoginScreen extends StatelessWidget {
                           fontFamily: 'Urbanist',
                           fontWeight: FontWeight.w600,
                         ),
-                    ),
+                      ),
                     ),
 
-                    SizedBox(height: 4),
+                    SizedBox(height: 20),
 
                     // Login Button
                     GestureDetector(
@@ -124,7 +163,6 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-
 
                     SizedBox(height: 20),
 
@@ -168,8 +206,7 @@ class LoginScreen extends StatelessWidget {
                         SizedBox(width: 45.47),
                         SquareTile(imagePath: 'assets/images/apple.png'),
                         SizedBox(width: 45.47),
-                        SquareTile(imagePath:'assets/images/facebook.png'),
-
+                        SquareTile(imagePath: 'assets/images/facebook.png'),
                       ],
                     ),
 
@@ -186,7 +223,7 @@ class LoginScreen extends StatelessWidget {
                             children: [
                               TextSpan(
                                 text: "Don't have an account? ",
-                                style: TextStyle(color: Colors.black54),
+                                style: TextStyle(color: Color(0xFF2C6E49)),
                               ),
                               TextSpan(
                                 text: "Register",
