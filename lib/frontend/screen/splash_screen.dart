@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
-import 'home_screen.dart';
+import 'package:wastesortapp/main.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -31,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         debugPrint('Navigating to HomeScreen');
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => MainScreen()),
         );
       }
     });
@@ -56,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             mainAxisSize: MainAxisSize.min,
             children: [
               Image.asset(
-                'lib/assets/picture/logo.png',
+                'lib/assets/images/logo.png',
                 height: 200,
               ),
               SizedBox(height: 10),

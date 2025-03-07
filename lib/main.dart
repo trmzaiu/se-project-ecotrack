@@ -4,8 +4,9 @@ import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import 'ScanAI/scanUI.dart';
-import 'frontend/screen/home/splash_screen.dart';
+import 'frontend/screen/splash_screen.dart';
 import 'frontend/screen/home/virtual_tree_screen.dart';
+import 'frontend/screen/home/camera_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -36,15 +37,21 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = [
     HomeScreen(),
     Center(child: Text('Guide Page', style: TextStyle(fontSize: 24))),
-    ImageClassifier(),
     VirtualTreeScreen(),
     Center(child: Text('Profile Page', style: TextStyle(fontSize: 24))),
   ];
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => CameraScreen()),
+      );
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
