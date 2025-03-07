@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'package:wastesortapp/main.dart';
+import 'package:wastesortapp/theme/colors.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -88,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       foreground: Paint()
                         ..style = PaintingStyle.stroke
                         ..strokeWidth = 2
-                        ..color = Color(0XFFF7EEE7),
+                        ..color = AppColors.background,
                     ),
                   ),
 

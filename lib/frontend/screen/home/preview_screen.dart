@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 class PreviewScreen extends StatelessWidget {
@@ -21,41 +22,53 @@ class PreviewScreen extends StatelessWidget {
           ),
 
           Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Spacer(),
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 20),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.9),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      "Scan",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+              Align(
+                alignment: Alignment.center,
+                child: GestureDetector(
+                  onTap: () {
+                    // Hành động khi nhấn nút Scan
+                  },
+                  child: Container(
+                    width: 356,
+                    padding: EdgeInsets.symmetric(vertical: 15),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.9), // Màu nền nút Scan
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                    SizedBox(height: 10),
-                    GestureDetector(
-                      onTap: () {
-                      },
+                    child: Center(
                       child: Text(
-                        "Upload Evidence",
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white70,
-                          decoration: TextDecoration.underline,
+                        "Scan",
+                        style: GoogleFonts.urbanist(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
+              SizedBox(height: 10),
+              Align(
+                alignment: Alignment.center, // Căn giữa theo chiều ngang
+                child: GestureDetector(
+                  onTap: () {
+                    // Hành động khi nhấn Upload Evidence
+                  },
+                  child: Text(
+                    "Upload Evidence",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 30),
             ],
           ),
 
@@ -67,14 +80,14 @@ class PreviewScreen extends StatelessWidget {
                 Navigator.pop(context);
               },
               child: Container(
-                padding: EdgeInsets.all(8),
+                height: 30,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFF494848).withOpacity(0.5),
+                  color: Color(0xFF494848).withOpacity(0.4),
                 ),
                 child: SvgPicture.asset(
                   'lib/assets/icons/ic_close.svg',
-                  height: 30,
+                  height: 40,
                 ),
               ),
             ),
