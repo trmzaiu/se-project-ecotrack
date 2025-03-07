@@ -1,5 +1,5 @@
-import requests
 from flask import Flask, request, jsonify
+import requests
 
 app = Flask(__name__)
 
@@ -17,10 +17,14 @@ def classify():
             return jsonify({"error": "No file uploaded"}), 400
 
         file = request.files["file"]
-        files = {"file": (file.filename, file.stream, file.mimetype)}
+
+        # Read file fully into memory before sending
+        file_content = file.read()
+
+        files = {"file": (file.filename, file_content, file.mimetype)}
 
         HF_API_URL = "https://wasteapp-clip-classifier.hf.space/run/predict"
-        response = requests.post(HF_API_URL, files=files)
+        response = requests.post(HF_API_URL, files=files, timeout=30)
 
         if response.status_code == 200:
             return jsonify(response.json())
@@ -31,5 +35,4 @@ def classify():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
-
+    app.run(host="0.0.0.0", port=10000, debug=True)
