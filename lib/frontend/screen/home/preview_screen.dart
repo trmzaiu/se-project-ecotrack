@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/theme/colors.dart';
+import 'package:wastesortapp/theme/fonts.dart';
 
 import '../../../ScanAI/processImage.dart';
 import '../evidence/upload_evidence_screen.dart';
@@ -65,32 +66,6 @@ class _PreviewScreenState extends State<PreviewScreen> {
             ),
           ),
 
-<<<<<<< Updated upstream
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Spacer(),
-              Align(
-                alignment: Alignment.center,
-                child: GestureDetector(
-                  onTap: () {
-                    // Hành động khi nhấn nút Scan
-                  },
-                  child: Container(
-                    width: 356,
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.9), // Màu nền nút Scan
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "Scan",
-                        style: GoogleFonts.urbanist(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-=======
           if (_isScanning)
             Center(
               child: Column(
@@ -267,35 +242,11 @@ class _PreviewScreenState extends State<PreviewScreen> {
                             fontWeight: AppFontWeight.semiBold,
                             color: AppColors.surface,
                           ),
->>>>>>> Stashed changes
                         ),
                       ),
                     ),
                   ),
                 ),
-<<<<<<< Updated upstream
-              ),
-              SizedBox(height: 10),
-              Align(
-                alignment: Alignment.center, // Căn giữa theo chiều ngang
-                child: GestureDetector(
-                  onTap: () {
-                    // Hành động khi nhấn Upload Evidence
-                  },
-                  child: Text(
-                    "Upload Evidence",
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 30),
-            ],
-          ),
-=======
                 SizedBox(height: 15),
                 Align(
                   alignment: Alignment.center,
@@ -328,7 +279,6 @@ class _PreviewScreenState extends State<PreviewScreen> {
                 SizedBox(height: 60),
               ],
             ),
->>>>>>> Stashed changes
 
           // Nút Close
           if (!_isScanning)
