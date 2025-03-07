@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wastesortapp/theme/colors.dart';
 
 class SquareTile extends StatelessWidget {
   final String imagePath;
@@ -11,7 +12,7 @@ class SquareTile extends StatelessWidget {
       decoration: BoxDecoration(
         // border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(10),
-        color: Colors.white,
+        color: AppColors.surface,
       ),
       child: Image.asset(imagePath, height: 40),
     );

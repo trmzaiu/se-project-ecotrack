@@ -4,6 +4,7 @@ import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import 'ScanAI/scanUI.dart';
+import 'frontend/screen/auth/login_screen.dart';
 import 'frontend/screen/splash_screen.dart';
 import 'frontend/screen/home/virtual_tree_screen.dart';
 import 'frontend/screen/home/camera_screen.dart';
@@ -37,8 +38,9 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = [
     HomeScreen(),
     Center(child: Text('Guide Page', style: TextStyle(fontSize: 24))),
+    CameraScreen(),
     VirtualTreeScreen(),
-    Center(child: Text('Login Page', style: TextStyle(fontSize: 24))),
+    LoginScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -182,3 +184,5 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
+
+

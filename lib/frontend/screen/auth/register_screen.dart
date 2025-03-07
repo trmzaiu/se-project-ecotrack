@@ -1,20 +1,22 @@
-// import 'package:flutter/material.dart';
-//
-// class Register extends StatelessWidget {
-//      Register({super.key});
-//
-//      // text editing controllers
-//      final usernameController = TextEditingController();
-//      final passwordController = TextEditingController();
-//
-//   @override
-//   Widget build(BuildContext context){
-//     return Scaffold(
-//       backgroundColor: Color(0xE5FEF2EC),
-//       body: SafeArea(
-//     child: SingleChildScrollView(
-//     child: Column(
-//     children: [
+import 'package:flutter/material.dart';
+import 'package:wastesortapp/components/my_button.dart';
+import 'package:wastesortapp/theme/colors.dart';
+import 'package:wastesortapp/theme/fonts.dart';
+
+ // class Register extends StatelessWidget {
+ //      Register({super.key});
+ //      // text editing controllers
+ //     final usernameController = TextEditingController();
+ //     final passwordController = TextEditingController();
+
+//    @override
+//    Widget build(BuildContext context){
+//      return Scaffold(
+//        backgroundColor: AppColors.background,
+//        body: SafeArea(
+//      child: SingleChildScrollView(
+//      child: Column(
+// //     children: [
 //     // Top Background with Image
 //     Container(
 //     width: 414,
