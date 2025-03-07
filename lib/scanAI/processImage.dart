@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String apiUrl = "https://wastesortapp.onrender.com/classify"; // Render API URL
+  static const String apiUrl = "https://wastesortapp.onrender.com/classify";
 
   static Future<String?> classifyImage(File imageFile) async {
     try {

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
-import 'ScanAI/scanUI.dart';
+import 'frontend/screen/camera/camera_screen.dart';
+import 'frontend/screen/guide/guide_screen.dart';
+import 'frontend/screen/home/home_screen.dart';
 import 'frontend/screen/splash_screen.dart';
-import 'frontend/screen/home/virtual_tree_screen.dart';
-import 'frontend/screen/home/camera_screen.dart';
+import 'frontend/screen/tree/virtual_tree_screen.dart';
+
+
 
 void main() {
   runApp(MyApp());
@@ -19,7 +21,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'EcoTrack',
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        primaryColor: AppColors.primary,
       ),
       home: SplashScreen(),
     );
@@ -36,7 +38,8 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _pages = [
     HomeScreen(),
-    Center(child: Text('Guide Page', style: TextStyle(fontSize: 24))),
+    GuideScreen(),
+    CameraScreen(),
     VirtualTreeScreen(),
     Center(child: Text('Profile Page', style: TextStyle(fontSize: 24))),
   ];
@@ -145,7 +148,7 @@ class _MainScreenState extends State<MainScreen> {
                     'lib/assets/icons/ic_camera.svg',
                     width: 30,
                     height: 30,
-                    color: AppColors.accent,
+                    colorFilter: ColorFilter.mode(AppColors.accent, BlendMode.srcIn),
                   ),
                 ),
               ],
@@ -161,14 +164,14 @@ class _MainScreenState extends State<MainScreen> {
       onTap: () => _onItemTapped(index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        spacing: 4,
         children: [
           SvgPicture.asset(
             iconPath,
             width: 25,
             height: 25,
-            color: _selectedIndex == index ? AppColors.primary : AppColors.accent,
+            colorFilter: ColorFilter.mode(_selectedIndex == index ? AppColors.primary : AppColors.accent, BlendMode.srcIn),
           ),
+          SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
@@ -178,7 +181,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
         ],
-      ),
+      )
     );
   }
 }

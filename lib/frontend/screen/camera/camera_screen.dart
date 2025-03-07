@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:wastesortapp/frontend/screen/home/preview_screen.dart';
+import 'package:wastesortapp/frontend/screen/camera/preview_screen.dart';
 
 class CameraScreen extends StatefulWidget {
   @override
@@ -18,7 +18,6 @@ class _CameraScreenState extends State<CameraScreen> {
   bool isCameraReady = false;
   File? _selectedImage;
   bool _isFlashOn = false;
-  String _result = "Select an image to classify";
 
   @override
   void initState() {
@@ -56,7 +55,7 @@ class _CameraScreenState extends State<CameraScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PreviewScreen(imagePath: image.path),
+          builder: (context) => ScanScreen(imagePath: image.path),
         ),
       );
     } catch (e) {
@@ -74,7 +73,7 @@ class _CameraScreenState extends State<CameraScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PreviewScreen(imagePath: pickedFile.path),
+          builder: (context) => ScanScreen(imagePath: pickedFile.path),
         ),
       );
     }
@@ -183,7 +182,7 @@ class _CameraScreenState extends State<CameraScreen> {
                         height: 48,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Color(0xFF494848).withOpacity(0.5),
+                          color: Color(0x80494848),
                         ),
                         child: SvgPicture.asset(
                           _isFlashOn
@@ -209,7 +208,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 height: 30,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFF494848).withOpacity(0.4),
+                  color: Color(0x80494848),
                 ),
                 child: SvgPicture.asset(
                   'lib/assets/icons/ic_close.svg',

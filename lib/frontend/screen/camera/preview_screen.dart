@@ -9,16 +9,16 @@ import 'package:wastesortapp/theme/fonts.dart';
 import '../../../ScanAI/processImage.dart';
 import '../evidence/upload_evidence_screen.dart';
 
-class PreviewScreen extends StatefulWidget {
+class ScanScreen extends StatefulWidget {
   final String imagePath;
 
-  PreviewScreen({required this.imagePath});
+  ScanScreen({required this.imagePath});
 
   @override
-  _PreviewScreenState createState() => _PreviewScreenState();
+  _ScanScreenState createState() => _ScanScreenState();
 }
 
-class _PreviewScreenState extends State<PreviewScreen> {
+class _ScanScreenState extends State<ScanScreen> {
   bool _isScanning = false;
   String? _scanResult;
   double _progress = 0.0;
@@ -32,19 +32,19 @@ class _PreviewScreenState extends State<PreviewScreen> {
       _scanCompleted = false;
     });
 
-    int totalTime = 4000;
-    int intervalMs = 50;
-    double increment = intervalMs / totalTime;
+    int startTime = DateTime.now().millisecondsSinceEpoch;
 
-    Timer timer = Timer.periodic(Duration(milliseconds: intervalMs), (t) {
+    Timer timer = Timer.periodic(Duration(milliseconds: 50), (t) {
       setState(() {
-        _progress = (_progress + increment).clamp(0.0, 0.98); // Giữ gần 100%
+        int elapsed = DateTime.now().millisecondsSinceEpoch - startTime;
+        _progress = (elapsed / 4000).clamp(0.0, 0.98);
       });
     });
 
     String? result = await ApiService.classifyImage(File(widget.imagePath));
 
     timer.cancel();
+
     setState(() {
       _isScanning = false;
       _scanCompleted = true;
@@ -52,7 +52,6 @@ class _PreviewScreenState extends State<PreviewScreen> {
       _progress = 1.0;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -280,7 +279,6 @@ class _PreviewScreenState extends State<PreviewScreen> {
               ],
             ),
 
-          // Nút Close
           if (!_isScanning)
             Positioned(
               top: 40,
