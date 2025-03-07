@@ -1,7 +1,6 @@
 import requests
 from flask import Flask, request, jsonify
-from gradio_client import Client
-import os
+from gradio_client import Client, handle_file
 
 app = Flask(__name__)
 
@@ -16,20 +15,18 @@ def classify():
             return jsonify({"error": "No file uploaded"}), 400
 
         file = request.files["file"]
+        file_path = f"/tmp/{file.filename}"
+        file.save(file_path)  # Save file temporarily
 
-        # Save file temporarily in the server
-        temp_filepath = f"/tmp/{file.filename}"
-        file.save(temp_filepath)
+        print(f"Received file: {file.filename}, Size: {file.content_length} bytes")
+        print(f"File saved at: {file_path}")
 
-        print(f"Received file: {file.filename}, Size: {os.path.getsize(temp_filepath)} bytes")
-        print(f"File saved at: {temp_filepath}")
-
-        # Use Hugging Face Gradio API client
-        client = Client("wasteapp/CLIP_classifier")  # Replace with your actual Hugging Face Space ID
-        result = client.predict(temp_filepath, api_name="/predict")
-
-        # Delete the temporary file after processing
-        os.remove(temp_filepath)
+        # Correctly send image data to Hugging Face
+        client = Client("wasteapp/CLIP_classifier")  # Replace with your Hugging Face Space ID
+        result = client.predict(
+            image=handle_file(file_path),  #Convert file to required format
+            api_name="/predict"
+        )
 
         return jsonify({"prediction": result})
 
