@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 
-class AppFonts {
-  static const String primaryFont = 'Nunito';
-  static const String secondaryFont = 'Domine';
-
-  static const TextStyle heading = TextStyle(
-    fontFamily: primaryFont,
-    fontSize: 24,
-    fontWeight: FontWeight.bold,
-    color: Colors.black,
-  );
-
-  static const TextStyle body = TextStyle(
-    fontFamily: secondaryFont,
-    fontSize: 16,
-    color: Colors.black87,
-  );
+class AppFontWeight {
+  static const FontWeight thin = FontWeight.w100;        // Thin
+  static const FontWeight extraLight = FontWeight.w200;  // Extra Light (Ultra Light)
+  static const FontWeight light = FontWeight.w300;       // Light
+  static const FontWeight regular = FontWeight.w400;     // Regular (Normal)
+  static const FontWeight medium = FontWeight.w500;      // Medium
+  static const FontWeight semiBold = FontWeight.w600;    // SemiBold (DemiBold)
+  static const FontWeight bold = FontWeight.w700;        // Bold
+  static const FontWeight extraBold = FontWeight.w800;   // Extra Bold (Ultra Bold)
+  static const FontWeight black = FontWeight.w900;       // Black (Heavy)
 }
+
+

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'package:wastesortapp/main.dart';
 import 'package:wastesortapp/theme/colors.dart';
+import 'package:wastesortapp/theme/fonts.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -68,7 +69,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     'EcoTrack',
                     style: GoogleFonts.aDLaMDisplay(
                       fontSize: 40,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: AppFontWeight.bold,
                       letterSpacing: 2,
                       shadows: [
                         Shadow(
@@ -84,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     'EcoTrack',
                     style: GoogleFonts.aDLaMDisplay(
                       fontSize: 40,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: AppFontWeight.bold,
                       letterSpacing: 2,
                       foreground: Paint()
                         ..style = PaintingStyle.stroke
@@ -102,7 +103,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           style: GoogleFonts.aDLaMDisplay(
                             color: Color(0xFF2C6E49),
                             fontSize: 40,
-                            fontWeight: FontWeight.w400,
+                            fontWeight: AppFontWeight.bold,
                             letterSpacing: 2,
                           ),
                         ),
@@ -111,7 +112,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           style: GoogleFonts.aDLaMDisplay(
                             color: Color(0xFF7C3F3E),
                             fontSize: 40,
-                            fontWeight: FontWeight.w400,
+                            fontWeight: AppFontWeight.bold,
                             letterSpacing: 2,
                           ),
                         ),
