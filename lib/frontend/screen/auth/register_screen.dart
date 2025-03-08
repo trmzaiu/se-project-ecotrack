@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:wastesortapp/components/my_button.dart';
-import 'package:wastesortapp/theme/colors.dart';
-import 'package:wastesortapp/theme/fonts.dart';
 import 'package:wastesortapp/components/my_textfield.dart';
-class Register extends StatelessWidget {
-  Register({super.key});
+import 'package:wastesortapp/theme/colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-  // Text editing controllers
-  final usernameController = TextEditingController();
+class RegisterScreen extends StatelessWidget {
+  RegisterScreen({super.key});
+
+  final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
-  // signUserIn
-  void signUserIn() {
-    // Implement logic here
-    print("User Registered!");
+  void registerUser() {
+    // Implement registration logic here
   }
 
   @override
@@ -32,9 +29,10 @@ class Register extends StatelessWidget {
                     height: 350,
                     decoration: BoxDecoration(
                       color: AppColors.secondary,
-                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+                      borderRadius:
+                      BorderRadius.vertical(bottom: Radius.circular(40)),
                       image: DecorationImage(
-                        image: AssetImage("assets/images/trash.png"),
+                        image: AssetImage("lib/assets/images/trash.png"),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -43,108 +41,100 @@ class Register extends StatelessWidget {
               ),
             ),
 
-            // Centered Column for Login Form & Register Text
+            // Centered Column for Registration Form
             Align(
               alignment: Alignment.center,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Register Form
-                  Container(
-                    width: 350,
-                    padding: EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 15,
-                          spreadRadius: 2,
-                        ),
-                      ],
+              child: Container(
+                width: 350,
+                padding: EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 15,
+                      spreadRadius: 2,
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          "Register",
-                          style: TextStyle(
-                            fontSize: 34,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                        SizedBox(height: 30),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Register",
+                      style: GoogleFonts.urbanist(
+                          fontSize: 34,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.secondary),
+                    ),
+                    SizedBox(height: 30),
 
-                        MyTextField(
-                          controller: usernameController,
-                          hintText: "Email",
-                          obscureText: false,
-                        ),
-                        SizedBox(height: 30),
+                    MyTextField(
+                      controller: emailController,
+                      hintText: "Email",
+                      obscureText: false,
+                    ),
+                    SizedBox(height: 20),
 
-                        MyTextField(
-                          controller: passwordController,
-                          hintText: "Password",
-                          obscureText: true,
-                        ),
-                        SizedBox(height: 30),
+                    MyTextField(
+                      controller: passwordController,
+                      hintText: "Password",
+                      obscureText: true,
+                    ),
+                    SizedBox(height: 20),
 
-                        MyTextField(
-                          controller: confirmPasswordController,
-                          hintText: "Confirm password",
-                          obscureText: true,
-                        ),
-                        SizedBox(height: 30),
+                    MyTextField(
+                      controller: confirmPasswordController,
+                      hintText: "Confirm password",
+                      obscureText: true,
+                    ),
+                    SizedBox(height: 30),
 
-                        GestureDetector(
-                          onTap: signUserIn,
-                          child: Container(
-                            width: double.infinity,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              "Create Account",
-                              style: TextStyle(
-                                color: AppColors.surface,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                    GestureDetector(
+                      onTap: registerUser,
+                      child: Container(
+                        width: double.infinity,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(30),
                         ),
-                        SizedBox(height: 20),
+                        alignment: Alignment.center,
+                        child: Text(
+                          "Create Account",
+                          style: GoogleFonts.urbanist(
+                              color: AppColors.surface,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
 
-                        // "Already have an account? Login"
-                        GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, '/login'),
-                          child: Text.rich(
+                    SizedBox(height: 20),
+
+                    // Already have an account? Login
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/login'),
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
                             TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: "Already have an account? ",
-                                  style: TextStyle(color: AppColors.primary),
-                                ),
-                                TextSpan(
-                                  text: "Login",
-                                  style: TextStyle(
-                                    color: AppColors.secondary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                                text: "Already have an account? ",
+                                style:
+                                GoogleFonts.urbanist(color: AppColors.primary)),
+                            TextSpan(
+                              text: "Login",
+                              style: GoogleFonts.urbanist(
+                                  color: AppColors.secondary,
+                                  fontWeight: FontWeight.bold),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
