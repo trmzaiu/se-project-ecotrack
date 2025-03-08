@@ -1,9 +1,9 @@
-import 'package:camera/camera.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/src/widgets/camera_awesome_builder.dart';
+import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'dart:io';
+import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
-
 import 'package:wastesortapp/frontend/screen/camera/preview_screen.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -12,62 +12,11 @@ class CameraScreen extends StatefulWidget {
 }
 
 class _CameraScreenState extends State<CameraScreen> {
-  CameraController? _controller;
-  bool _isCameraInitialized = false;
-  List<CameraDescription> cameras = [];
-  bool isCameraReady = false;
-  File? _selectedImage;
-  bool _isFlashOn = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeCamera();
-  }
-
-  Future<void> _initializeCamera() async {
-    cameras = await availableCameras();
-    CameraDescription backCamera = cameras.firstWhere(
-            (camera) => camera.lensDirection == CameraLensDirection.back);
-
-    _controller = CameraController(
-      backCamera,
-      ResolutionPreset.max,
-    );
-    try {
-      await _controller!.initialize();
-      if (mounted) {
-        setState(() {
-          _isCameraInitialized = true;
-        });
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Future<void> _takePicture() async {
-    if (_controller == null || !_controller!.value.isInitialized) return;
-    try {
-      final image = await _controller!.takePicture();
-      if (!mounted) return;
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ScanScreen(imagePath: image.path),
-        ),
-      );
-    } catch (e) {
-      print("Error taking picture: $e");
-    }
-  }
 
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _selectedImage = File(pickedFile.path);
       });
 
       Navigator.push(
@@ -79,147 +28,102 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
-  Future<void> _toggleFlash() async {
-    if (_controller == null || !_controller!.value.isInitialized) return;
-
-    try {
-      setState(() {
-        _isFlashOn = !_isFlashOn;
-      });
-
-      await _controller!.setFlashMode(
-        _isFlashOn ? FlashMode.torch : FlashMode.off,
-      );
-    } catch (e) {
-      print("Error toggling flash: $e");
-    }
-  }
-
-  Future<void> _handleTap(TapDownDetails details) async {
-    if (_controller == null || !_controller!.value.isInitialized) return;
-
-    try {
-      final size = MediaQuery.of(context).size;
-      final x = details.localPosition.dx / size.width;
-      final y = details.localPosition.dy / size.height;
-
-      await _controller!.setFocusPoint(Offset(x, y));
-      await _controller!.setFocusMode(FocusMode.auto);
-
-      setState(() {});
-    } catch (e) {
-      print("Error focusing: $e");
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _isCameraInitialized
-          ? Stack(
-        children: [
-          GestureDetector(
-            onTapDown: _handleTap,
-            child: Positioned.fill(
-              child: SizedBox(
-                width: double.infinity,
-                height: double.infinity,
-                child: FittedBox(
-                  fit: BoxFit.cover,
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                    child: CameraPreview(_controller!),
-                  ),
-                ),
+    return CameraAwesomeBuilder.awesome(
+      saveConfig: SaveConfig.photo(),
+      theme: AwesomeTheme(
+        bottomActionsBackgroundColor: Colors.transparent,
+        buttonTheme: AwesomeButtonTheme(
+          backgroundColor: Color(0x4D333333),
+          iconSize: 24,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.all(11),
+          buttonBuilder: (child, onTap) => ClipOval(
+            child: Material(
+              color: Colors.transparent,
+              shape: const CircleBorder(),
+              child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                onTap: onTap,
+                child: child,
               ),
             ),
           ),
-
-          Column(
-            children: [
-              Spacer(),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 70),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: _pickImage,
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(9),
-                          image: DecorationImage(
-                            image: _selectedImage != null
-                                ? FileImage(_selectedImage!) as ImageProvider
-                                : AssetImage("lib/assets/images/default.png"),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 100),
-                    GestureDetector(
-                      onTap: _takePicture,
-                      child: SvgPicture.asset(
-                        'lib/assets/icons/ic_take_photo.svg',
-                        height: 80,
-                      ),
-                    ),
-                    SizedBox(width: 100),
-                    GestureDetector(
-                      onTap: _toggleFlash,
-                      child: Container(
-                        padding: EdgeInsets.all(8),
-                        height: 48,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0x80494848),
-                        ),
-                        child: SvgPicture.asset(
-                          _isFlashOn
-                              ? 'lib/assets/icons/ic_flash_on.svg'
-                              : 'lib/assets/icons/ic_flash_off.svg',
-                          height: 30,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+        ),
+      ),
+      topActionsBuilder: (state) => Padding(
+        padding: const EdgeInsets.only(top: 20, right: 20),
+        child: Align(
+          alignment: Alignment.topRight,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Container(
+              width: 35,
+              height: 35,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0x4D333333),
               ),
-            ],
-          ),
-          Positioned(
-            top: 40,
-            right: 20,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.pop(context);
-              },
-              child: Container(
-                height: 30,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0x80494848),
-                ),
+              child: Center(
                 child: SvgPicture.asset(
                   'lib/assets/icons/ic_close.svg',
+                  width: 40,
                   height: 40,
                 ),
               ),
             ),
           ),
+        ),
+      ),
+      middleContentBuilder: (state) => Column(
+        children: [
+          const Spacer(),
+          Builder(builder: (context) {
+            return Container(
+              color: AwesomeThemeProvider.of(context)
+                  .theme
+                  .bottomActionsBackgroundColor,
+              child: const Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                ),
+              ),
+            );
+          }),
         ],
-      )
-          : Center(child: CircularProgressIndicator()),
+      ),
+      bottomActionsBuilder: (state) => Padding(
+        padding: const EdgeInsets.only(bottom: 50),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(9),
+                  image: DecorationImage(
+                    image: AssetImage("lib/assets/images/default.png"),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 70),
+            // AwesomeCaptureButton(state: state),
+            AwesomeCaptureButton(state: state),
+            SizedBox(width: 70),
+            AwesomeFlashButton(state: state),
+          ],
+        ),
+      ),
     );
   }
 }

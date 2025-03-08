@@ -7,8 +7,7 @@ import 'frontend/screen/guide/guide_screen.dart';
 import 'frontend/screen/home/home_screen.dart';
 import 'frontend/screen/splash_screen.dart';
 import 'frontend/screen/tree/virtual_tree_screen.dart';
-
-
+import 'frontend/screen/user/profile_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -41,7 +40,7 @@ class _MainScreenState extends State<MainScreen> {
     GuideScreen(),
     CameraScreen(),
     VirtualTreeScreen(),
-    Center(child: Text('Profile Page', style: TextStyle(fontSize: 24))),
+    ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
