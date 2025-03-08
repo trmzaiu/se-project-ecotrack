@@ -146,13 +146,13 @@ class LoginScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SquareTile(
-                                imagePath: 'lib/assets/images/icons8-facebook.svg'),
+                                imagePath: 'lib/assets/icons/icons8-facebook.svg'),
                             SizedBox(width: 30),
                             SquareTile(
-                                imagePath: 'lib/assets/images/icons8-google.svgs'),
+                                imagePath: 'lib/assets/icons/icons8-google.svgs'),
                             SizedBox(width: 30),
                             SquareTile(
-                                imagePath: 'lib/assets/images/icons8-apple.svg'),
+                                imagePath: 'lib/assets/icons/icons8-apple.svg'),
                           ],
                         ),
                       ],
