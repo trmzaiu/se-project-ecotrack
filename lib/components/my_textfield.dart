@@ -30,6 +30,7 @@ class MyTextField extends StatelessWidget {
           border: InputBorder.none,
           hintText: hintText, // Using the passed parameter
           hintStyle: TextStyle(color: AppColors.tertiary),
+
         ),
       ),
     );

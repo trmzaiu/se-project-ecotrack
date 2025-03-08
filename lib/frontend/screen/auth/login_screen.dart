@@ -31,7 +31,7 @@ class LoginScreen extends StatelessWidget {
                       borderRadius:
                       BorderRadius.vertical(bottom: Radius.circular(20)),
                       image: DecorationImage(
-                        image: NetworkImage("https://placehold.co/370x370"),
+                        image: AssetImage("lib/assets/images/trash.png"),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -67,7 +67,7 @@ class LoginScreen extends StatelessWidget {
                         Text(
                           "Login",
                           style: TextStyle(
-                              fontSize: 22,
+                              fontSize: 34,
                               fontWeight: FontWeight.bold,
                               color: AppColors.secondary),
                         ),
