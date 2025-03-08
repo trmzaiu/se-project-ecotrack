@@ -56,12 +56,18 @@ class _ScanScreenState extends State<ScanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Stack(
         children: [
-          SizedBox.expand(
-            child: FittedBox(
-              fit: BoxFit.cover,
-              child: Image.file(File(widget.imagePath)),
+          Center(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Image.file(
+                  File(widget.imagePath),
+                  width: constraints.maxWidth,
+                  fit: BoxFit.cover,
+                );
+              },
             ),
           ),
 
@@ -285,7 +291,7 @@ class _ScanScreenState extends State<ScanScreen> {
               right: 20,
               child: GestureDetector(
                 onTap: () {
-                  Navigator.popUntil(context, (route) => route.isFirst);
+                  _scanCompleted ? Navigator.popUntil(context, (route) => route.isFirst) : Navigator.pop(context);
                 },
                 child: Container(
                   height: 30,
