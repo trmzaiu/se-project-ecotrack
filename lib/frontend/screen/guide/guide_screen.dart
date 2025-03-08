@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
-class ProfileScreen extends StatelessWidget {
+class GuideScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: Text('Guide'),
         backgroundColor: AppColors.primary,
       ),
       body: Center(
         child: Text(
-          'Welcome to Waste Sorting App!',
+          'Guide!',
           style: TextStyle(fontSize: 20),
         ),
       ),
