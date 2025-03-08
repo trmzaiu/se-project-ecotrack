@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:wastesortapp/components/square_tile.dart';
 import 'package:wastesortapp/components/my_textfield.dart';
 import 'package:wastesortapp/theme/colors.dart';
+import 'package:wastesortapp/theme/fonts.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
@@ -66,7 +68,7 @@ class LoginScreen extends StatelessWidget {
                       children: [
                         Text(
                           "Login",
-                          style: TextStyle(
+                          style: GoogleFonts.urbanist(
                               fontSize: 34,
                               fontWeight: FontWeight.bold,
                               color: AppColors.secondary),
@@ -89,8 +91,13 @@ class LoginScreen extends StatelessWidget {
 
                         Align(
                           alignment: Alignment.centerRight,
-                          child: Text("Forgot your password?",
-                              style: TextStyle(color: AppColors.secondary)),
+                          child: GestureDetector(
+                            onTap: () => Navigator.pushNamed(context, '/forgot-password'),
+                            child: Text(
+                              "Forgot your password?",
+                              style: GoogleFonts.urbanist(color: AppColors.secondary),
+                            ),
+                          ),
                         ),
                         SizedBox(height: 30),
 
@@ -104,11 +111,13 @@ class LoginScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(30),
                             ),
                             alignment: Alignment.center,
-                            child: Text("Login",
-                                style: TextStyle(
-                                    color: AppColors.surface,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold)),
+                            child: Text(
+                              "Login",
+                              style: GoogleFonts.urbanist(
+                                  color: AppColors.surface,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
 
@@ -121,8 +130,10 @@ class LoginScreen extends StatelessWidget {
                                     color: AppColors.secondary, thickness: 1)),
                             Padding(
                               padding: EdgeInsets.symmetric(horizontal: 10),
-                              child: Text("Or sign in with",
-                                  style: TextStyle(color: AppColors.secondary)),
+                              child: Text(
+                                "Or sign in with",
+                                style: GoogleFonts.urbanist(color: AppColors.secondary),
+                              ),
                             ),
                             Expanded(
                                 child: Divider(
@@ -158,10 +169,10 @@ class LoginScreen extends StatelessWidget {
                         children: [
                           TextSpan(
                               text: "Don't have an account? ",
-                              style: TextStyle(color: AppColors.primary)),
+                              style: GoogleFonts.urbanist(color: AppColors.primary)),
                           TextSpan(
                             text: "Register",
-                            style: TextStyle(
+                            style: GoogleFonts.urbanist(
                                 color: AppColors.secondary,
                                 fontWeight: FontWeight.bold),
                           ),
