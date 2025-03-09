@@ -34,7 +34,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
     int startTime = DateTime.now().millisecondsSinceEpoch;
 
-    Timer timer = Timer.periodic(Duration(milliseconds: 50), (t) {
+    Timer timer = Timer.periodic(Duration(milliseconds: 100), (t) {
       setState(() {
         int elapsed = DateTime.now().millisecondsSinceEpoch - startTime;
         _progress = (elapsed / 4000).clamp(0.0, 0.98);
@@ -82,6 +82,13 @@ class _ScanScreenState extends State<ScanScreen> {
                       fontSize: 24,
                       fontWeight: AppFontWeight.semiBold,
                       color: AppColors.surface,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                          color: Colors.black.withOpacity(0.5),
+                        ),
+                      ],
                     ),
                   ),
                   SizedBox(height: 24),
