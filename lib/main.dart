@@ -13,6 +13,7 @@ import 'frontend/screen/auth/login_screen.dart';
 import 'frontend/screen/splash_screen.dart';
 import 'frontend/screen/tree/virtual_tree_screen.dart';
 import 'frontend/screen/user/profile_screen.dart';
+import 'frontend/screen/auth/opening_screen.dart';
 
 
 void main() {
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: AppColors.primary,
       ),
-      home: SplashScreen(),  // ✅ Keep this
+      home: OpeningScreen(),  // ✅ Keep this
       routes: {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
