@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: AppColors.primary,
       ),
-      home: OpeningScreen(),  // ✅ Keep this
+      home: SplashScreen(),  // ✅ Keep this
       routes: {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
@@ -54,7 +54,7 @@ class _MainScreenState extends State<MainScreen> {
     GuideScreen(),
     CameraScreen(),
     VirtualTreeScreen(),
-    LoginScreen(),
+    OpeningScreen(),
   ];
 
   void _onItemTapped(int index) {
