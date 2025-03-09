@@ -53,6 +53,10 @@ class _CameraScreenState extends State<CameraScreen> {
   Widget build(BuildContext context) {
     return CameraAwesomeBuilder.awesome(
       enablePhysicalButton: true,
+      previewFit: CameraPreviewFit.fitWidth,
+      sensorConfig: SensorConfig.single(
+        aspectRatio: CameraAspectRatios.ratio_16_9,
+      ),
       saveConfig: SaveConfig.photoAndVideo(
         initialCaptureMode: CaptureMode.photo,
         photoPathBuilder: (sensors) async {
