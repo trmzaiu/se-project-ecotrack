@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:wastesortapp/theme/colors.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SquareTile extends StatelessWidget {
   final String imagePath;
-  const SquareTile({required this.imagePath, Key? key}) : super(key: key);
+
+  const SquareTile({super.key, required this.imagePath});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10),
+      width: 50,
+      height: 50,
+      padding: EdgeInsets.all(8),
       decoration: BoxDecoration(
-        // border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(10),
-        color: AppColors.surface,
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
       ),
-      child: Image.asset(imagePath, height: 40),
+      child: SvgPicture.asset(imagePath),
     );
   }
 }

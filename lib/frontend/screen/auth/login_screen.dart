@@ -4,6 +4,8 @@ import 'package:wastesortapp/components/my_textfield.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
@@ -145,16 +147,14 @@ class LoginScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SquareTile(
-                                imagePath: 'lib/assets/icons/icons8-facebook.svg'),
+                            SquareTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
                             SizedBox(width: 30),
-                            SquareTile(
-                                imagePath: 'lib/assets/icons/icons8-google.svgs'),
+                            SquareTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
                             SizedBox(width: 30),
-                            SquareTile(
-                                imagePath: 'lib/assets/icons/icons8-apple.svg'),
+                            SquareTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
                           ],
                         ),
+
                       ],
                     ),
                   ),
