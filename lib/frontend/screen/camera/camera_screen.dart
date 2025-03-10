@@ -28,12 +28,25 @@ class _CameraScreenState extends State<CameraScreen> {
       setState(() {
       });
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ScanScreen(imagePath: pickedFile.path),
-        ),
-      );
+      Navigator.of(context).push(PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 300), // Tốc độ chuyển trang
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            ScanScreen(imagePath: pickedFile.path),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          var begin = const Offset(1.0, 0.0); // Từ phải sang trái
+          var end = Offset.zero;
+          var curve = Curves.easeOut;
+
+          var tween = Tween(begin: begin, end: end)
+              .chain(CurveTween(curve: curve));
+          var offsetAnimation = animation.drive(tween);
+
+          return SlideTransition(
+            position: offsetAnimation,
+            child: child,
+          );
+        },
+      ));
     }
   }
 
@@ -41,6 +54,25 @@ class _CameraScreenState extends State<CameraScreen> {
     // Add your image processing logic here
     // For now, returning the original image without processing
     return analysisImage;
+  }
+
+  Route _createSlideRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(1.0, 0.0);
+        const end = Offset.zero;
+        const curve = Curves.easeOut;
+
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var offsetAnimation = animation.drive(tween);
+
+        return SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        );
+      },
+    );
   }
 
   @override
@@ -77,12 +109,7 @@ class _CameraScreenState extends State<CameraScreen> {
               single: (single) async {
                 if (!mounted) return;
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ScanScreen(imagePath: single.file?.path ?? ""),
-                    ),
-                  );
+                  Navigator.of(context).push(_createSlideRoute(ScanScreen(imagePath: single.file?.path ?? "")));
                 });
               }
           );
