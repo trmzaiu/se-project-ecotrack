@@ -17,8 +17,8 @@ class OpeningScreen extends StatelessWidget {
             Expanded(
               child: Center(
                 child: Image.asset(
-                  "lib/assets/images/logo.png",
-                  width: 250,
+                  "lib/assets/images/opening.png",
+                  width: 387.12,
                 ),
               ),
             ),
