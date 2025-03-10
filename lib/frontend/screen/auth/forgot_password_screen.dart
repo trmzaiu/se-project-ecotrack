@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:wastesortapp/components/square_tile.dart';
-import 'package:wastesortapp/components/my_textfield.dart';
-import 'package:wastesortapp/main.dart';
-import 'package:wastesortapp/theme/colors.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 void main(){
   runApp(MyApp());
