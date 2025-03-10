@@ -30,7 +30,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     Future.delayed(Duration(seconds: 5), () {
       if (mounted) {
-        debugPrint('Navigating to HomeScreen with fade transition');
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => MainScreen(),
@@ -40,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 child: child,
               );
             },
-            transitionDuration: Duration(milliseconds: 500),
+            transitionDuration: Duration(milliseconds: 1000),
           ),
         );
       }

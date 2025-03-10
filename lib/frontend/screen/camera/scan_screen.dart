@@ -34,7 +34,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
     int startTime = DateTime.now().millisecondsSinceEpoch;
 
-    Timer timer = Timer.periodic(Duration(milliseconds: 50), (t) {
+    Timer timer = Timer.periodic(Duration(milliseconds: 100), (t) {
       setState(() {
         int elapsed = DateTime.now().millisecondsSinceEpoch - startTime;
         _progress = (elapsed / 4000).clamp(0.0, 0.98);
@@ -56,12 +56,18 @@ class _ScanScreenState extends State<ScanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black12,
       body: Stack(
         children: [
-          SizedBox.expand(
-            child: FittedBox(
-              fit: BoxFit.cover,
-              child: Image.file(File(widget.imagePath)),
+          Center(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Image.file(
+                  File(widget.imagePath),
+                  width: constraints.maxWidth,
+                  fit: BoxFit.cover,
+                );
+              },
             ),
           ),
 
@@ -76,6 +82,13 @@ class _ScanScreenState extends State<ScanScreen> {
                       fontSize: 24,
                       fontWeight: AppFontWeight.semiBold,
                       color: AppColors.surface,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                          color: Colors.black.withOpacity(0.5),
+                        ),
+                      ],
                     ),
                   ),
                   SizedBox(height: 24),
@@ -285,7 +298,7 @@ class _ScanScreenState extends State<ScanScreen> {
               right: 20,
               child: GestureDetector(
                 onTap: () {
-                  Navigator.popUntil(context, (route) => route.isFirst);
+                  _scanCompleted ? Navigator.popUntil(context, (route) => route.isFirst) : Navigator.pop(context);
                 },
                 child: Container(
                   height: 30,

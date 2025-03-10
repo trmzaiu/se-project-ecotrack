@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:camerawesome/src/widgets/camera_awesome_builder.dart';
 import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:wastesortapp/frontend/screen/camera/preview_screen.dart';
+import 'package:wastesortapp/frontend/screen/camera/scan_screen.dart';
 
 class CameraScreen extends StatefulWidget {
   @override
@@ -13,25 +17,120 @@ class CameraScreen extends StatefulWidget {
 
 class _CameraScreenState extends State<CameraScreen> {
 
+  Future<void> _requestPermissions() async {
+    await Permission.camera.request();
+    await Permission.storage.request();
+  }
+
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
       });
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ScanScreen(imagePath: pickedFile.path),
-        ),
-      );
+      Navigator.of(context).push(PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 300), // Tốc độ chuyển trang
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            ScanScreen(imagePath: pickedFile.path),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          var begin = const Offset(1.0, 0.0); // Từ phải sang trái
+          var end = Offset.zero;
+          var curve = Curves.easeOut;
+
+          var tween = Tween(begin: begin, end: end)
+              .chain(CurveTween(curve: curve));
+          var offsetAnimation = animation.drive(tween);
+
+          return SlideTransition(
+            position: offsetAnimation,
+            child: child,
+          );
+        },
+      ));
     }
+  }
+
+  Future<AnalysisImage> processImage(AnalysisImage analysisImage) async {
+    // Add your image processing logic here
+    // For now, returning the original image without processing
+    return analysisImage;
+  }
+
+  Route _createSlideRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(1.0, 0.0);
+        const end = Offset.zero;
+        const curve = Curves.easeOut;
+
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var offsetAnimation = animation.drive(tween);
+
+        return SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _requestPermissions();
   }
 
   @override
   Widget build(BuildContext context) {
     return CameraAwesomeBuilder.awesome(
-      saveConfig: SaveConfig.photo(),
+      enablePhysicalButton: true,
+      previewFit: CameraPreviewFit.fitWidth,
+      sensorConfig: SensorConfig.single(
+        aspectRatio: CameraAspectRatios.ratio_16_9,
+      ),
+      saveConfig: SaveConfig.photoAndVideo(
+        initialCaptureMode: CaptureMode.photo,
+        photoPathBuilder: (sensors) async {
+          final Directory extDir = await getTemporaryDirectory();
+          final String filePath =
+              '${extDir.path}/camerawesome/${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+          await Directory('${extDir.path}/camerawesome').create(recursive: true);
+
+          print("📸 Image will be saved to: $filePath");
+
+          return SingleCaptureRequest(filePath, sensors.first);;
+        },
+      ),
+      onMediaCaptureEvent: (event) {
+        if (event.status == MediaCaptureStatus.success && event.isPicture) {
+          event.captureRequest.when(
+              single: (single) async {
+                if (!mounted) return;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Navigator.of(context).push(_createSlideRoute(ScanScreen(imagePath: single.file?.path ?? "")));
+                });
+              }
+          );
+        }
+      },
+      onImageForAnalysis: (analysisImage) {
+        return processImage(analysisImage);
+      },
+      onMediaTap: (mediaCapture) {
+        mediaCapture.captureRequest.when(
+          single: (single) {
+            debugPrint('single: ${single.file?.path}');
+          },
+        );
+      },
+      imageAnalysisConfig: AnalysisConfig(
+        androidOptions: const AndroidAnalysisOptions.nv21(
+          width: 1024,
+        ),
+        autoStart: true,
+      ),
       theme: AwesomeTheme(
         bottomActionsBackgroundColor: Colors.transparent,
         buttonTheme: AwesomeButtonTheme(
@@ -97,6 +196,12 @@ class _CameraScreenState extends State<CameraScreen> {
           }),
         ],
       ),
+      // bottomActionsBuilder: (state) {
+      //   return AwesomeBottomActions(
+      //     state: state,
+      //     onMediaTap: _handleMediaTap,
+      //   );
+      // },
       bottomActionsBuilder: (state) => Padding(
         padding: const EdgeInsets.only(bottom: 50),
         child: Row(
@@ -117,7 +222,6 @@ class _CameraScreenState extends State<CameraScreen> {
               ),
             ),
             SizedBox(width: 70),
-            // AwesomeCaptureButton(state: state),
             AwesomeCaptureButton(state: state),
             SizedBox(width: 70),
             AwesomeFlashButton(state: state),
