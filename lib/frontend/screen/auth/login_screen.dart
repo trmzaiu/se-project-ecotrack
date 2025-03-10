@@ -47,12 +47,15 @@ class LoginScreen extends StatelessWidget {
             // Centered Column for Login Form & Register Text
             Align(
               alignment: Alignment.center,
+              child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  SizedBox(height: 200),
                   // Login Form
                   Container(
-                    width: 350,
+                    width: 370,
+                    height:500,
                     padding: EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: AppColors.background,
@@ -181,6 +184,7 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
               ),
             ),
           ],
