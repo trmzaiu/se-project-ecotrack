@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:wastesortapp/components/square_tile.dart';
+import 'package:wastesortapp/components/my_textfield.dart';
+import 'package:wastesortapp/main.dart';
+import 'package:wastesortapp/theme/colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-void main() {
-  runApp(const MyApp());
+void main(){
+  runApp(MyApp());
 }
-
-class MyApp extends StatelessWidget {
+class MyApp extends StatelessWidget{
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build (BuildContext context){
+    return  MaterialApp(
       home: ResetPasswordScreen(),
     );
   }
@@ -27,8 +31,9 @@ class ResetPasswordScreen extends StatelessWidget {
           children: [
             // Top rounded container
             Container(
-              width: double.infinity,
-              height: 240,
+              width: 412,
+              height: 896,
+              clipBehavior: Clip.antiAlias,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
