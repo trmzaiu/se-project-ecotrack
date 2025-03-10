@@ -25,28 +25,32 @@ class _CameraScreenState extends State<CameraScreen> {
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
-      setState(() {
-      });
+      File imageFile = File(pickedFile.path);
 
-      Navigator.of(context).push(PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 300), // Tốc độ chuyển trang
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            ScanScreen(imagePath: pickedFile.path),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          var begin = const Offset(1.0, 0.0); // Từ phải sang trái
-          var end = Offset.zero;
-          var curve = Curves.easeOut;
+      if (await imageFile.exists()) {
+        if (!mounted) return;
+        Navigator.of(context).push(PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 300),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              ScanScreen(imagePath: pickedFile.path),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            var begin = const Offset(1.0, 0.0);
+            var end = Offset.zero;
+            var curve = Curves.easeOut;
 
-          var tween = Tween(begin: begin, end: end)
-              .chain(CurveTween(curve: curve));
-          var offsetAnimation = animation.drive(tween);
+            var tween = Tween(begin: begin, end: end)
+                .chain(CurveTween(curve: curve));
+            var offsetAnimation = animation.drive(tween);
 
-          return SlideTransition(
-            position: offsetAnimation,
-            child: child,
-          );
-        },
-      ));
+            return SlideTransition(
+              position: offsetAnimation,
+              child: child,
+            );
+          },
+        ));
+      } else {
+        print("❌");
+      }
     }
   }
 
