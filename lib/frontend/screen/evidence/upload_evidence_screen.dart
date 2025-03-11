@@ -90,7 +90,7 @@ class _UploadScreenState extends State<UploadScreen> {
                     style: GoogleFonts.urbanist(
                       color: AppColors.surface,
                       fontSize: 18,
-                      fontWeight: AppFontWeight.bold,
+                      fontWeight: AppFontWeight.semiBold,
                       letterSpacing: 1,
                     ),
                   ),
@@ -129,19 +129,46 @@ class _UploadScreenState extends State<UploadScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              for (var image in selectedImages) ...[
-                                Container(
-                                  width: 360,
-                                  height: 360,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    image: DecorationImage(
-                                      image: FileImage(image),
-                                      fit: BoxFit.cover,
+                              for (var i = 0; i < selectedImages.length; i++) ...[
+                                Stack(
+                                  children: [
+                                    Container(
+                                      width: 360,
+                                      height: 360,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                        image: DecorationImage(
+                                          image: FileImage(selectedImages[i]),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                    Positioned(
+                                      top: 10,
+                                      right: 10,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            selectedImages.removeAt(i);
+                                          });
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withOpacity(0.4),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          padding: EdgeInsets.all(5),
+                                          child: Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                            size: 24,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                SizedBox(width: 20)
+                                SizedBox(width: 20),
                               ],
 
                               if (selectedImages.length < 5) ...[
