@@ -12,7 +12,6 @@ import '../../../theme/fonts.dart';
 
 class UploadScreen extends StatefulWidget {
   final String imagePath;
-  File? selectedImage;
 
   UploadScreen({required this.imagePath});
 
@@ -23,24 +22,44 @@ class UploadScreen extends StatefulWidget {
 class _UploadScreenState extends State<UploadScreen> {
   String? selectedCategory;
   bool isDropdownOpened = false;
+  List<File> selectedImages = [];
   List<String> categories = ["Recyclable", "Organic", "Hazardous", "General"];
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.imagePath.isNotEmpty) {
+      selectedImages.add(File(widget.imagePath));
+
+      Future.delayed(Duration(milliseconds: 300), () {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+        );
+      });
+    }
+  }
 
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
-      File imageFile = File(pickedFile.path);
+      setState(() {
+        selectedImages.add(File(pickedFile.path));
+      });
+
+      Future.delayed(Duration(milliseconds: 300), () {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+        );
+      });
     }
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     appBar: AppBar(title: Text("Upload Evidence")),
-  //     body: Center(
-  //       child: Image.file(File(imagePath)),
-  //     ),
-  //   );
-  // }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,7 +74,9 @@ class _UploadScreenState extends State<UploadScreen> {
                 Positioned(
                   left: 15,
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
                     child: SvgPicture.asset(
                       'lib/assets/icons/ic_back.svg',
                       height: 20,
@@ -100,55 +121,74 @@ class _UploadScreenState extends State<UploadScreen> {
                     ),
                     SizedBox(height: 10),
                     Center(
-                      child:
-                      // child: Row(
-                      //   children: [
-                      //     if (selectedImage != null)
-                      //       Container(
-                      //         width: 350,
-                      //         height: 350,
-                      //         decoration: BoxDecoration(
-                      //           borderRadius: BorderRadius.circular(8),
-                      //           image: DecorationImage(
-                      //             image: FileImage(selectedImage!),
-                      //             fit: BoxFit.cover,
-                      //           ),
-                      //         ),
-                      //       ),
-                      //
-                      //   ],
-                      // ),
-                      DottedBorder(
-                        color: AppColors.primary,
-                        strokeWidth: 2,
-                        dashPattern: [8, 4],
-                        borderType: BorderType.RRect,
-                        radius: Radius.circular(8),
-                        child: Container(
-                          width: 350,
-                          height: 350,
-                          color: AppColors.accent,
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: GestureDetector(
-                              onTap: _pickImage,
-                              child: Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  shape: BoxShape.circle,
+                      child: SingleChildScrollView(
+                        controller: _scrollController,
+                        scrollDirection: Axis.horizontal,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: selectedImages.isEmpty ? 0 : 30),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              for (var image in selectedImages) ...[
+                                Container(
+                                  width: 360,
+                                  height: 360,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    image: DecorationImage(
+                                      image: FileImage(image),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
                                 ),
-                                child: SvgPicture.asset(
-                                  'lib/assets/icons/ic_plus.svg',
-                                  height: 30,
+                                SizedBox(width: 20)
+                              ],
+
+                              if (selectedImages.length < 5) ...[
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: DottedBorder(
+                                    color: AppColors.primary,
+                                    strokeWidth: 3,
+                                    dashPattern: [8, 4],
+                                    borderType: BorderType.RRect,
+                                    radius: Radius.circular(8),
+                                    child: GestureDetector(
+                                      onTap: _pickImage,
+                                      child: Container(
+                                        width: 360,
+                                        height: 360,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.accent,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Align(
+                                          alignment: Alignment.center,
+                                          child: Container(
+                                            width: 50,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primary,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: SvgPicture.asset(
+                                              'lib/assets/icons/ic_plus.svg',
+                                              height: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            )
+                                if (selectedImages.isNotEmpty) SizedBox(width: 20),
+                              ],
+                            ],
                           ),
-                        ),
-                      ),
+                        )
+                      )
                     ),
+
                     SizedBox(height: 20),
                     Padding(
                       padding: EdgeInsets.only(left: 15),
