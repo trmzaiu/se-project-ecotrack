@@ -24,7 +24,7 @@ class MyTextField extends StatelessWidget {
       ),
       child: TextField(
         controller: controller,
-        obscureText: obscureText, // Using the passed parameter
+        obscureText: obscureText, // Using the passed parametera
         decoration: InputDecoration(
           contentPadding: EdgeInsets.symmetric(horizontal: 20),
           border: InputBorder.none,

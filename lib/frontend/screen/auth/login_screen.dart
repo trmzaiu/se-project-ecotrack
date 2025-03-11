@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wastesortapp/components/square_tile.dart';
+import 'package:wastesortapp/components/circle_tile.dart';
 import 'package:wastesortapp/components/my_textfield.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -137,11 +137,11 @@ class LoginScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SquareTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
+                        CircleTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
                         SizedBox(width: 30),
-                        SquareTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
+                        CircleTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
                         SizedBox(width: 30),
-                        SquareTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
+                        CircleTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
                       ],
                     ),
                   ],
