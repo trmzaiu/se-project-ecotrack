@@ -16,6 +16,7 @@ class MyTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      alignment: Alignment.center,
       width: double.infinity,
       height: 50,
       decoration: BoxDecoration(

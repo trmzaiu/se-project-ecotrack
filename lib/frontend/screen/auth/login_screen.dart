@@ -42,7 +42,7 @@ class LoginScreen extends StatelessWidget {
 
              // Centered Column for Login Form & Register Text
             Positioned(
-              bottom: 40,
+              top: 210,
               left: 20,
               right: 20,
               child: Container(
@@ -69,21 +69,21 @@ class LoginScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           color: AppColors.secondary),
                     ),
-                    SizedBox(height: 30),
+                    SizedBox(height: 20),
 
                     MyTextField(
                       controller: usernameController,
                       hintText: "Email",
                       obscureText: false,
                     ),
-                    SizedBox(height: 30),
+                    SizedBox(height: 20),
 
                     MyTextField(
                       controller: passwordController,
                       hintText: "Password",
                       obscureText: true,
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 10),
 
                     Align(
                       alignment: Alignment.centerRight,
@@ -95,7 +95,7 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(height: 30),
+                    SizedBox(height: 20),
 
                     GestureDetector(
                       onTap: signUserIn,
@@ -139,9 +139,9 @@ class LoginScreen extends StatelessWidget {
                       children: [
                         CircleTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
                         SizedBox(width: 30),
-                        CircleTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
-                        SizedBox(width: 30),
                         CircleTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
+                        SizedBox(width: 30),
+                        CircleTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
                       ],
                     ),
                   ],
@@ -151,7 +151,7 @@ class LoginScreen extends StatelessWidget {
 
             // "Don't have an account? Register"
             Positioned(
-              bottom: 10,
+              bottom: 40,
               left: 0,
               right: 0,
               child: GestureDetector(
