@@ -3,15 +3,29 @@ import 'package:wastesortapp/components/circle_tile.dart';
 import 'package:wastesortapp/components/my_textfield.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wastesortapp/database/google_auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  final GoogleAuthService _googleAuthService = GoogleAuthService();
 
   void signUserIn() {
     // Implement login logic here
+  }
+
+  void signInWithGoogle(BuildContext context) async {
+    UserCredential? userCredential = await _googleAuthService.signInWithGoogle();
+    if (userCredential != null) {
+      print("Google Sign-In Successful: ${userCredential.user?.displayName}");
+      // Navigate to home or dashboard
+      Navigator.pushNamed(context, '/home');
+    } else {
+      print("Google Sign-In Failed");
+    }
   }
 
   @override
@@ -137,7 +151,12 @@ class LoginScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircleTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
+                        GestureDetector(
+                          onTap: () async {
+                            GoogleAuthService().signInWithGoogle();
+                          }, // Call Google Sign-In function
+                          child: CircleTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
+                        ),
                         SizedBox(width: 30),
                         CircleTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
                         SizedBox(width: 30),

@@ -14,9 +14,16 @@ import 'frontend/screen/splash_screen.dart';
 import 'frontend/screen/tree/virtual_tree_screen.dart';
 import 'frontend/screen/user/profile_screen.dart';
 import 'frontend/screen/auth/opening_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:wastesortapp/database/firebase_options.dart';
 
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform, // Ensure Firebase is initialized
+  );
   runApp(MyApp());
 }
 
