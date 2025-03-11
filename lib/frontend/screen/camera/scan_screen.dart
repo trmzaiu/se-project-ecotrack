@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wastesortapp/theme/colors.dart';
-import 'package:wastesortapp/theme/fonts.dart';
 
 import '../../../ScanAI/processImage.dart';
+import '../../../theme/colors.dart';
+import '../../../theme/fonts.dart';
 import '../evidence/upload_evidence_screen.dart';
 
 class ScanScreen extends StatefulWidget {
@@ -139,7 +139,7 @@ class _ScanScreenState extends State<ScanScreen> {
               child: Stack(
                 children: [
                   Container(
-                    width: 290,
+                    width: 280,
                     height: 82,
                     margin: EdgeInsets.only(bottom: 160),
                     decoration: BoxDecoration(

@@ -200,12 +200,6 @@ class _CameraScreenState extends State<CameraScreen> {
           }),
         ],
       ),
-      // bottomActionsBuilder: (state) {
-      //   return AwesomeBottomActions(
-      //     state: state,
-      //     onMediaTap: _handleMediaTap,
-      //   );
-      // },
       bottomActionsBuilder: (state) => Padding(
         padding: const EdgeInsets.only(bottom: 50),
         child: Row(
