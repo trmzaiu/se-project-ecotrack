@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:wastesortapp/frontend/screen/evidence/evidence_detail_screen.dart';
-import 'package:wastesortapp/frontend/screen/evidence/upload_evidence_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import 'frontend/screen/camera/camera_screen.dart';
+import 'frontend/screen/evidence/evidence_screen.dart';
 import 'frontend/screen/home/home_screen.dart';
 import 'frontend/screen/splash_screen.dart';
 import 'frontend/screen/tree/virtual_tree_screen.dart';
@@ -39,7 +38,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = [
     HomeScreen(),
     // UploadScreen(imagePath: ""),
-    EvidenceDetailScreen(),
+    EvidenceScreen(),
     // GuideScreen(),
     CameraScreen(),
     VirtualTreeScreen(),

@@ -8,7 +8,6 @@ import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
 import '../../widget/bar_title.dart';
-import '../../widget/info_column.dart';
 
 class EvidenceDetailScreen extends StatefulWidget {
   @override
@@ -40,8 +39,6 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
           Expanded(
             child: Container(
               width: double.infinity,
-              height: 800,
-              padding: EdgeInsets.all(20),
               decoration: ShapeDecoration(
                 color: AppColors.background,
                 shape: RoundedRectangleBorder(
@@ -53,7 +50,7 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
               ),
               child: Column(
                 children: [
-                  SizedBox(height: 10),
+                  SizedBox(height: 30),
                   Center(
                     child: Stack(
                       alignment: Alignment.center,
@@ -194,16 +191,8 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          InfoColumn(
-                            title: 'Category',
-                            value: 'Recyclable',
-                            width: (phoneWidth - 60) / 2,
-                          ),
-                          InfoColumn(
-                            title: 'Status',
-                            value: 'Approved',
-                            width: (phoneWidth - 60) / 2,
-                          ),
+                          _infoColumn('Category', 'Recyclable', (phoneWidth - 60) / 2),
+                          _infoColumn('Status', 'Approved', (phoneWidth - 60) / 2)
                         ],
                       )
                   ),
@@ -213,30 +202,47 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          InfoColumn(
-                            title: 'Points Earned',
-                            value: '15 pts',
-                            width: (phoneWidth - 60) / 2,
-                          ),
-                          InfoColumn(
-                            title: 'Date',
-                            value: '28 Feb, 2025',
-                            width: (phoneWidth - 60) / 2,
-                          ),
+                          _infoColumn('Points Earned', '15 pts', (phoneWidth - 60) / 2),
+                          _infoColumn('Date', '28 Feb, 2025', (phoneWidth - 60) / 2)
                         ],
                       )
                   ),
                   SizedBox(height: 20),
                   SizedBox(
                     width: phoneWidth - 60,
-                    child: InfoColumn(
-                      title: 'Description',
-                      value: 'The description goes here',
-                      width: (phoneWidth - 60),
-                    ),
+                    child: _infoColumn('Description', 'The description goes here', (phoneWidth - 60)),
                   )
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoColumn(String title, String value, double width) {
+    return SizedBox(
+      width: width,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.urbanist(
+              color: AppColors.primary,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.3,
+            ),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.urbanist(
+              color: AppColors.tertiary,
+              fontSize: 20,
+              fontWeight: AppFontWeight.regular,
+              letterSpacing: 1,
             ),
           ),
         ],
