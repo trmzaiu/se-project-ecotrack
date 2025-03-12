@@ -13,8 +13,65 @@ class VirtualTreeScreen extends StatefulWidget {
 
 class _VirtualTreeScreenState extends State<VirtualTreeScreen> {
   double progress = 0.0;
-  String state = 'lib/assets/images/state1.png';
-  int value = 1;
+  int neededDrops = 0;
+  int drops = 10;
+  int leftDrops = 100;
+  int trees = 0;
+  int value = 0;
+
+  final List<dynamic> _state = [
+    ['lib/assets/images/state1.png', 5],
+    ['lib/assets/images/state2.png', 15],
+    ['lib/assets/images/state3.png', 30],
+    ['lib/assets/images/state4.png', 50],
+  ];
+
+
+  void showTreeDialog(bool isDonated, int state) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          // title: Text("Congratulations!"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isDonated) ...[
+                Image.asset('lib/assets/images/state4.png', width: 100, height: 100),
+                SizedBox(height: 10),
+                Text("Congratulations! You have grown a tree!"),
+              ] else ...[
+                Image.asset('lib/assets/images/state${state + 1}.png', width: 100, height: 100),
+                SizedBox(height: 10),
+                Text("Congratulations! You are at level ${state + 1}"),
+              ],
+            ],
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(AppColors.primary),
+                foregroundColor: WidgetStateProperty.all(AppColors.surface),
+                overlayColor: WidgetStateProperty.all(Color(0x4CE7E0DA)),
+                shadowColor: WidgetStateProperty.all(Colors.transparent),
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                elevation: WidgetStateProperty.all(1),
+                fixedSize: WidgetStateProperty.all(Size(100, 40)),
+                textStyle: WidgetStateProperty.all(TextStyle(fontSize: 13, fontWeight: FontWeight.normal)),
+              ),
+              child: isDonated ? Text("Donate") : Text("Continue"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +105,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Image.asset('lib/assets/images/drop.png', width: 25),
-                      Text('10', style: TextStyle(fontSize: 30, fontWeight: FontWeight.normal)),
+                      Text('$drops', style: TextStyle(fontSize: 30, fontWeight: FontWeight.normal)),
                     ],
                   ),
                 ),
@@ -58,7 +115,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset('lib/assets/images/tree.png', width: 25),
-                      Text('100', style: TextStyle(fontSize: 30, fontWeight: FontWeight.normal)),
+                      Text('$trees', style: TextStyle(fontSize: 30, fontWeight: FontWeight.normal)),
                     ],
                   ),
                 )
@@ -72,10 +129,10 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Image.asset(state, width: 200, height: 200),
+                    Image.asset(_state[value][0], width: 200, height: 200),
                     SizedBox(height: 20),
                     Text(
-                      '${(progress * 20).toInt()}/20',
+                      '${(progress * _state[value][1]).round()}/${_state[value][1]}',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w300,
@@ -96,7 +153,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('5', style: TextStyle(fontSize: 30, fontWeight: FontWeight.normal)),
+                      Text('$leftDrops', style: TextStyle(fontSize: 30, fontWeight: FontWeight.normal)),
                       Image.asset('lib/assets/images/drop.png', width: 25, height: 25),
                     ],
                   ),
@@ -105,22 +162,46 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> {
               )
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: drops > 0
+                  ? () {
+                leftDrops = 100 + neededDrops - drops;
                 setState(() {
-                  if (progress > 1) {
-                    value++;
-                    progress = 0;
-                    state = getState(value);
-                  } else
-                    progress = (progress + 0.05);
+                  while (value < _state.length && drops > 0) {
+                    neededDrops = (_state[value][1] - (progress * _state[value][1])).ceil();
+                    if (drops >= neededDrops) {
+                      drops -= neededDrops;
+                      progress = 0;
+                      value++;
+                    } else {
+                      progress += (drops / _state[value][1]);
+                      drops = 0;
+                    }
+
+                    if (value == _state.length) {
+                      trees++;
+                      value = 0;
+                      progress = 0;
+                      showTreeDialog(true, 0);
+                    }
+                  }
+                  showTreeDialog(false, value);
                 });
-              },
+              } : null,
               style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(Colors.transparent),
+                backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                      (Set<WidgetState> states) {
+                    if (states.contains(WidgetState.disabled)) {
+                      return Colors.grey;
+                    }
+                    return Colors.transparent;
+                  },
+                ),
                 foregroundColor: WidgetStateProperty.all(AppColors.primary),
                 overlayColor: WidgetStateProperty.all(Color(0x4CE7E0DA)),
                 shadowColor: WidgetStateProperty.all(Colors.transparent),
-                shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))),
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                ),
                 elevation: WidgetStateProperty.all(1),
                 side: WidgetStateProperty.all(BorderSide(color: AppColors.primary, width: 1)),
                 fixedSize: WidgetStateProperty.all(Size(200, 50)),
@@ -132,13 +213,6 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> {
         ),
       ),
     );
-  }
-
-  String getState(int value) {
-    if (value % 4 == 1) return 'lib/assets/images/state1.png';
-    if (value % 4 == 2) return 'lib/assets/images/state2.png';
-    if (value % 4 == 3) return 'lib/assets/images/state3.png';
-    return 'lib/assets/images/state4.png';
   }
 }
 
