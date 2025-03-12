@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/material.dart';
 import 'package:wastesortapp/components/my_textfield.dart';
+import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -43,7 +44,6 @@ class _SignUpScreenState extends State<RegisterScreen> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +153,12 @@ class _SignUpScreenState extends State<RegisterScreen> {
 
                   // "Already have an account? Login"
                   GestureDetector(
-                    onTap: () => Navigator.pushNamed(context, '/login'),
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
+                      );
+                    },
                     child: Text.rich(
                       TextSpan(
                         children: [

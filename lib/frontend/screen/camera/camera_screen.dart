@@ -29,11 +29,11 @@ class _CameraScreenState extends State<CameraScreen> {
       });
 
       Navigator.of(context).push(PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 300), // Tốc độ chuyển trang
+        transitionDuration: const Duration(milliseconds: 300),
         pageBuilder: (context, animation, secondaryAnimation) =>
             ScanScreen(imagePath: pickedFile.path),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          var begin = const Offset(1.0, 0.0); // Từ phải sang trái
+          var begin = const Offset(1.0, 0.0);
           var end = Offset.zero;
           var curve = Curves.easeOut;
 

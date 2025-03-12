@@ -36,13 +36,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: AppColors.primary,
       ),
-      home: SplashScreen(),  // ✅ Keep this
-      routes: {
-        '/login': (context) => LoginScreen(),
-        '/register': (context) => RegisterScreen(),
-        // '/forgot-password': (context) => ForgotPasswordScreen(),
-        '/home': (context) => MainScreen(),
-      },
+      home: SplashScreen(),
     );
 
   }

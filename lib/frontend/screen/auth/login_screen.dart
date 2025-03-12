@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:wastesortapp/components/circle_tile.dart';
 import 'package:wastesortapp/components/my_textfield.dart';
+import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
+import 'package:wastesortapp/main.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/service/google_auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
@@ -22,7 +26,10 @@ class LoginScreen extends StatelessWidget {
     if (userCredential != null) {
       print("Google Sign-In Successful: ${userCredential.user?.displayName}");
       // Navigate to home or dashboard
-      Navigator.pushNamed(context, '/home');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen()),
+      );
     } else {
       print("Google Sign-In Failed");
     }
@@ -102,7 +109,12 @@ class LoginScreen extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerRight,
                       child: GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '/forgot-password'),
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => ResetPasswordScreen()),
+                          );
+                        },
                         child: Text(
                           "Forgot your password?",
                           style: GoogleFonts.urbanist(color: AppColors.secondary),
@@ -154,7 +166,7 @@ class LoginScreen extends StatelessWidget {
                         GestureDetector(
                           onTap: () async {
                             GoogleAuthService().signInWithGoogle();
-                          }, // Call Google Sign-In function
+                          },
                           child: CircleTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
                         ),
                         SizedBox(width: 30),
@@ -174,7 +186,12 @@ class LoginScreen extends StatelessWidget {
               left: 0,
               right: 0,
               child: GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/register'),
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegisterScreen()),
+                  );
+                },
                 child: Center(
                   child: Text.rich(
                     TextSpan(
