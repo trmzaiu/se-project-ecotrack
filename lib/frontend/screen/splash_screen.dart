@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'package:wastesortapp/main.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
+import 'package:wastesortapp/frontend/screen/auth/opening_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -28,22 +30,44 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       curve: Curves.easeIn,
     );
 
-    Future.delayed(Duration(seconds: 5), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => MainScreen(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
-            transitionDuration: Duration(milliseconds: 1000),
-          ),
+    // Check login status and navigate accordingly
+    _checkLoginStatus();
+
+    // Future.delayed(Duration(seconds: 5), () {
+    //   if (mounted) {
+    //     Navigator.of(context).pushReplacement(
+    //       PageRouteBuilder(
+    //         pageBuilder: (context, animation, secondaryAnimation) => MainScreen(),
+    //         transitionsBuilder: (context, animation, secondaryAnimation, child) {
+    //           return FadeTransition(
+    //             opacity: animation,
+    //             child: child,
+    //           );
+    //         },
+    //         transitionDuration: Duration(milliseconds: 1000),
+    //       ),
+    //     );
+    //   }
+    // });
+  }
+
+  Future<void> _checkLoginStatus() async {
+    await Future.delayed(Duration(seconds: 3)); // Show splash for 3 seconds
+
+    User? user = FirebaseAuth.instance.currentUser; // Check if user is logged in
+    if (mounted) {
+      if (user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MainScreen(userId: user.uid,)),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => OpeningScreen()),
         );
       }
-    });
+    }
   }
 
   @override

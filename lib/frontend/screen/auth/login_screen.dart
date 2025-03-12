@@ -29,7 +29,7 @@ class LoginScreen extends StatelessWidget {
       // Navigate to home or dashboard
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => MainScreen()),
+        MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
       );
     } else {
       print("Google Sign-In Failed");

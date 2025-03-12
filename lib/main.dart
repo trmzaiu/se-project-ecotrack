@@ -43,6 +43,10 @@ class MyApp extends StatelessWidget {
 }
 
 class MainScreen extends StatefulWidget {
+  final String userId; // Receive userId
+
+  const MainScreen({Key? key, required this.userId}) : super(key: key);
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -50,13 +54,19 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    HomeScreen(),
-    GuideScreen(),
-    CameraScreen(),
-    VirtualTreeScreen(),
-    OpeningScreen(),
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      HomeScreen(userId: widget.userId),
+      GuideScreen(),
+      CameraScreen(),
+      VirtualTreeScreen(),
+      OpeningScreen(),
+    ];
+  }
 
   void _onItemTapped(int index) {
     if (index == 2) {
