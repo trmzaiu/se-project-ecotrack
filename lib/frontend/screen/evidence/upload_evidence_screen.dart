@@ -121,99 +121,148 @@ class _UploadScreenState extends State<UploadScreen> {
                     ),
                     SizedBox(height: 10),
                     Center(
-                      child: SingleChildScrollView(
-                        controller: _scrollController,
-                        scrollDirection: Axis.horizontal,
-                        child: Padding(
-                          padding: EdgeInsets.only(left: selectedImages.isEmpty ? 0 : 30),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              for (var i = 0; i < selectedImages.length; i++) ...[
-                                Stack(
-                                  children: [
-                                    Container(
-                                      width: 360,
-                                      height: 360,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8),
-                                        image: DecorationImage(
-                                          image: FileImage(selectedImages[i]),
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 10,
-                                      right: 10,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            selectedImages.removeAt(i);
-                                          });
-                                        },
-                                        child: Container(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SingleChildScrollView(
+                            controller: _scrollController,
+                            scrollDirection: Axis.horizontal,
+                            child: Padding(
+                              padding: EdgeInsets.only(left: selectedImages.isEmpty ? 0 : 30),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  for (var i = 0; i < selectedImages.length; i++) ...[
+                                    Stack(
+                                      children: [
+                                        Container(
+                                          width: 360,
+                                          height: 360,
                                           decoration: BoxDecoration(
-                                            color: Colors.black.withOpacity(0.4),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          padding: EdgeInsets.all(5),
-                                          child: Icon(
-                                            Icons.close,
-                                            color: Colors.white,
-                                            size: 24,
+                                            borderRadius: BorderRadius.circular(8),
+                                            image: DecorationImage(
+                                              image: FileImage(selectedImages[i]),
+                                              fit: BoxFit.cover,
+                                            ),
                                           ),
                                         ),
-                                      ),
+                                        Positioned(
+                                          top: 10,
+                                          right: 10,
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                selectedImages.removeAt(i);
+                                              });
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.black.withOpacity(0.4),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              padding: EdgeInsets.all(5),
+                                              child: Icon(
+                                                Icons.close,
+                                                color: Colors.white,
+                                                size: 24,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
+                                    SizedBox(width: 20),
                                   ],
-                                ),
-                                SizedBox(width: 20),
-                              ],
 
-                              if (selectedImages.length < 5) ...[
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: DottedBorder(
-                                    color: AppColors.primary,
-                                    strokeWidth: 3,
-                                    dashPattern: [8, 4],
-                                    borderType: BorderType.RRect,
-                                    radius: Radius.circular(8),
-                                    child: GestureDetector(
-                                      onTap: _pickImage,
-                                      child: Container(
-                                        width: 360,
-                                        height: 360,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.accent,
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Align(
-                                          alignment: Alignment.center,
+                                  if (selectedImages.length < 5) ...[
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: DottedBorder(
+                                        color: AppColors.primary,
+                                        strokeWidth: 3,
+                                        dashPattern: [8, 4],
+                                        borderType: BorderType.RRect,
+                                        radius: Radius.circular(8),
+                                        child: GestureDetector(
+                                          onTap: _pickImage,
                                           child: Container(
-                                            width: 50,
-                                            height: 50,
+                                            width: 360,
+                                            height: 360,
                                             decoration: BoxDecoration(
-                                              color: AppColors.primary,
-                                              shape: BoxShape.circle,
+                                              color: AppColors.accent,
+                                              borderRadius: BorderRadius.circular(8),
                                             ),
-                                            child: SvgPicture.asset(
-                                              'lib/assets/icons/ic_plus.svg',
-                                              height: 30,
+                                            child: Align(
+                                              alignment: Alignment.center,
+                                              child: Container(
+                                                width: 50,
+                                                height: 50,
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.primary,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: SvgPicture.asset(
+                                                  'lib/assets/icons/ic_plus.svg',
+                                                  height: 30,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                                if (selectedImages.isNotEmpty) SizedBox(width: 20),
-                              ],
-                            ],
+                                    if (selectedImages.isNotEmpty) SizedBox(width: 20),
+                                  ],
+                                ],
+                              ),
+                            ),
                           ),
-                        )
-                      )
+
+                          // Nút mũi tên trái
+                          Positioned(
+                            left: 0,
+                            child: GestureDetector(
+                              onTap: () {
+                                _scrollController.animateTo(
+                                  _scrollController.offset - 380,
+                                  duration: Duration(milliseconds: 300),
+                                  curve: Curves.easeOut,
+                                );
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.3),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.arrow_back_ios, color: Colors.white, size: 24),
+                              ),
+                            ),
+                          ),
+
+                          // Nút mũi tên phải
+                          Positioned(
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: () {
+                                _scrollController.animateTo(
+                                  _scrollController.offset + 380,
+                                  duration: Duration(milliseconds: 300),
+                                  curve: Curves.easeOut,
+                                );
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.3),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.arrow_forward_ios, color: Colors.white, size: 24),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
                     SizedBox(height: 20),
