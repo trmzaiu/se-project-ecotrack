@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:wastesortapp/frontend/widget/bar_title.dart';
 
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
+import '../../utils/phone_size.dart';
 
 class UploadScreen extends StatefulWidget {
   final String imagePath;
@@ -62,367 +64,293 @@ class _UploadScreenState extends State<UploadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double phoneWidth = getPhoneWidth(context);
+
     return Scaffold(
+      backgroundColor: AppColors.secondary,
       body: Column(
         children: [
-          Container(
-            width: double.infinity,
-            color: AppColors.secondary,
-            padding: EdgeInsets.only(top: 60, bottom: 20),
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 15,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: SvgPicture.asset(
-                      'lib/assets/icons/ic_back.svg',
-                      height: 20,
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Text(
-                    'Upload Evidence',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.urbanist(
-                      color: AppColors.surface,
-                      fontSize: 18,
-                      fontWeight: AppFontWeight.semiBold,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          BarTitle(title: 'Upload Evidence'),
+          SizedBox(height: 30),
           Expanded(
-            child: SingleChildScrollView(
-              child: Container(
-                padding: EdgeInsets.only(top: 26),
-                width: double.infinity,
-                color: AppColors.background,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(left: 15),
-                      child: Text(
-                        'Evidence',
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.secondary,
-                          fontSize: 20,
-                          fontWeight: AppFontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
+            child: Container(
+              padding: EdgeInsets.only(top: 20),
+              width: double.infinity,
+              color: AppColors.background,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(left: 15),
+                    child: Text(
+                      'Evidence',
+                      style: GoogleFonts.urbanist(
+                        color: AppColors.secondary,
+                        fontSize: 18,
+                        fontWeight: AppFontWeight.bold,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Center(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          SingleChildScrollView(
-                            controller: _scrollController,
-                            scrollDirection: Axis.horizontal,
-                            child: Padding(
-                              padding: EdgeInsets.only(left: selectedImages.isEmpty ? 0 : 30),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  for (var i = 0; i < selectedImages.length; i++) ...[
-                                    Stack(
-                                      children: [
-                                        Container(
-                                          width: 360,
-                                          height: 360,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(8),
-                                            image: DecorationImage(
-                                              image: FileImage(selectedImages[i]),
-                                              fit: BoxFit.cover,
+                  ),
+                  SizedBox(height: 10),
+                  Center(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SingleChildScrollView(
+                          controller: _scrollController,
+                          scrollDirection: Axis.horizontal,
+                          child: Padding(
+                            padding: EdgeInsets.only(left: selectedImages.isEmpty ? 0 : 30),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                for (var i = 0; i < selectedImages.length; i++) ...[
+                                  Stack(
+                                    children: [
+                                      Container(
+                                        width: phoneWidth - 60,
+                                        height: phoneWidth - 60,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(8),
+                                          image: DecorationImage(
+                                            image: FileImage(selectedImages[i]),
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        top: 10,
+                                        right: 10,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              selectedImages.removeAt(i);
+                                            });
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.black.withOpacity(0.4),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            padding: EdgeInsets.all(5),
+                                            child: Icon(
+                                              Icons.close,
+                                              color: Colors.white,
+                                              size: 24,
                                             ),
                                           ),
                                         ),
-                                        Positioned(
-                                          top: 10,
-                                          right: 10,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                selectedImages.removeAt(i);
-                                              });
-                                            },
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(width: 20),
+                                ],
+
+                                if (selectedImages.length < 5) ...[
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: DottedBorder(
+                                      color: AppColors.primary,
+                                      strokeWidth: 3,
+                                      dashPattern: [8, 4],
+                                      borderType: BorderType.RRect,
+                                      radius: Radius.circular(8),
+                                      child: GestureDetector(
+                                        onTap: _pickImage,
+                                        child: Container(
+                                          width: phoneWidth - 60,
+                                          height: phoneWidth - 60,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.accent,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Align(
+                                            alignment: Alignment.center,
                                             child: Container(
+                                              width: 50,
+                                              height: 50,
                                               decoration: BoxDecoration(
-                                                color: Colors.black.withOpacity(0.4),
+                                                color: AppColors.primary,
                                                 shape: BoxShape.circle,
                                               ),
-                                              padding: EdgeInsets.all(5),
-                                              child: Icon(
-                                                Icons.close,
-                                                color: Colors.white,
-                                                size: 24,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(width: 20),
-                                  ],
-
-                                  if (selectedImages.length < 5) ...[
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: DottedBorder(
-                                        color: AppColors.primary,
-                                        strokeWidth: 3,
-                                        dashPattern: [8, 4],
-                                        borderType: BorderType.RRect,
-                                        radius: Radius.circular(8),
-                                        child: GestureDetector(
-                                          onTap: _pickImage,
-                                          child: Container(
-                                            width: 360,
-                                            height: 360,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.accent,
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: Align(
-                                              alignment: Alignment.center,
-                                              child: Container(
-                                                width: 50,
-                                                height: 50,
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.primary,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: SvgPicture.asset(
-                                                  'lib/assets/icons/ic_plus.svg',
-                                                  height: 30,
-                                                ),
+                                              child: SvgPicture.asset(
+                                                'lib/assets/icons/ic_plus.svg',
+                                                height: 30,
                                               ),
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                    if (selectedImages.isNotEmpty) SizedBox(width: 20),
-                                  ],
+                                  ),
+                                  if (selectedImages.isNotEmpty) SizedBox(width: 20),
                                 ],
-                              ),
+                              ],
                             ),
                           ),
+                        ),
+                      ],
+                    ),
+                  ),
 
-                          // Nút mũi tên trái
-                          Positioned(
-                            left: 0,
-                            child: GestureDetector(
-                              onTap: () {
-                                _scrollController.animateTo(
-                                  _scrollController.offset - 380,
-                                  duration: Duration(milliseconds: 300),
-                                  curve: Curves.easeOut,
-                                );
-                              },
-                              child: Container(
-                                padding: EdgeInsets.all(10),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: EdgeInsets.only(left: 15),
+                    child: Text(
+                      'Category',
+                      style: GoogleFonts.urbanist(
+                        color: AppColors.secondary,
+                        fontSize: 18,
+                        fontWeight: AppFontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Center(
+                    child: StatefulBuilder(
+                      builder: (context, setState) {
+                        return Container(
+                          width: phoneWidth - 60,
+                          decoration: BoxDecoration(
+                            color: AppColors.accent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton2<String>(
+                              value: selectedCategory,
+                              isExpanded: true,
+
+                              buttonStyleData: ButtonStyleData(
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.3),
-                                  shape: BoxShape.circle,
+                                  color: AppColors.accent,
+                                  borderRadius: isDropdownOpened
+                                      ? BorderRadius.vertical(top: Radius.circular(10))
+                                      : BorderRadius.circular(10),
                                 ),
-                                child: Icon(Icons.arrow_back_ios, color: Colors.white, size: 24),
                               ),
-                            ),
-                          ),
 
-                          // Nút mũi tên phải
-                          Positioned(
-                            right: 0,
-                            child: GestureDetector(
-                              onTap: () {
-                                _scrollController.animateTo(
-                                  _scrollController.offset + 380,
-                                  duration: Duration(milliseconds: 300),
-                                  curve: Curves.easeOut,
-                                );
-                              },
-                              child: Container(
-                                padding: EdgeInsets.all(10),
+                              dropdownStyleData: DropdownStyleData(
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.3),
-                                  shape: BoxShape.circle,
+                                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
+                                  color: AppColors.accent,
                                 ),
-                                child: Icon(Icons.arrow_forward_ios, color: Colors.white, size: 24),
+                                elevation: 0,
+                                maxHeight: 250,
                               ),
+
+                              menuItemStyleData: MenuItemStyleData(
+                                padding: EdgeInsets.symmetric(vertical: 0, horizontal: 15),
+                              ),
+
+                              hint: Text(
+                                'Select category',
+                                style: GoogleFonts.urbanist(
+                                  color: AppColors.tertiary,
+                                  fontSize: 15,
+                                  fontWeight: AppFontWeight.regular,
+                                ),
+                              ),
+
+                              iconStyleData: IconStyleData(
+                                icon: Padding(
+                                  padding: EdgeInsets.only(right: 5),
+                                  child: Icon(Icons.arrow_drop_down, color: AppColors.tertiary),
+                                ),
+                              ),
+
+                              onMenuStateChange: (isOpen) {
+                                setState(() {
+                                  isDropdownOpened = isOpen;
+                                });
+                              },
+
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  selectedCategory = newValue;
+                                });
+                              },
+
+                              items: categories.map((String category) {
+                                return DropdownMenuItem<String>(
+                                  value: category,
+                                  child: Text(
+                                    category,
+                                    style: GoogleFonts.urbanist(fontSize: 15, color: AppColors.tertiary),
+                                  ),
+                                );
+                              }).toList(),
                             ),
                           ),
-                        ],
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: EdgeInsets.only(left: 15),
+                    child: Text(
+                      'Description',
+                      style: GoogleFonts.urbanist(
+                        color: AppColors.secondary,
+                        fontSize: 18,
+                        fontWeight: AppFontWeight.bold,
+                        letterSpacing: 0.5,
                       ),
                     ),
-
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: EdgeInsets.only(left: 15),
-                      child: Text(
-                        'Category',
+                  ),
+                  SizedBox(height: 10),
+                  Center(
+                    child: Container(
+                      width: phoneWidth - 60,
+                      decoration: BoxDecoration(
+                        color: AppColors.accent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: TextField(
+                        maxLines: 3,
                         style: GoogleFonts.urbanist(
-                          color: AppColors.secondary,
-                          fontSize: 20,
-                          fontWeight: AppFontWeight.bold,
-                          letterSpacing: 0.5,
+                          color: AppColors.tertiary,
+                          fontSize: 15,
                         ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Center(
-                      child: StatefulBuilder(
-                        builder: (context, setState) {
-                          return Container(
-                            width: 360,
-                            decoration: BoxDecoration(
-                              color: AppColors.accent,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton2<String>(
-                                value: selectedCategory,
-                                isExpanded: true,
-
-                                buttonStyleData: ButtonStyleData(
-                                  decoration: BoxDecoration(
-                                    color: AppColors.accent,
-                                    borderRadius: isDropdownOpened
-                                        ? BorderRadius.vertical(top: Radius.circular(10))
-                                        : BorderRadius.circular(10),
-                                  ),
-                                ),
-
-                                dropdownStyleData: DropdownStyleData(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
-                                    color: AppColors.accent,
-                                  ),
-                                  elevation: 0,
-                                  maxHeight: 250,
-                                ),
-
-                                menuItemStyleData: MenuItemStyleData(
-                                  padding: EdgeInsets.symmetric(vertical: 0, horizontal: 15),
-                                ),
-
-                                hint: Text(
-                                  'Select category',
-                                  style: GoogleFonts.urbanist(
-                                    color: AppColors.tertiary,
-                                    fontSize: 15,
-                                    fontWeight: AppFontWeight.regular,
-                                  ),
-                                ),
-
-                                iconStyleData: IconStyleData(
-                                  icon: Padding(
-                                    padding: EdgeInsets.only(right: 5),
-                                    child: Icon(Icons.arrow_drop_down, color: AppColors.tertiary),
-                                  ),
-                                ),
-
-                                onMenuStateChange: (isOpen) {
-                                  setState(() {
-                                    isDropdownOpened = isOpen;
-                                  });
-                                },
-
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    selectedCategory = newValue;
-                                  });
-                                },
-
-                                items: categories.map((String category) {
-                                  return DropdownMenuItem<String>(
-                                    value: category,
-                                    child: Text(
-                                      category,
-                                      style: GoogleFonts.urbanist(fontSize: 15, color: AppColors.tertiary),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: EdgeInsets.only(left: 15),
-                      child: Text(
-                        'Description',
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.secondary,
-                          fontSize: 20,
-                          fontWeight: AppFontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Center(
-                      child: Container(
-                        width: 360,
-                        decoration: BoxDecoration(
-                          color: AppColors.accent,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: TextField(
-                          maxLines: 3,
-                          style: GoogleFonts.urbanist(
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                          hintText: 'Type some description...',
+                          hintStyle: GoogleFonts.urbanist(
                             color: AppColors.tertiary,
                             fontSize: 15,
                           ),
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                            hintText: 'Type some description...',
-                            hintStyle: GoogleFonts.urbanist(
-                              color: AppColors.tertiary,
-                              fontSize: 15,
-                            ),
-                            border: InputBorder.none,
-                          ),
+                          border: InputBorder.none,
                         ),
                       ),
                     ),
+                  ),
 
-                    SizedBox(height: 30),
-                    Center(
-                      child: Container(
-                        width: 300,
-                        height: 50,
-                        decoration: ShapeDecoration(
-                          color: Color(0xFF2C6E49),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
+                  SizedBox(height: 25),
+                  Center(
+                    child: Container(
+                      width: phoneWidth - 112,
+                      height: 50,
+                      decoration: ShapeDecoration(
+                        color: Color(0xFF2C6E49),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
                         ),
-                        child: Center(
-                          child: Text(
-                            "Submit",
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.surface,
-                              fontSize: 18,
-                              fontWeight: AppFontWeight.bold,
-                            ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Submit",
+                          style: GoogleFonts.urbanist(
+                            color: AppColors.surface,
+                            fontSize: 18,
+                            fontWeight: AppFontWeight.bold,
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
