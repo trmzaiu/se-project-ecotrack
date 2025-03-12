@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:wastesortapp/frontend/screen/evidence/evidence_screen.dart';
 import 'package:wastesortapp/frontend/screen/evidence/upload_evidence_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
@@ -38,7 +39,9 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _pages = [
     HomeScreen(),
-    UploadScreen(imagePath: ""),
+    // UploadScreen(imagePath: ""),
+    EvidenceScreen(),
+    // GuideScreen(),
     CameraScreen(),
     VirtualTreeScreen(),
     ProfileScreen(),
