@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -79,29 +81,91 @@ class _EvidenceScreenState extends State<EvidenceScreen> {
                     Padding(
                       padding: EdgeInsets.only(top: 10),
                       child: Center(
-                        child: Container(
-                          width: 360,
-                          height: 360,
-                          child: PageView.builder(
-                            controller: _pageController,
-                            itemCount: imagePaths.length,
-                            onPageChanged: (index) {
-                              setState(() {
-                                _currentIndex = index;
-                              });
-                            },
-                            itemBuilder: (context, index) {
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Image.asset(
-                                  imagePaths[index],
-                                  width: 360,
-                                  height: 360,
-                                  fit: BoxFit.cover,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            SizedBox(
+                              width: 360,
+                              height: 360,
+                              child: PageView.builder(
+                                controller: _pageController,
+                                itemCount: imagePaths.length,
+                                onPageChanged: (index) {
+                                  setState(() {
+                                    _currentIndex = index;
+                                  });
+                                },
+                                itemBuilder: (context, index) {
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Image.asset(
+                                      imagePaths[index],
+                                      width: 360,
+                                      height: 360,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+
+                            Positioned(
+                              left: 10,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (_currentIndex > 0) {
+                                    _pageController.previousPage(
+                                      duration: Duration(milliseconds: 300),
+                                      curve: Curves.easeOut,
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.3),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: SvgPicture.asset(
+                                    'lib/assets/icons/ic_back.svg',
+                                    height: 16,
+                                  ),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            ),
+
+                            Positioned(
+                              right: 10,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (_currentIndex < imagePaths.length - 1) {
+                                    _pageController.nextPage(
+                                      duration: Duration(milliseconds: 300),
+                                      curve: Curves.easeOut,
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.3),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Transform.rotate(
+                                    angle: math.pi,
+                                    child: SvgPicture.asset(
+                                      'lib/assets/icons/ic_back.svg',
+                                      height: 16,
+                                    ),
+                                  )
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
