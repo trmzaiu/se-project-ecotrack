@@ -8,7 +8,7 @@ class GoogleAuthService {
   Future<UserCredential?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null; // User canceled login
+      if (googleUser == null) return null;
 
       // Obtain the auth details from the request
       final GoogleSignInAuthentication? googleAuth = await googleUser.authentication;

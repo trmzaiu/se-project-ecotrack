@@ -3,7 +3,7 @@ import 'package:wastesortapp/components/circle_tile.dart';
 import 'package:wastesortapp/components/my_textfield.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wastesortapp/database/google_auth_service.dart';
+import 'package:wastesortapp/frontend/service/google_auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatelessWidget {
