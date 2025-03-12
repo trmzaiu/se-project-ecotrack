@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 
 class OpeningScreen extends StatelessWidget {
   const OpeningScreen({super.key});
@@ -51,7 +52,10 @@ class OpeningScreen extends StatelessWidget {
             // "Getting Started" Button
             GestureDetector(
               onTap: () {
-                Navigator.pushNamed(context, '/login'); // Navigate to login page
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                );
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 30),

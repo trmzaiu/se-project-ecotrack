@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:wastesortapp/components/circle_tile.dart';
 import 'package:wastesortapp/components/my_textfield.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
+import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
 import 'package:wastesortapp/main.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,7 +25,7 @@ class LoginScreen extends StatelessWidget {
   void signInWithGoogle(BuildContext context) async {
     UserCredential? userCredential = await _googleAuthService.signInWithGoogle();
     if (userCredential != null) {
-      print("Google Sign-In Successful: ${userCredential.user?.displayName}");
+      String userId = userCredential.user?.uid ?? '';
       // Navigate to home or dashboard
       Navigator.pushReplacement(
         context,
@@ -164,9 +165,7 @@ class LoginScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         GestureDetector(
-                          onTap: () async {
-                            GoogleAuthService().signInWithGoogle();
-                          },
+                          onTap: () => signInWithGoogle(context),
                           child: CircleTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
                         ),
                         SizedBox(width: 30),

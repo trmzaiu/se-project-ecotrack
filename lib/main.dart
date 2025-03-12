@@ -20,9 +20,9 @@ import 'package:wastesortapp/database/firebase_options.dart';
 
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // Ensure Firebase is initialized
+    options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(MyApp());
 }
