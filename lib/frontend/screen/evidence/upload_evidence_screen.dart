@@ -15,11 +15,11 @@ class UploadScreen extends StatelessWidget {
       body: Column(
         children: [
           SizedBox(height: 20),
-          Image.file(File(imagePath), height: 300), // Hiển thị ảnh đã chọn
+          Image.file(File(imagePath), height: 300),
           SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              // Thêm logic upload file tại đây
+
             },
             child: Text("Upload"),
           ),

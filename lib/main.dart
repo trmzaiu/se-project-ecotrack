@@ -1,24 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:wastesortapp/frontend/screen/auth/forgot_pw_code.dart';
-import 'package:wastesortapp/frontend/screen/auth/forgot_pw_email.dart';
 import 'package:wastesortapp/theme/colors.dart';
-import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
-import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
-import 'package:wastesortapp/frontend/screen/auth/forgot_password_screen.dart';
 
 import 'frontend/screen/camera/camera_screen.dart';
 import 'frontend/screen/guide/guide_screen.dart';
 import 'frontend/screen/home/home_screen.dart';
-import 'ScanAI/scanUI.dart';
-import 'frontend/screen/auth/login_screen.dart';
 import 'frontend/screen/splash_screen.dart';
 import 'frontend/screen/tree/virtual_tree_screen.dart';
-import 'frontend/screen/user/profile_screen.dart';
 import 'frontend/screen/auth/opening_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:wastesortapp/database/firebase_options.dart';
 
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 
@@ -31,21 +29,17 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: AppColors.primary,
       ),
-      home: SplashScreen(),  // ✅ Keep this
-      routes: {
-        '/login': (context) => LoginScreen(),
-        '/register': (context) => RegisterScreen(),
-         '/forgot-password': (context) => ForgotPasswordScreen(),
-        '/home': (context) => MainScreen(),
-        '/otp' : (context) => VerificationScreen(),
-        '/email' : (context) => ForgotPasswordScreenMail(),
-      },
+      home: SplashScreen(),
     );
 
   }
 }
 
 class MainScreen extends StatefulWidget {
+  final String userId; // Receive userId
+
+  const MainScreen({Key? key, required this.userId}) : super(key: key);
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -53,13 +47,19 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    HomeScreen(),
-    GuideScreen(),
-    CameraScreen(),
-    VirtualTreeScreen(),
-    OpeningScreen(),
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      HomeScreen(userId: widget.userId),
+      GuideScreen(),
+      CameraScreen(),
+      VirtualTreeScreen(),
+      OpeningScreen(),
+    ];
+  }
 
   void _onItemTapped(int index) {
     if (index == 2) {

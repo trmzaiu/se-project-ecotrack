@@ -1,17 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:wastesortapp/components/square_tile.dart';
+import 'package:wastesortapp/components/circle_tile.dart';
 import 'package:wastesortapp/components/my_textfield.dart';
+import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
+import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
+import 'package:wastesortapp/main.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wastesortapp/frontend/service/google_auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  final GoogleAuthService _googleAuthService = GoogleAuthService();
 
   void signUserIn() {
     // Implement login logic here
+  }
+
+  void signInWithGoogle(BuildContext context) async {
+    UserCredential? userCredential = await _googleAuthService.signInWithGoogle();
+    if (userCredential != null) {
+      String userId = userCredential.user?.uid ?? '';
+      // Navigate to home or dashboard
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
+      );
+    } else {
+      print("Google Sign-In Failed");
+    }
   }
 
   @override
@@ -42,7 +64,7 @@ class LoginScreen extends StatelessWidget {
 
              // Centered Column for Login Form & Register Text
             Positioned(
-              bottom: 40,
+              top: 210,
               left: 20,
               right: 20,
               child: Container(
@@ -69,33 +91,38 @@ class LoginScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           color: AppColors.secondary),
                     ),
-                    SizedBox(height: 30),
+                    SizedBox(height: 20),
 
                     MyTextField(
                       controller: usernameController,
                       hintText: "Email",
                       obscureText: false,
                     ),
-                    SizedBox(height: 30),
+                    SizedBox(height: 20),
 
                     MyTextField(
                       controller: passwordController,
                       hintText: "Password",
                       obscureText: true,
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 10),
 
                     Align(
                       alignment: Alignment.centerRight,
                       child: GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '/email'),
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => ResetPasswordScreen()),
+                          );
+                        },
                         child: Text(
                           "Forgot your password?",
                           style: GoogleFonts.urbanist(color: AppColors.secondary),
                         ),
                       ),
                     ),
-                    SizedBox(height: 30),
+                    SizedBox(height: 20),
 
                     GestureDetector(
                       onTap: signUserIn,
@@ -137,11 +164,14 @@ class LoginScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SquareTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
+                        GestureDetector(
+                          onTap: () => signInWithGoogle(context),
+                          child: CircleTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
+                        ),
                         SizedBox(width: 30),
-                        SquareTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
+                        CircleTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
                         SizedBox(width: 30),
-                        SquareTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
+                        CircleTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
                       ],
                     ),
                   ],
@@ -151,11 +181,16 @@ class LoginScreen extends StatelessWidget {
 
             // "Don't have an account? Register"
             Positioned(
-              bottom: 10,
+              bottom: 40,
               left: 0,
               right: 0,
               child: GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/register'),
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegisterScreen()),
+                  );
+                },
                 child: Center(
                   child: Text.rich(
                     TextSpan(

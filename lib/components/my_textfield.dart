@@ -16,6 +16,7 @@ class MyTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      alignment: Alignment.center,
       width: double.infinity,
       height: 50,
       decoration: BoxDecoration(
@@ -24,7 +25,7 @@ class MyTextField extends StatelessWidget {
       ),
       child: TextField(
         controller: controller,
-        obscureText: obscureText, // Using the passed parameter
+        obscureText: obscureText, // Using the passed parametera
         decoration: InputDecoration(
           contentPadding: EdgeInsets.symmetric(horizontal: 20),
           border: InputBorder.none,
