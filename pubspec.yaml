@@ -48,20 +48,3 @@ flutter:
     - lib/assets/images/
 
   uses-material-design: true
-
-  fonts:
-    - family: Nunito
-      fonts:
-        - asset: lib/assets/fonts/nunito.ttf
-    - family: Domine
-      fonts:
-        - asset: lib/assets/fonts/domine.ttf
-    - family: Madisonian
-      fonts:
-        - asset: lib/assets/fonts/abc.ttf
-    - family: Urbanist
-      fonts:
-        - asset: lib/assets/fonts/urbanist.ttf
-    - family: Rancher
-      fonts:
-        - asset: lib/assets/fonts/rancher.ttf
