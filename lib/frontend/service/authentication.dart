@@ -9,22 +9,26 @@ class AuthenticationService {
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
   // Sign in with email and password
-  Future<String?> signIn({required String email, required String password}) async {
+  Future<String> signIn({required String email, required String password}) async {
     try {
       await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-      return "Signed in";
+      return "Success"; // Standardized return value
     } on FirebaseAuthException catch (e) {
-      return e.message;
+      return "Error: ${e.message}"; // Ensure consistent error messages
+    } catch (e) {
+      return "Error: An unexpected error occurred"; // Handle other exceptions
     }
   }
 
   // Register with email and password
-  Future<String?> register({required String email, required String password}) async {
+  Future<String> register({required String email, required String password}) async {
     try {
       await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-      return "Registered";
+      return "Success"; // Standardized return value
     } on FirebaseAuthException catch (e) {
-      return e.message;
+      return "Error: ${e.message}";
+    } catch (e) {
+      return "Error: An unexpected error occurred";
     }
   }
 
@@ -34,12 +38,14 @@ class AuthenticationService {
   }
 
   // Reset password
-  Future<String?> resetPassword({required String email}) async {
+  Future<String> resetPassword({required String email}) async {
     try {
       await _firebaseAuth.sendPasswordResetEmail(email: email);
-      return "Password reset email sent";
+      return "Success";
     } on FirebaseAuthException catch (e) {
-      return e.message;
+      return "Error: ${e.message}";
+    } catch (e) {
+      return "Error: An unexpected error occurred";
     }
   }
 }

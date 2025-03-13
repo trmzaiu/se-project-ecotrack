@@ -8,9 +8,8 @@ import 'package:wastesortapp/main.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/service/google_auth_service.dart';
+import 'package:wastesortapp/frontend/service/authentication.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
@@ -19,21 +18,38 @@ class LoginScreen extends StatelessWidget {
   final passwordController = TextEditingController();
   final GoogleAuthService _googleAuthService = GoogleAuthService();
 
-  void signUserIn() {
-    // Implement login logic here
+  void signUserIn(BuildContext context) async {
+    final authService = AuthenticationService(FirebaseAuth.instance);
+    String? result = await authService.signIn(
+      email: usernameController.text.trim(),
+      password: passwordController.text.trim(),
+    );
+
+    if (result == "Signed in") {
+      String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result ?? "Login failed")),
+      );
+    }
   }
 
   void signInWithGoogle(BuildContext context) async {
     UserCredential? userCredential = await _googleAuthService.signInWithGoogle();
     if (userCredential != null) {
       String userId = userCredential.user?.uid ?? '';
-      // Navigate to home or dashboard
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
       );
     } else {
-      print("Google Sign-In Failed");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Google Sign-In Failed")),
+      );
     }
   }
 
@@ -44,7 +60,6 @@ class LoginScreen extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            // Background Image
             Positioned.fill(
               child: Column(
                 children: [
@@ -63,7 +78,6 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
 
-             // Centered Column for Login Form & Register Text
             Positioned(
               top: 210,
               left: 20,
@@ -126,7 +140,7 @@ class LoginScreen extends StatelessWidget {
                     SizedBox(height: 20),
 
                     GestureDetector(
-                      onTap: signUserIn,
+                      onTap: () => signUserIn(context),
                       child: Container(
                         width: double.infinity,
                         height: 50,
@@ -180,7 +194,6 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
 
-            // "Don't have an account? Register"
             Positioned(
               bottom: 40,
               left: 0,
