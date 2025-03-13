@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wastesortapp/frontend/screen/auth/forgot_password_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -31,6 +32,22 @@ class _VerificationScreenState extends State<VerificationScreen> {
     super.dispose();
   }
 
+  void _onChanged(int index, String value) {
+    if (value.isNotEmpty) {
+      if (index < 3) {
+        _focusNodes[index].unfocus();
+        _focusNodes[index + 1].requestFocus(); // Move to next box
+      } else {
+        _focusNodes[index].unfocus(); // Last digit, remove focus
+      }
+    } else if (value.isEmpty) {
+      if (index > 0) {
+        _focusNodes[index].unfocus();
+        _focusNodes[index - 1].requestFocus(); // Go back to previous box
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,7 +55,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // Background Image
+            // Background
             Positioned.fill(
               child: Column(
                 children: [
@@ -57,11 +74,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
             // Verification Form
             Positioned(
-              bottom: 60,
-              left: 20,
-              right: 20,
+              bottom: -100,
+              width: 414,
+              height: 800,
               child: Container(
-                width: 370,
+                width: 400,
                 padding: EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: AppColors.background,
@@ -77,12 +94,23 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Title
+                    Container(
+                      width: 90,
+                      height: 3.5,
+                      decoration: ShapeDecoration(
+                        color: Color(0xFF7C3F3E),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 50),// Title
                     Text(
                       "Get Your Code",
+                      textAlign: TextAlign.center,
                       style: GoogleFonts.urbanist(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.secondary,
                       ),
                     ),
@@ -95,48 +123,40 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       style: GoogleFonts.urbanist(
                         color: AppColors.secondary,
                         fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     SizedBox(height: 24),
 
-                    // 4 Digit Input Fields
+                    // Digit Input Fields
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(4, (index) {
                         return Container(
                           width: 50,
                           height: 50,
-                          alignment: Alignment.center,
+                          margin: EdgeInsets.symmetric(horizontal: 8),
                           decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.secondary),
-                            borderRadius: BorderRadius.circular(3),
+                            border: Border.all(color: AppColors.tertiary, width: 1),
+                            borderRadius: BorderRadius.circular(10),
+                            color: Color(0xFFFFFCFB),
                           ),
                           child: TextField(
                             controller: _controllers[index],
                             focusNode: _focusNodes[index],
                             keyboardType: TextInputType.number,
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.urbanist(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
-                            ),
                             maxLength: 1,
-                            decoration: InputDecoration(
-                              counterText: '',
-                              border: InputBorder.none,
-                              fillColor: AppColors.surface,
-                              filled: true,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
                             ),
-                            onChanged: (value) {
-                              if (value.isNotEmpty && index < 3) {
-                                FocusScope.of(context)
-                                    .requestFocus(_focusNodes[index + 1]);
-                              } else if (value.isEmpty && index > 0) {
-                                FocusScope.of(context)
-                                    .requestFocus(_focusNodes[index - 1]);
-                              }
-                            },
+                            decoration: InputDecoration(
+                              counterText: "", // Remove counter below input field
+                              border: InputBorder.none, // Remove default border
+                            ),
+                            onChanged: (value) => _onChanged(index, value),
                           ),
                         );
                       }),
@@ -153,7 +173,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         text: TextSpan(
                           text: "Didn't receive the code? ",
                           style: GoogleFonts.urbanist(
-                            color: AppColors.secondary,
+                            color: AppColors.primary,
                             fontSize: 14,
                           ),
                           children: [
@@ -161,7 +181,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                               text: "Send again",
                               style: GoogleFonts.urbanist(
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
+                                color: AppColors.secondary,
                               ),
                             ),
                           ],
@@ -174,7 +194,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     // Confirm Button
                     GestureDetector(
                       onTap: (){
-                        Navigator.pushNamed(context, '/forgot-password');
+                        Navigator.push(context,
+                        MaterialPageRoute(builder: (context)=> ForgotPasswordScreen()),
+                        );
                       },
                       child: Container(
                         width: double.infinity,

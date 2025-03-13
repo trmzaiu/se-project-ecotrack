@@ -1,5 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:wastesortapp/components/my_textfield.dart';
+import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
+import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
+import 'package:wastesortapp/frontend/screen/user/profile_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -57,11 +61,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
             // Reset Password Form
             Positioned(
-              bottom: 120,
-              left: 20,
-              right: 20,
+              bottom: -100,
+              width: 414,
+              height: 800,
               child: Container(
-                width: 370,
+                width: 400,
                 padding: EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: AppColors.background,
@@ -77,10 +81,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // 👇 Add the bar here 👇
+                    //  Add the bar here
                     Container(
                       width: 90,
-                      height: 5,
+                      height: 3.5,
                       decoration: ShapeDecoration(
                         color: Color(0xFF7C3F3E),
                         shape: RoundedRectangleBorder(
@@ -91,7 +95,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     SizedBox(height: 20),
 
                     Text(
-                      "Reset Password",
+                      "Enter New Password",
                       style: GoogleFonts.urbanist(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -101,25 +105,96 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     SizedBox(height: 20),
 
                     Text(
-                      "Enter your new password and confirm it below.",
+                      "Your new password must be different from previously used password.",
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.urbanist(color: AppColors.secondary),
+                      style: GoogleFonts.urbanist(color: AppColors.secondary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          ),
                     ),
                     SizedBox(height: 30),
 
                     // Password Text Field
-                    MyTextField(
-                      controller: passwordController,
-                      hintText: "Password",
-                      obscureText: true,
+                    Container(
+                      width: 330,
+                      height: 49,
+                      decoration: ShapeDecoration(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            child: Container(
+                              width: 330,
+                              height: 49,
+                              decoration: ShapeDecoration(
+                                color: Color(0xFFFFFCFB),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 18.33,
+                            top: 16,
+                            child: SizedBox(
+                              width: 148.50,
+                              child: Text(
+                                'Password',
+                                style: TextStyle(
+                                  color: Color(0xFF9C9385),
+                                  fontSize: 16,
+                                  fontFamily: 'Urbanist',
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     SizedBox(height: 20),
 
                     // Confirm Password Text Field
-                    MyTextField(
-                      controller: confirmPasswordController,
-                      hintText: "Confirm Password",
-                      obscureText: true,
+                    Container(
+                      width: 330,
+                      height: 49,
+                      decoration: ShapeDecoration(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            child: Container(
+                              width: 330,
+                              height: 49,
+                              decoration: ShapeDecoration(
+                                color: Color(0xFFFFFCFB),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 18.33,
+                            top: 16,
+                            child: SizedBox(
+                              width: 148.50,
+                              child: Text(
+                                'Confirm Password',
+                                style: TextStyle(
+                                  color: Color(0xFF9C9385),
+                                  fontSize: 16,
+                                  fontFamily: 'Urbanist',
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     SizedBox(height: 10),
 
@@ -137,20 +212,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                       ),
 
-                    SizedBox(height: 20),
+                    SizedBox(height: 30),
 
                     // Confirm Button
                     GestureDetector(
                       onTap: () {
-                        resetPassword();
-                        Navigator.pushNamed(context, '');
+                        Navigator.push(context,
+                        MaterialPageRoute(builder: (context) =>HomeScreen()),
+                        );
                       },
                       child: Container(
-                        width: double.infinity,
-                        height: 50,
-                        decoration: BoxDecoration(
+                        width: 330,
+                        height: 49,
+                        decoration: ShapeDecoration(
                           color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(30),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
                         alignment: Alignment.center,
                         child: Text(
@@ -166,7 +242,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                     // Back to Login
                     GestureDetector(
-                      onTap: () => Navigator.pushNamed(context, '/login'),
+                      onTap: () {
+                        Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => LoginScreen()),
+
+                      );
+                    },
                       child: Text(
                         "Back to Login",
                         style: GoogleFonts.urbanist(
