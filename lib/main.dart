@@ -37,7 +37,6 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _pages = [
     HomeScreen(),
-    // UploadScreen(imagePath: ""),
     EvidenceScreen(),
     // GuideScreen(),
     CameraScreen(),

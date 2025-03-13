@@ -3,12 +3,9 @@ import 'dart:io';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:camerawesome/src/widgets/camera_awesome_builder.dart';
-import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:photo_manager/photo_manager.dart';
 import 'package:wastesortapp/frontend/screen/camera/scan_screen.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -17,7 +14,6 @@ class CameraScreen extends StatefulWidget {
 }
 
 class _CameraScreenState extends State<CameraScreen> {
-  String? _latestImagePath;
 
   Future<void> _requestPermissions() async {
     if (await Permission.camera.isDenied) {
@@ -61,29 +57,6 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
-  Future<void> _getLatestImage() async {
-    final permitted = await PhotoManager.requestPermissionExtend();
-    if (!permitted.hasAccess) return;
-
-    final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
-      type: RequestType.image,
-      onlyAll: true,
-    );
-
-    if (albums.isNotEmpty) {
-      final recentAssets = await albums[0].getAssetListRange(start: 0, end: 1);
-
-      if (recentAssets.isNotEmpty) {
-        final file = await recentAssets.first.file;
-        if (file != null) {
-          setState(() {
-            _latestImagePath = file.path;
-          });
-        }
-      }
-    }
-  }
-
   Future<AnalysisImage> processImage(AnalysisImage analysisImage) async {
     // Add your image processing logic here
     // For now, returning the original image without processing
@@ -114,7 +87,6 @@ class _CameraScreenState extends State<CameraScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _requestPermissions();
-      _getLatestImage();
     });
   }
 
@@ -244,9 +216,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(9),
                   image: DecorationImage(
-                    image: _latestImagePath != null
-                        ? FileImage(File(_latestImagePath!))
-                        : AssetImage("lib/assets/images/default.png") as ImageProvider,
+                    image: AssetImage("lib/assets/images/default.png"),
                     fit: BoxFit.cover,
                   ),
                 ),
