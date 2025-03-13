@@ -167,7 +167,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     // Resend Code
                     TextButton(
                       onPressed: () {
-                        // Add logic to resend code
+
                       },
                       child: RichText(
                         text: TextSpan(

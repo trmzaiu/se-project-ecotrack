@@ -240,7 +240,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                     SizedBox(height: 20),
 
-                    // Back to Login
+                    // Back 
                     GestureDetector(
                       onTap: () {
                         Navigator.push(context,
