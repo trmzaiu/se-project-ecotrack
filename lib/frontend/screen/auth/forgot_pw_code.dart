@@ -191,7 +191,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
                     SizedBox(height: 20),
 
-                    // Confirm Button
+                    // Confirm Button cuu toi
                     GestureDetector(
                       onTap: (){
                         Navigator.push(context,

@@ -59,7 +59,7 @@ class ForgotPasswordScreenMail extends StatelessWidget {
                       spreadRadius: 2,
                     ),
                   ],
-                ),
+                ), //cucuucucu
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

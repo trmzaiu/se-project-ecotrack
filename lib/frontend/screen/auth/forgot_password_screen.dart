@@ -218,7 +218,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     GestureDetector(
                       onTap: () {
                         Navigator.push(context,
-                        MaterialPageRoute(builder: (context) =>HomeScreen()),
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
                         );
                       },
                       child: Container(
