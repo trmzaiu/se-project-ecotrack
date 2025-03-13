@@ -4,6 +4,7 @@
     <uses-feature android:name="android.hardware.camera.front" android:required="false"/>
     <uses-feature android:name="android.hardware.camera.any" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-feature android:glEsVersion="0x00020000" android:required="false" />
 
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -16,6 +17,7 @@
         android:label="EcoTrack"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
+        android:hardwareAccelerated="true"
         android:enableOnBackInvokedCallback="true">
         <activity
             android:name=".MainActivity"

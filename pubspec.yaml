@@ -32,10 +32,11 @@ dependencies:
   camerawesome: ^2.0.0
   open_filex: ^4.7.0
   path_provider: ^2.0.0
-#  photo_manager: ^3.0.0
 
   dotted_border: ^2.0.0
   dropdown_button2: ^2.3.9
+  photo_manager: ^3.6.4
+  tflite_flutter: ^0.11.0
 
 dev_dependencies:
   flutter_test:
