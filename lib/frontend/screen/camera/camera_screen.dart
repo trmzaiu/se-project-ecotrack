@@ -8,6 +8,7 @@ import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:wastesortapp/frontend/screen/camera/scan_screen.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -16,10 +17,16 @@ class CameraScreen extends StatefulWidget {
 }
 
 class _CameraScreenState extends State<CameraScreen> {
+  String? _latestImagePath;
 
   Future<void> _requestPermissions() async {
-    await Permission.camera.request();
-    await Permission.storage.request();
+    if (await Permission.camera.isDenied) {
+      await Permission.camera.request();
+    }
+
+    if (await Permission.storage.isDenied) {
+      await Permission.storage.request();
+    }
   }
 
   Future<void> _pickImage() async {
@@ -54,6 +61,29 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
+  Future<void> _getLatestImage() async {
+    final permitted = await PhotoManager.requestPermissionExtend();
+    if (!permitted.hasAccess) return;
+
+    final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
+      type: RequestType.image,
+      onlyAll: true,
+    );
+
+    if (albums.isNotEmpty) {
+      final recentAssets = await albums[0].getAssetListRange(start: 0, end: 1);
+
+      if (recentAssets.isNotEmpty) {
+        final file = await recentAssets.first.file;
+        if (file != null) {
+          setState(() {
+            _latestImagePath = file.path;
+          });
+        }
+      }
+    }
+  }
+
   Future<AnalysisImage> processImage(AnalysisImage analysisImage) async {
     // Add your image processing logic here
     // For now, returning the original image without processing
@@ -82,7 +112,10 @@ class _CameraScreenState extends State<CameraScreen> {
   @override
   void initState() {
     super.initState();
-    _requestPermissions();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _requestPermissions();
+      _getLatestImage();
+    });
   }
 
   @override
@@ -98,28 +131,26 @@ class _CameraScreenState extends State<CameraScreen> {
         photoPathBuilder: (sensors) async {
           final Directory extDir = await getTemporaryDirectory();
           final String filePath =
-              '${extDir.path}/camerawesome/${DateTime.now().millisecondsSinceEpoch}.jpg';
+              '${extDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-          await Directory('${extDir.path}/camerawesome').create(recursive: true);
+          await Directory('${extDir.path}').create(recursive: true);
 
           print("📸 Image will be saved to: $filePath");
 
           return SingleCaptureRequest(filePath, sensors.first);;
         },
       ),
-      onMediaCaptureEvent: (event) {
-        if (event.status == MediaCaptureStatus.success && event.isPicture) {
-          event.captureRequest.when(
+        onMediaCaptureEvent: (event) {
+          if (event.status == MediaCaptureStatus.success && event.isPicture) {
+            event.captureRequest.when(
               single: (single) async {
                 if (!mounted) return;
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  Navigator.of(context).push(_createSlideRoute(ScanScreen(imagePath: single.file?.path ?? "")));
-                });
-              }
-          );
-        }
-      },
-      onImageForAnalysis: (analysisImage) {
+                Navigator.of(context).push(_createSlideRoute(ScanScreen(imagePath: single.file?.path ?? "")));
+              },
+            );
+          }
+        },
+        onImageForAnalysis: (analysisImage) {
         return processImage(analysisImage);
       },
       onMediaTap: (mediaCapture) {
@@ -213,7 +244,9 @@ class _CameraScreenState extends State<CameraScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(9),
                   image: DecorationImage(
-                    image: AssetImage("lib/assets/images/default.png"),
+                    image: _latestImagePath != null
+                        ? FileImage(File(_latestImagePath!))
+                        : AssetImage("lib/assets/images/default.png") as ImageProvider,
                     fit: BoxFit.cover,
                   ),
                 ),

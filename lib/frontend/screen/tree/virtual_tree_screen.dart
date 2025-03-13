@@ -14,7 +14,7 @@ class VirtualTreeScreen extends StatefulWidget {
 class _VirtualTreeScreenState extends State<VirtualTreeScreen> {
   double progress = 0.0;
   int neededDrops = 0;
-  int drops = 10;
+  int drops = 300;
   int leftDrops = 100;
   int trees = 0;
   int value = 0;
