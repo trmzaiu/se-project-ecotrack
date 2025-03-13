@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:wastesortapp/components/circle_tile.dart';
 import 'package:wastesortapp/components/my_textfield.dart';
+import 'package:wastesortapp/frontend/screen/auth/forgot_pw_email.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
 import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
 import 'package:wastesortapp/main.dart';
@@ -113,7 +114,7 @@ class LoginScreen extends StatelessWidget {
                         onTap: () {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => ResetPasswordScreen()),
+                            MaterialPageRoute(builder: (context) => ForgotPasswordScreenMail()),
                           );
                         },
                         child: Text(
