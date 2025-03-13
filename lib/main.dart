@@ -10,6 +10,7 @@ import 'frontend/screen/tree/virtual_tree_screen.dart';
 import 'frontend/screen/auth/opening_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:wastesortapp/database/firebase_options.dart';
+import 'package:wastesortapp/frontend/screen/user/profile_screen.dart';
 
 
 void main() async {
@@ -57,7 +58,7 @@ class _MainScreenState extends State<MainScreen> {
       GuideScreen(),
       CameraScreen(),
       VirtualTreeScreen(),
-      OpeningScreen(),
+      ProfileScreen(userId: widget.userId),
     ];
   }
 
