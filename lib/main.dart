@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:wastesortapp/frontend/screen/auth/forgot_pw_code.dart';
+import 'package:wastesortapp/frontend/screen/auth/forgot_pw_email.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
@@ -33,8 +35,10 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
-        // '/forgot-password': (context) => ForgotPasswordScreen(),
+         '/forgot-password': (context) => ForgotPasswordScreen(),
         '/home': (context) => MainScreen(),
+        '/otp' : (context) => VerificationScreen(),
+        '/email' : (context) => ForgotPasswordScreenMail(),
       },
     );
 
