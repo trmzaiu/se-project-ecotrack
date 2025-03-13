@@ -1,20 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:wastesortapp/theme/colors.dart';
-import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
-import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
-import 'package:wastesortapp/frontend/screen/auth/forgot_password_screen.dart';
 
 import 'frontend/screen/camera/camera_screen.dart';
 import 'frontend/screen/guide/guide_screen.dart';
 import 'frontend/screen/home/home_screen.dart';
-import 'ScanAI/scanUI.dart';
-import 'frontend/screen/auth/login_screen.dart';
 import 'frontend/screen/splash_screen.dart';
 import 'frontend/screen/tree/virtual_tree_screen.dart';
-import 'frontend/screen/user/profile_screen.dart';
 import 'frontend/screen/auth/opening_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:wastesortapp/database/firebase_options.dart';
 
