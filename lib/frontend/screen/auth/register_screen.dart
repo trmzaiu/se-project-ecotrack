@@ -1,5 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wastesortapp/components/my_textfield.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
@@ -7,10 +7,10 @@ import 'package:google_fonts/google_fonts.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
-  _SignUpScreenState createState() => _SignUpScreenState();
+  _RegisterScreenState createState() => _RegisterScreenState();
 }
 
-class _SignUpScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -58,6 +58,26 @@ class _SignUpScreenState extends State<RegisterScreen> {
     }
   }
 
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,7 +85,6 @@ class _SignUpScreenState extends State<RegisterScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // Background Image
             Positioned.fill(
               child: Column(
                 children: [
@@ -85,13 +104,11 @@ class _SignUpScreenState extends State<RegisterScreen> {
               ),
             ),
 
-            // Centered Column for Registration Form & Login Text
             Align(
               alignment: Alignment.center,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Registration Form
                   Container(
                     width: 350,
                     padding: EdgeInsets.all(24),
@@ -162,9 +179,8 @@ class _SignUpScreenState extends State<RegisterScreen> {
                     ),
                   ),
 
-                  SizedBox(height: 60), // Space between registration form & login text
+                  SizedBox(height: 60),
 
-                  // "Already have an account? Login"
                   GestureDetector(
                     onTap: () {
                       Navigator.pushReplacement(

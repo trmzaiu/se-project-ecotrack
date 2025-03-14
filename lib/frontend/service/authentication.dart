@@ -1,3 +1,4 @@
+// authentication.dart
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthenticationService {
@@ -29,12 +30,11 @@ class AuthenticationService {
     }
   }
 
-
   // Register with email and password
   Future<String> register({required String email, required String password}) async {
     try {
       await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-      return "Success"; // Standardized return value
+      return "Success";
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'invalid-email':

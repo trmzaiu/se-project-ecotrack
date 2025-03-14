@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:wastesortapp/components/square_tile.dart';
-import 'package:wastesortapp/components/my_textfield.dart';
-import 'package:wastesortapp/frontend/screen/auth/forgot_pw_email.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
 import 'package:wastesortapp/frontend/service/authentication.dart';
 import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../components/circle_tile.dart';
+import '../../../components/square_tile.dart';
 import '../../../components/my_textfield.dart';
-import '../../../main.dart';
 import 'forgot_pw_email.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -25,37 +22,56 @@ class LoginScreen extends StatelessWidget {
     final password = passwordController.text.trim();
 
     // Validate email structure
-    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}").hasMatch(email)) {
+    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}").hasMatch(email)) {
       _showErrorDialog(context, "Invalid Email Format", "Please enter a valid email address.");
       return;
     }
 
-    if (result == "Signed in") {
-      String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result ?? "Login failed")),
-      );
+    // Attempt login
+    String result = await authService.signIn(email: email, password: password);
+
+    // Handle specific errors or success
+    switch (result) {
+      case "Success":
+        String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen(userId: userId)),
+        );
+        break;
+      case "Invalid email address.":
+        _showErrorDialog(context, "Login Failed", "The email address entered is invalid.");
+        break;
+      case "No account found with this email.":
+        _showErrorDialog(context, "Login Failed", "No account is associated with this email.");
+        break;
+      case "Incorrect password.":
+        _showErrorDialog(context, "Login Failed", "The password entered is incorrect.");
+        break;
+      default:
+        _showErrorDialog(context, "Login Failed", result);
+        break;
     }
   }
 
-  void signInWithGoogle(BuildContext context) async {
-    UserCredential? userCredential = await _googleAuthService.signInWithGoogle();
-    if (userCredential != null) {
-      String userId = userCredential.user?.uid ?? '';
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Google Sign-In Failed")),
-      );
-    }
+  void _showErrorDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -186,12 +202,12 @@ class LoginScreen extends StatelessWidget {
                       children: [
                         GestureDetector(
                           onTap: () => signInWithGoogle(context),
-                          child: CircleTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
+                          child: SquareTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
                         ),
                         SizedBox(width: 30),
-                        CircleTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
+                        SquareTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
                         SizedBox(width: 30),
-                        CircleTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
+                        SquareTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
                       ],
                     ),
                   ],
@@ -234,5 +250,9 @@ class LoginScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void signInWithGoogle(BuildContext context) async {
+    // Implement Google Sign-In logic as required
   }
 }
