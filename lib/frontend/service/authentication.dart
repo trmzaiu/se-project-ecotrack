@@ -1,3 +1,4 @@
+// authentication.dart
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthenticationService {
@@ -12,11 +13,20 @@ class AuthenticationService {
   Future<String> signIn({required String email, required String password}) async {
     try {
       await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-      return "Success"; // Standardized return value
+      return "Success";
     } on FirebaseAuthException catch (e) {
-      return "Error: ${e.message}"; // Ensure consistent error messages
+      switch (e.code) {
+        case 'invalid-email':
+          return "Invalid email address.";
+        case 'user-not-found':
+          return "No account found with this email.";
+        case 'wrong-password':
+          return "Incorrect password.";
+        default:
+          return "Error: ${e.message}";
+      }
     } catch (e) {
-      return "Error: An unexpected error occurred"; // Handle other exceptions
+      return "Error: An unexpected error occurred";
     }
   }
 
@@ -24,9 +34,18 @@ class AuthenticationService {
   Future<String> register({required String email, required String password}) async {
     try {
       await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-      return "Success"; // Standardized return value
+      return "Success";
     } on FirebaseAuthException catch (e) {
-      return "Error: ${e.message}";
+      switch (e.code) {
+        case 'invalid-email':
+          return "Invalid email address.";
+        case 'email-already-in-use':
+          return "Email is already in use.";
+        case 'weak-password':
+          return "Password is too weak.";
+        default:
+          return "Error: ${e.message}";
+      }
     } catch (e) {
       return "Error: An unexpected error occurred";
     }
@@ -43,7 +62,14 @@ class AuthenticationService {
       await _firebaseAuth.sendPasswordResetEmail(email: email);
       return "Success";
     } on FirebaseAuthException catch (e) {
-      return "Error: ${e.message}";
+      switch (e.code) {
+        case 'invalid-email':
+          return "Invalid email address.";
+        case 'user-not-found':
+          return "No account found with this email.";
+        default:
+          return "Error: ${e.message}";
+      }
     } catch (e) {
       return "Error: An unexpected error occurred";
     }

@@ -1,56 +1,93 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:wastesortapp/components/square_tile.dart';
-import 'package:wastesortapp/components/my_textfield.dart';
-import 'package:wastesortapp/frontend/screen/auth/forgot_pw_email.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
+import 'package:wastesortapp/frontend/service/authentication.dart';
 import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
-import 'package:wastesortapp/main.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wastesortapp/frontend/service/google_auth_service.dart';
-import 'package:wastesortapp/frontend/service/authentication.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../../components/square_tile.dart';
+import '../../../components/my_textfield.dart';
+import '../../../main.dart';
+import '../../service/google_auth_service.dart';
+import 'forgot_pw_email.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
 
-  final usernameController = TextEditingController();
-  final passwordController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   final GoogleAuthService _googleAuthService = GoogleAuthService();
 
   void signUserIn(BuildContext context) async {
     final authService = AuthenticationService(FirebaseAuth.instance);
-    String? result = await authService.signIn(
-      email: usernameController.text.trim(),
-      password: passwordController.text.trim(),
-    );
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
 
-    if (result == "Signed in") {
-      String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result ?? "Login failed")),
-      );
+    // Validate email format
+    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
+      _showErrorDialog(context, "Invalid Email", "Please enter a valid email address.");
+      return;
+    }
+
+    if (password.isEmpty) {
+      _showErrorDialog(context, "Invalid Password", "Password cannot be empty.");
+      return;
+    }
+
+    // Attempt login
+    try {
+      String result = await authService.signIn(email: email, password: password);
+      if (result == "Success") {
+        String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen(userId: userId)),
+        );
+      } else {
+        _showErrorDialog(context, "Login Failed", result);
+      }
+    } catch (e) {
+      _showErrorDialog(context, "Login Error", "An unexpected error occurred: $e");
     }
   }
 
   void signInWithGoogle(BuildContext context) async {
-    UserCredential? userCredential = await _googleAuthService.signInWithGoogle();
-    if (userCredential != null) {
-      String userId = userCredential.user?.uid ?? '';
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Google Sign-In Failed")),
-      );
+    try {
+      UserCredential? userCredential = await _googleAuthService.signInWithGoogle();
+      if (userCredential != null) {
+        String userId = userCredential.user?.uid ?? '';
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen(userId: userId)),
+        );
+      } else {
+        _showErrorDialog(context, "Google Sign-In Failed", "Please try again.");
+      }
+    } catch (e) {
+      _showErrorDialog(context, "Google Sign-In Error", "An error occurred: $e");
     }
+  }
+
+  void _showErrorDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -60,12 +97,11 @@ class LoginScreen extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            Positioned.fill(
+            Positioned(
               child: Column(
-                 children: [
+                children: [
                   Container(
-                    height: MediaQuery.of(context).size.height * 0.4,
-                    width: double.infinity,
+                    height: 350,
                     decoration: BoxDecoration(
                       color: AppColors.secondary,
                       borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
@@ -110,7 +146,7 @@ class LoginScreen extends StatelessWidget {
                     SizedBox(height: 20),
 
                     MyTextField(
-                      controller: usernameController,
+                      controller: emailController,
                       hintText: "Email",
                       obscureText: false,
                     ),
@@ -138,7 +174,7 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 30),
 
                     GestureDetector(
                       onTap: () => signUserIn(context),
@@ -147,7 +183,7 @@ class LoginScreen extends StatelessWidget {
                         height: 50,
                         decoration: BoxDecoration(
                           color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(30),
                         ),
                         alignment: Alignment.center,
                         child: Text(
@@ -181,9 +217,7 @@ class LoginScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         GestureDetector(
-                          onTap: () async {
-                            GoogleAuthService().signInWithGoogle();
-                          },
+                          onTap: () => signInWithGoogle(context),
                           child: SquareTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
                         ),
                         SizedBox(width: 30),
@@ -201,29 +235,28 @@ class LoginScreen extends StatelessWidget {
               top: 810,
               left: 0,
               right: 0,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => RegisterScreen()),
-                  );
-                },
-                child: Center(
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
+              child: Center(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
                           text: "Don't have an account? ",
-                          style: GoogleFonts.urbanist(color: AppColors.primary),
+                          style: GoogleFonts.urbanist(color: AppColors.primary)),
+                      TextSpan(
+                        text: "Register",
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
+                          fontWeight: FontWeight.bold,
                         ),
-                        TextSpan(
-                          text: "Register",
-                          style: GoogleFonts.urbanist(
-                              color: AppColors.secondary,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => RegisterScreen()),
+                            );
+                          },
+                      ),
+                    ],
                   ),
                 ),
               ),
