@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:wastesortapp/components/square_tile.dart';
+import 'package:wastesortapp/components/my_textfield.dart';
+import 'package:wastesortapp/frontend/screen/auth/forgot_pw_email.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
 import 'package:wastesortapp/frontend/service/authentication.dart';
 import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
@@ -28,39 +30,32 @@ class LoginScreen extends StatelessWidget {
       return;
     }
 
-    // Attempt login
-    String result = await authService.signIn(email: email, password: password);
-
-    // Handle specific errors or success
-    if (result == "Success") {
+    if (result == "Signed in") {
       String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
       );
     } else {
-      _showErrorDialog(context, "Login Failed", result);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result ?? "Login failed")),
+      );
     }
   }
 
-  void _showErrorDialog(BuildContext context, String title, String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
+  void signInWithGoogle(BuildContext context) async {
+    UserCredential? userCredential = await _googleAuthService.signInWithGoogle();
+    if (userCredential != null) {
+      String userId = userCredential.user?.uid ?? '';
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Google Sign-In Failed")),
+      );
+    }
   }
 
   @override
@@ -239,9 +234,5 @@ class LoginScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void signInWithGoogle(BuildContext context) async {
-    // Implement Google Sign-In logic as required
   }
 }
