@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 class MyTextField extends StatelessWidget {
@@ -16,23 +17,23 @@ class MyTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // alignment: Alignment.center,
-      width: double.infinity,
-      height: 42,
+      height: 45,
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        style: TextStyle(fontSize: 13),
-        decoration: InputDecoration(
-          isDense: true,
-          contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 12), // Center vertically
-          border: InputBorder.none,
-          hintText: hintText,
-          hintStyle: TextStyle(fontSize: 13, color: AppColors.tertiary),
+      child: Align(
+        alignment: Alignment.center,
+        child: TextField(
+          textAlignVertical: TextAlignVertical.center,
+          style: GoogleFonts.urbanist(fontSize: 13),
+          decoration: InputDecoration(
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10), // Fine-tuning
+            border: InputBorder.none,
+            hintText: hintText,
+            hintStyle: GoogleFonts.urbanist(fontSize: 13, color: AppColors.tertiary),
+          ),
         ),
       ),
     );
