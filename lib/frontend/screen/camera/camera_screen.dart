@@ -18,13 +18,16 @@ class _CameraScreenState extends State<CameraScreen> {
   String? _latestImagePath;
 
   Future<void> _requestPermissions() async {
-    await Future.delayed(Duration.zero);
-    if (await Permission.camera.isDenied) {
-      await Permission.camera.request();
-    }
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.camera,
+      Permission.microphone,
+      Permission.storage,
+    ].request();
 
-    if (await Permission.storage.isDenied) {
-      await Permission.storage.request();
+    if (statuses[Permission.camera] != PermissionStatus.granted ||
+        statuses[Permission.microphone] != PermissionStatus.granted ||
+        statuses[Permission.storage] != PermissionStatus.granted) {
+      print('❌ Permissions not granted');
     }
   }
 
@@ -114,8 +117,8 @@ class _CameraScreenState extends State<CameraScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _requestPermissions();
+    Future.delayed(Duration.zero, () async {
+      await _requestPermissions();
       _getLatestImage();
     });
   }
