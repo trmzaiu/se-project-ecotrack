@@ -8,6 +8,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../components/square_tile.dart';
 import '../../../components/my_textfield.dart';
+import '../../../main.dart';
+import '../../service/google_auth_service.dart';
 import 'forgot_pw_email.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -15,6 +17,23 @@ class LoginScreen extends StatelessWidget {
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  final GoogleAuthService _googleAuthService = GoogleAuthService();
+
+  void signInWithGoogle(BuildContext context) async {
+    UserCredential? userCredential = await _googleAuthService
+        .signInWithGoogle();
+    if (userCredential != null) {
+      String userId = userCredential.user?.uid ?? '';
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Google Sign-In Failed")),
+      );
+    }
+  }
 
   void signUserIn(BuildContext context) async {
     final authService = AuthenticationService(FirebaseAuth.instance);
@@ -22,7 +41,7 @@ class LoginScreen extends StatelessWidget {
     final password = passwordController.text.trim();
 
     // Validate email structure
-    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}").hasMatch(email)) {
+    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}").hasMatch(email)) {
       _showErrorDialog(context, "Invalid Email Format", "Please enter a valid email address.");
       return;
     }
@@ -250,9 +269,5 @@ class LoginScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void signInWithGoogle(BuildContext context) async {
-    // Implement Google Sign-In logic as required
   }
 }
