@@ -41,35 +41,31 @@ class LoginScreen extends StatelessWidget {
     final password = passwordController.text.trim();
 
     // Validate email structure
-    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}").hasMatch(email)) {
+    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
       _showErrorDialog(context, "Invalid Email Format", "Please enter a valid email address.");
       return;
     }
 
-    // Attempt login
-    String result = await authService.signIn(email: email, password: password);
+    if (password.isEmpty) {
+      _showErrorDialog(context, "Invalid Password", "Password cannot be empty.");
+      return;
+    }
 
-    // Handle specific errors or success
-    switch (result) {
-      case "Success":
+    // Attempt login
+    try {
+      String result = await authService.signIn(email: email, password: password);
+
+      if (result == "Success") {
         String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomeScreen(userId: userId)),
         );
-        break;
-      case "Invalid email address.":
-        _showErrorDialog(context, "Login Failed", "The email address entered is invalid.");
-        break;
-      case "No account found with this email.":
-        _showErrorDialog(context, "Login Failed", "No account is associated with this email.");
-        break;
-      case "Incorrect password.":
-        _showErrorDialog(context, "Login Failed", "The password entered is incorrect.");
-        break;
-      default:
+      } else {
         _showErrorDialog(context, "Login Failed", result);
-        break;
+      }
+    } catch (e) {
+      _showErrorDialog(context, "Login Error", "An unexpected error occurred: $e");
     }
   }
 
