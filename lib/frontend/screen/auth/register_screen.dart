@@ -17,18 +17,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
+  // RegisterScreen({super.key});
+
+  // final emailController = TextEditingController();
+  // final passwordController = TextEditingController();
+  // final confirmPasswordController = TextEditingController();
+
   Future<void> signUp() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
 
-    // Validate email format
-    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
+    // Validate email structure
+    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}").hasMatch(email)) {
       _showErrorDialog("Invalid Email", "Please enter a valid email address.");
       return;
     }
 
-    // Check if passwords match
+    // Check password match
     if (password != confirmPassword) {
       _showErrorDialog("Password Mismatch", "Passwords do not match.");
       return;
@@ -86,6 +92,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SafeArea(
         child: Stack(
           children: [
+            // Background Image
             Positioned.fill(
               child: Column(
                 children: [
@@ -93,10 +100,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     height: 350,
                     decoration: BoxDecoration(
                       color: AppColors.secondary,
-                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+                      borderRadius:
+                      BorderRadius.vertical(bottom: Radius.circular(20)),
                       image: DecorationImage(
                         image: AssetImage("lib/assets/images/trash.png"),
                         fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
                       ),
                     ),
                   ),
@@ -134,19 +143,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     SizedBox(height: 20),
 
-                    MyTextField(
-                      controller: emailController,
-                      hintText: "Email",
-                      obscureText: false,
-                    ),
-                    SizedBox(height: 20),
+                        MyTextField(
+                          controller: emailController,
+                          hintText: "Email",
+                          obscureText: false,
+                        ),
+                        SizedBox(height: 20),
 
-                    MyTextField(
-                      controller: passwordController,
-                      hintText: "Password",
-                      obscureText: true,
-                    ),
-                    SizedBox(height: 20),
+                        MyTextField(
+                          controller: passwordController,
+                          hintText: "Password",
+                          obscureText: true,
+                        ),
+                        SizedBox(height: 20),
 
                     MyTextField(
                       controller: confirmPasswordController,
@@ -205,9 +214,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             );
                           },
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ],

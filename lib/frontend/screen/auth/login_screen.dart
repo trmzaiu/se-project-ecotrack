@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
@@ -16,8 +15,8 @@ import 'forgot_pw_email.dart';
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
 
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
   final GoogleAuthService _googleAuthService = GoogleAuthService();
 
   void signUserIn(BuildContext context) async {
@@ -54,6 +53,19 @@ class LoginScreen extends StatelessWidget {
   }
 
   void signInWithGoogle(BuildContext context) async {
+    UserCredential? userCredential = await _googleAuthService
+        .signInWithGoogle();
+    if (userCredential != null) {
+      String userId = userCredential.user?.uid ?? '';
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Google Sign-In Failed")),
+      );
+    }
     try {
       UserCredential? userCredential = await _googleAuthService.signInWithGoogle();
       if (userCredential != null) {
