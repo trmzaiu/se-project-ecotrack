@@ -64,8 +64,6 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<AnalysisImage> processImage(AnalysisImage analysisImage) async {
-    // Add your image processing logic here
-    // For now, returning the original image without processing
     return analysisImage;
   }
 
@@ -127,7 +125,7 @@ class _CameraScreenState extends State<CameraScreen> {
   Widget build(BuildContext context) {
     return CameraAwesomeBuilder.awesome(
       enablePhysicalButton: true,
-      previewFit: CameraPreviewFit.fitWidth,
+      // previewFit: CameraPreviewFit.fitWidth,
       sensorConfig: SensorConfig.single(
         aspectRatio: CameraAspectRatios.ratio_16_9,
       ),
