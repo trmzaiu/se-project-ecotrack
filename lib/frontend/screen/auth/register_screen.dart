@@ -23,26 +23,26 @@ class _SignUpScreenState extends State<RegisterScreen> {
   // final confirmPasswordController = TextEditingController();
 
   Future<void> signUp() async {
-    if (passwordController.text != confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Mật khẩu xác nhận không trùng khớp')),
-      );
-      return;
-    }
-
-    try {
-      await _auth.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login successfully!')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
-    }
+    // if (passwordController.text != confirmPasswordController.text) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(content: Text('Mật khẩu xác nhận không trùng khớp')),
+    //   );
+    //   return;
+    // }
+    //
+    // try {
+    //   await _auth.createUserWithEmailAndPassword(
+    //     email: emailController.text.trim(),
+    //     password: passwordController.text.trim(),
+    //   );
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(content: Text('Login successfully!')),
+    //   );
+    // } catch (e) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(content: Text('Error: ${e.toString()}')),
+    //   );
+    // }
   }
 
   @override
@@ -57,7 +57,7 @@ class _SignUpScreenState extends State<RegisterScreen> {
               child: Column(
                 children: [
                   Container(
-                    height: 350,
+                    height: 370,
                     decoration: BoxDecoration(
                       color: AppColors.secondary,
                       borderRadius:
@@ -65,6 +65,7 @@ class _SignUpScreenState extends State<RegisterScreen> {
                       image: DecorationImage(
                         image: AssetImage("lib/assets/images/trash.png"),
                         fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
                       ),
                     ),
                   ),

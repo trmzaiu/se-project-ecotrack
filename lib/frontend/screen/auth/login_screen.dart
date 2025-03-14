@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wastesortapp/components/circle_tile.dart';
+import 'package:wastesortapp/components/square_tile.dart';
 import 'package:wastesortapp/components/my_textfield.dart';
 import 'package:wastesortapp/frontend/screen/auth/forgot_pw_email.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
@@ -62,9 +62,10 @@ class LoginScreen extends StatelessWidget {
           children: [
             Positioned.fill(
               child: Column(
-                children: [
+                 children: [
                   Container(
-                    height: 350,
+                    height: MediaQuery.of(context).size.height * 0.4,
+                    width: double.infinity,
                     decoration: BoxDecoration(
                       color: AppColors.secondary,
                       borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
@@ -146,7 +147,7 @@ class LoginScreen extends StatelessWidget {
                         height: 50,
                         decoration: BoxDecoration(
                           color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         alignment: Alignment.center,
                         child: Text(
@@ -180,13 +181,15 @@ class LoginScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         GestureDetector(
-                          onTap: () => signInWithGoogle(context),
-                          child: CircleTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
+                          onTap: () async {
+                            GoogleAuthService().signInWithGoogle();
+                          },
+                          child: SquareTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
                         ),
                         SizedBox(width: 30),
-                        CircleTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
+                        SquareTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
                         SizedBox(width: 30),
-                        CircleTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
+                        SquareTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
                       ],
                     ),
                   ],
@@ -195,7 +198,7 @@ class LoginScreen extends StatelessWidget {
             ),
 
             Positioned(
-              bottom: 40,
+              top: 810,
               left: 0,
               right: 0,
               child: GestureDetector(

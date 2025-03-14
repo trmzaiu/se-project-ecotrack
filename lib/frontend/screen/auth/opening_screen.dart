@@ -3,6 +3,8 @@ import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 
+import 'login_screen.dart';
+
 class OpeningScreen extends StatelessWidget {
   const OpeningScreen({super.key});
 
@@ -28,6 +30,7 @@ class OpeningScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     "Hello.",
