@@ -21,11 +21,11 @@ class HomeScreen extends StatelessWidget {
               'Welcome to Waste Sorting App!',
               style: TextStyle(fontSize: 20),
             ),
-            SizedBox(height: 10), // Add some spacing
-            Text(
-              userId,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            // SizedBox(height: 10), // Add some spacing
+            // Text(
+            //   userId,
+            //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+
           ],
         ),
       ),

@@ -1,56 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:wastesortapp/components/circle_tile.dart';
-import 'package:wastesortapp/components/my_textfield.dart';
-import 'package:wastesortapp/frontend/screen/auth/forgot_pw_email.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
+import 'package:wastesortapp/frontend/service/authentication.dart';
 import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
-import 'package:wastesortapp/main.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wastesortapp/frontend/service/google_auth_service.dart';
-import 'package:wastesortapp/frontend/service/authentication.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../../components/circle_tile.dart';
+import '../../../components/my_textfield.dart';
+import '../../../main.dart';
+import 'forgot_pw_email.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
-  final GoogleAuthService _googleAuthService = GoogleAuthService();
 
   void signUserIn(BuildContext context) async {
     final authService = AuthenticationService(FirebaseAuth.instance);
-    String? result = await authService.signIn(
-      email: usernameController.text.trim(),
-      password: passwordController.text.trim(),
-    );
+    final email = usernameController.text.trim();
+    final password = passwordController.text.trim();
 
-    if (result == "Signed in") {
+    // Validate email structure
+    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}").hasMatch(email)) {
+      _showErrorDialog(context, "Invalid Email Format", "Please enter a valid email address.");
+      return;
+    }
+
+    // Attempt login
+    String result = await authService.signIn(email: email, password: password);
+
+    // Handle specific errors or success
+    if (result == "Success") {
       String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result ?? "Login failed")),
-      );
+      _showErrorDialog(context, "Login Failed", result);
     }
   }
 
-  void signInWithGoogle(BuildContext context) async {
-    UserCredential? userCredential = await _googleAuthService.signInWithGoogle();
-    if (userCredential != null) {
-      String userId = userCredential.user?.uid ?? '';
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Google Sign-In Failed")),
-      );
-    }
+  void _showErrorDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -229,5 +239,9 @@ class LoginScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void signInWithGoogle(BuildContext context) async {
+    // Implement Google Sign-In logic as required
   }
 }
