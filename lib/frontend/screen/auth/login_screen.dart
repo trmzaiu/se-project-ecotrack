@@ -4,13 +4,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
 import 'package:wastesortapp/frontend/service/authentication.dart';
 import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
+import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wastesortapp/theme/fonts.dart';
 
-import '../../../components/square_tile.dart';
-import '../../../components/my_textfield.dart';
+import '../../widget/my_textfield.dart';
 import '../../../main.dart';
 import '../../service/google_auth_service.dart';
+import '../../widget/square_tile.dart';
 import 'forgot_pw_email.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -105,177 +107,194 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double phoneHeight= getPhoneHeight(context);
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned(
-              child: Column(
-                children: [
-                  Container(
-                    height: 350,
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary,
-                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-                      image: DecorationImage(
-                        image: AssetImage("lib/assets/images/trash.png"),
-                        fit: BoxFit.cover,
-                      ),
+      body: Stack(
+        children: [
+          Positioned(
+            child: Column(
+              children: [
+                Container(
+                  height: 350,
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary,
+                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+                  ),
+                  child: Center(
+                    child: Image.asset(
+                      "lib/assets/images/trash.png", width: 370,
                     ),
+                  )
+                ),
+              ],
+            ),
+          ),
+
+          Positioned(
+            top: 180,
+            right: 20,
+            left: 20,
+            child: Container(
+              width: 370,
+              padding: EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 15,
+                    spreadRadius: 2,
                   ),
                 ],
               ),
-            ),
-
-            Positioned(
-              top: 210,
-              left: 20,
-              right: 20,
-              child: Container(
-                width: 370,
-                padding: EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 15,
-                      spreadRadius: 2,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Login",
+                    style: GoogleFonts.urbanist(
+                        fontSize: 34,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.secondary
                     ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "Login",
-                      style: GoogleFonts.urbanist(
-                          fontSize: 34,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.secondary),
-                    ),
-                    SizedBox(height: 20),
+                  ),
+                  SizedBox(height: 20),
 
-                    MyTextField(
-                      controller: emailController,
-                      hintText: "Email",
-                      obscureText: false,
-                    ),
-                    SizedBox(height: 20),
+                  MyTextField(
+                    controller: emailController,
+                    hintText: "Email",
+                    obscureText: false,
+                  ),
+                  SizedBox(height: 25),
 
-                    MyTextField(
-                      controller: passwordController,
-                      hintText: "Password",
-                      obscureText: true,
-                    ),
-                    SizedBox(height: 10),
+                  MyTextField(
+                    controller: passwordController,
+                    hintText: "Password",
+                    obscureText: true,
+                  ),
+                  SizedBox(height: 10),
 
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => ForgotPasswordScreenMail()),
-                          );
-                        },
-                        child: Text(
-                          "Forgot your password?",
-                          style: GoogleFonts.urbanist(color: AppColors.secondary),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ForgotPasswordScreenMail()),
+                        );
+                      },
+                      child: Text(
+                        "Forgot your password?",
+                        style: GoogleFonts.urbanist(
+                            color: AppColors.secondary,
+                            fontSize: 12,
+                            fontWeight: AppFontWeight.regular
                         ),
                       ),
                     ),
-                    SizedBox(height: 30),
+                  ),
+                  SizedBox(height: 30),
 
-                    GestureDetector(
-                      onTap: () => signUserIn(context),
-                      child: Container(
-                        width: double.infinity,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(12),
+                  GestureDetector(
+                    onTap: () => signUserIn(context),
+                    child: Container(
+                      width: double.infinity,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Login",
+                        style: GoogleFonts.urbanist(
+                            color: AppColors.surface,
+                            fontSize: 18,
+                            fontWeight: AppFontWeight.bold
                         ),
-                        alignment: Alignment.center,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 30),
+
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: AppColors.secondary, thickness: 1)),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
                         child: Text(
-                          "Login",
+                          "or sign in with",
                           style: GoogleFonts.urbanist(
-                              color: AppColors.surface,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 30),
-
-                    Row(
-                      children: [
-                        Expanded(child: Divider(color: AppColors.secondary, thickness: 1)),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Text(
-                            "Or sign in with",
-                            style: GoogleFonts.urbanist(color: AppColors.secondary),
+                              color: AppColors.secondary,
+                              fontSize: 13,
+                              fontWeight: AppFontWeight.medium
                           ),
                         ),
-                        Expanded(child: Divider(color: AppColors.secondary, thickness: 1)),
-                      ],
-                    ),
-                    SizedBox(height: 25),
+                      ),
+                      Expanded(child: Divider(color: AppColors.secondary, thickness: 1)),
+                    ],
+                  ),
+                  SizedBox(height: 30),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GestureDetector(
-                          onTap: () => signInWithGoogle(context),
-                          child: SquareTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
-                        ),
-                        SizedBox(width: 30),
-                        SquareTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
-                        SizedBox(width: 30),
-                        SquareTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
-                      ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () => signInWithGoogle(context),
+                        child: SquareTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
+                      ),
+                      SizedBox(width: 50),
+                      SquareTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
+                      SizedBox(width: 50),
+                      SquareTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
+                    ],
+                  ),
+                  SizedBox(height: 13),
+                ],
+              ),
+            ),
+          ),
+
+          Positioned(
+            left: 0,
+            right: 0,
+            top: phoneHeight - 55,
+            child: Center(
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Don't have an account? ",
+                      style: GoogleFonts.urbanist(
+                        color: AppColors.primary,
+                        fontSize: 14,
+                      )
+                    ),
+                    TextSpan(
+                      text: "Register",
+                      style: GoogleFonts.urbanist(
+                        color: AppColors.secondary,
+                        fontSize: 15,
+                        fontWeight: AppFontWeight.bold
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => RegisterScreen()),
+                          );
+                        },
                     ),
                   ],
                 ),
               ),
             ),
-
-            Positioned(
-              top: 810,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                          text: "Don't have an account? ",
-                          style: GoogleFonts.urbanist(color: AppColors.primary)),
-                      TextSpan(
-                        text: "Register",
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.secondary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => RegisterScreen()),
-                            );
-                          },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

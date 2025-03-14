@@ -17,22 +17,23 @@ class MyTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 45,
+      height: 50,
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 1)],
       ),
       child: Align(
         alignment: Alignment.center,
         child: TextField(
           textAlignVertical: TextAlignVertical.center,
-          style: GoogleFonts.urbanist(fontSize: 13),
+          style: GoogleFonts.urbanist(fontSize: 13, color: AppColors.tertiary),
           decoration: InputDecoration(
             isDense: true,
-            contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10), // Fine-tuning
+            contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 15), // Fine-tuning
             border: InputBorder.none,
             hintText: hintText,
-            hintStyle: GoogleFonts.urbanist(fontSize: 13, color: AppColors.tertiary),
+            hintStyle: GoogleFonts.urbanist(fontSize: 13, color: AppColors.tertiary.withOpacity(0.8)),
           ),
         ),
       ),

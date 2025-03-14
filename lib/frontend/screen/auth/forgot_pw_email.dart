@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wastesortapp/components/my_textfield.dart';
+import 'package:wastesortapp/frontend/widget/my_textfield.dart';
 import 'package:wastesortapp/frontend/screen/auth/forgot_pw_code.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
