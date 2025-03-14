@@ -8,6 +8,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:wastesortapp/frontend/screen/camera/scan_screen.dart';
+import 'package:wastesortapp/theme/colors.dart';
 
 class CameraScreen extends StatefulWidget {
   @override
@@ -20,12 +21,10 @@ class _CameraScreenState extends State<CameraScreen> {
   Future<void> _requestPermissions() async {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.camera,
-      Permission.microphone,
       Permission.storage,
     ].request();
 
     if (statuses[Permission.camera] != PermissionStatus.granted ||
-        statuses[Permission.microphone] != PermissionStatus.granted ||
         statuses[Permission.storage] != PermissionStatus.granted) {
       print('❌ Permissions not granted');
     }
@@ -115,162 +114,183 @@ class _CameraScreenState extends State<CameraScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration.zero, () async {
-      await _requestPermissions();
-      _getLatestImage();
-    });
+    _handlePermissions();
+  }
+
+  Future<void> _handlePermissions() async {
+    await _requestPermissions();
+    if (await _checkPermissions()) {
+      await _getLatestImage();
+      setState(() {});
+    }
+  }
+
+  Future<bool> _checkPermissions() async {
+    return await Permission.camera.isGranted && await Permission.storage.isGranted;
   }
 
   @override
   Widget build(BuildContext context) {
-    return CameraAwesomeBuilder.awesome(
-      enablePhysicalButton: true,
-      // previewFit: CameraPreviewFit.fitWidth,
-      sensorConfig: SensorConfig.single(
-        aspectRatio: CameraAspectRatios.ratio_16_9,
-      ),
-      saveConfig: SaveConfig.photoAndVideo(
-        initialCaptureMode: CaptureMode.photo,
-        photoPathBuilder: (sensors) async {
-          final Directory extDir = await getTemporaryDirectory();
-          final String filePath =
-              '${extDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-
-          await Directory(extDir.path).create(recursive: true);
-
-          print("📸 Image will be saved to: $filePath");
-
-          return SingleCaptureRequest(filePath, sensors.first);
-        },
-      ),
-      onMediaCaptureEvent: (event) {
-        if (event.status == MediaCaptureStatus.success && event.isPicture) {
-          event.captureRequest.when(
-            single: (single) {
-              if (!mounted) return;
-
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                Navigator.of(context).push(
-                  _createSlideRoute(
-                    ScanScreen(imagePath: single.file?.path ?? ""),
-                  ),
-                );
-              });
-            },
+    return FutureBuilder<bool>(
+      future: _checkPermissions(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: CircularProgressIndicator(
+              color: AppColors.primary,
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+            )
           );
         }
-      },
-      onImageForAnalysis: (analysisImage) async {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          processImage(analysisImage);
-        });
-      },
-      onMediaTap: (mediaCapture) {
-        mediaCapture.captureRequest.when(
-          single: (single) {
-            debugPrint('single: ${single.file?.path}');
-          },
-        );
-      },
-      imageAnalysisConfig: AnalysisConfig(
-        androidOptions: const AndroidAnalysisOptions.nv21(
-          width: 1024,
-        ),
-        autoStart: true,
-      ),
-      theme: AwesomeTheme(
-        bottomActionsBackgroundColor: Colors.transparent,
-        buttonTheme: AwesomeButtonTheme(
-          backgroundColor: Color(0x4D333333),
-          iconSize: 24,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.all(11),
-          buttonBuilder: (child, onTap) => ClipOval(
-            child: Material(
-              color: Colors.transparent,
-              shape: const CircleBorder(),
-              child: InkWell(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onTap: onTap,
-                child: child,
-              ),
+
+        if (snapshot.data == true) {
+          return CameraAwesomeBuilder.awesome(
+            enablePhysicalButton: true,
+            // previewFit: CameraPreviewFit.fitWidth,
+            sensorConfig: SensorConfig.single(
+              aspectRatio: CameraAspectRatios.ratio_16_9,
             ),
-          ),
-        ),
-      ),
-      topActionsBuilder: (state) => Padding(
-        padding: const EdgeInsets.only(top: 20, right: 20),
-        child: Align(
-          alignment: Alignment.topRight,
-          child: GestureDetector(
-            onTap: () {
-              Navigator.pop(context);
+            saveConfig: SaveConfig.photoAndVideo(
+              initialCaptureMode: CaptureMode.photo,
+              photoPathBuilder: (sensors) async {
+                final Directory extDir = await getTemporaryDirectory();
+                final String filePath =
+                    '${extDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+                await Directory(extDir.path).create(recursive: true);
+
+                print("📸 Image will be saved to: $filePath");
+
+                return SingleCaptureRequest(filePath, sensors.first);
+              },
+            ),
+            onMediaCaptureEvent: (event) {
+              if (event.status == MediaCaptureStatus.success && event.isPicture) {
+                event.captureRequest.when(
+                  single: (single) {
+                    if (!mounted) return;
+
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      Navigator.of(context).push(
+                        _createSlideRoute(
+                          ScanScreen(imagePath: single.file?.path ?? ""),
+                        ),
+                      );
+                    });
+                  },
+                );
+              }
             },
-            child: Container(
-              width: 35,
-              height: 35,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0x4D333333),
-              ),
-              child: Center(
-                child: SvgPicture.asset(
-                  'lib/assets/icons/ic_close.svg',
-                  width: 40,
-                  height: 40,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-      middleContentBuilder: (state) => Column(
-        children: [
-          const Spacer(),
-          Builder(builder: (context) {
-            return Container(
-              color: AwesomeThemeProvider.of(context)
-                  .theme
-                  .bottomActionsBackgroundColor,
-              child: const Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-      bottomActionsBuilder: (state) => Padding(
-        padding: const EdgeInsets.only(bottom: 50),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: _pickImage,
-              child: Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(9),
-                  image: DecorationImage(
-                    image: _latestImagePath != null
-                  ? FileImage(File(_latestImagePath!))
-                      : AssetImage("lib/assets/images/default.png") as ImageProvider,
-                    fit: BoxFit.cover,
+            onImageForAnalysis: (analysisImage) async {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                processImage(analysisImage);
+              });
+            },
+            onMediaTap: (mediaCapture) {
+              mediaCapture.captureRequest.when(
+                single: (single) {
+                  debugPrint('single: ${single.file?.path}');
+                },
+              );
+            },
+            theme: AwesomeTheme(
+              bottomActionsBackgroundColor: Colors.transparent,
+              buttonTheme: AwesomeButtonTheme(
+                backgroundColor: Color(0x4D333333),
+                iconSize: 24,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.all(11),
+                buttonBuilder: (child, onTap) => ClipOval(
+                  child: Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      onTap: onTap,
+                      child: child,
+                    ),
                   ),
                 ),
               ),
             ),
-            SizedBox(width: 70),
-            AwesomeCaptureButton(state: state),
-            SizedBox(width: 70),
-            AwesomeFlashButton(state: state),
-          ],
-        ),
-      ),
+            topActionsBuilder: (state) => Padding(
+              padding: const EdgeInsets.only(top: 20, right: 20),
+              child: Align(
+                alignment: Alignment.topRight,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    width: 35,
+                    height: 35,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0x4D333333),
+                    ),
+                    child: Center(
+                      child: SvgPicture.asset(
+                        'lib/assets/icons/ic_close.svg',
+                        width: 40,
+                        height: 40,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            middleContentBuilder: (state) => Column(
+              children: [
+                const Spacer(),
+                Builder(builder: (context) {
+                  return Container(
+                    color: AwesomeThemeProvider.of(context)
+                        .theme
+                        .bottomActionsBackgroundColor,
+                    child: const Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
+            bottomActionsBuilder: (state) => Padding(
+              padding: const EdgeInsets.only(bottom: 50),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      width: 45,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(9),
+                        image: DecorationImage(
+                          image: _latestImagePath != null
+                              ? FileImage(File(_latestImagePath!))
+                              : AssetImage("lib/assets/images/default.png") as ImageProvider,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 70),
+                  AwesomeCaptureButton(state: state),
+                  SizedBox(width: 70),
+                  AwesomeFlashButton(state: state),
+                ],
+              ),
+            ),
+          );
+        } else {
+          return Center(child: Text(""));
+        }
+      }
     );
   }
 }
