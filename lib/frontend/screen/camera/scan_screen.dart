@@ -71,8 +71,10 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
               builder: (context, constraints) {
                 return Image.file(
                   File(widget.imagePath),
-                  width: constraints.maxWidth,
+                  // width: constraints.maxWidth,
                   fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
                 );
               },
             ),
