@@ -8,7 +8,7 @@ class AuthenticationService {
 
   // Stream to track user authentication state
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
-
+  String? get userId => _firebaseAuth.currentUser?.uid;
   // Sign in with email and password
   Future<String> signIn({required String email, required String password}) async {
     try {

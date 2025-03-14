@@ -41,7 +41,7 @@ class LoginScreen extends StatelessWidget {
     final password = passwordController.text.trim();
 
     // Validate email structure
-    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
+    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}").hasMatch(email)) {
       _showErrorDialog(context, "Invalid Email Format", "Please enter a valid email address.");
       return;
     }

@@ -5,6 +5,8 @@ import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../main.dart';
+
 class RegisterScreen extends StatefulWidget {
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
@@ -34,13 +36,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     try {
-      await _auth.createUserWithEmailAndPassword(email: email, password: password);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Account created successfully!")),
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
+      final userId = userCredential.user?.uid ?? '';
+
+      // Show success dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Success"),
+            content: Text("Account created successfully!"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                  // Navigate to MainScreen
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MainScreen(userId: userId),
+                    ),
+                  );
+                },
+                child: Text("OK"),
+              ),
+            ],
+          );
+        },
       );
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -92,8 +117,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     height: 350,
                     decoration: BoxDecoration(
                       color: AppColors.secondary,
-                      borderRadius:
-                      BorderRadius.vertical(bottom: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
                       image: DecorationImage(
                         image: AssetImage("lib/assets/images/trash.png"),
                         fit: BoxFit.cover,
@@ -129,9 +153,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Text(
                           "Register",
                           style: GoogleFonts.urbanist(
-                              fontSize: 34,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.secondary),
+                            fontSize: 34,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.secondary,
+                          ),
                         ),
                         SizedBox(height: 30),
 
@@ -169,9 +194,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             child: Text(
                               "Create Account",
                               style: GoogleFonts.urbanist(
-                                  color: AppColors.surface,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold),
+                                color: AppColors.surface,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
@@ -192,13 +218,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       TextSpan(
                         children: [
                           TextSpan(
-                              text: "Already have an account? ",
-                              style: GoogleFonts.urbanist(color: AppColors.primary)),
+                            text: "Already have an account? ",
+                            style: GoogleFonts.urbanist(color: AppColors.primary),
+                          ),
                           TextSpan(
                             text: "Login",
                             style: GoogleFonts.urbanist(
-                                color: AppColors.secondary,
-                                fontWeight: FontWeight.bold),
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
