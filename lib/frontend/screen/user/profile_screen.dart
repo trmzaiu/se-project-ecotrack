@@ -1,7 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 import 'package:wastesortapp/frontend/service/google_auth_service.dart';
+
+import '../../service/auth_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   final String userId;
@@ -26,7 +29,7 @@ class ProfileScreen extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await GoogleAuthService().logout();
+                await AuthenticationService(FirebaseAuth.instance).signOut();
 
                 // Navigate back to LoginScreen
                 Navigator.pushReplacement(

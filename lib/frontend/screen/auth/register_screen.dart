@@ -2,46 +2,86 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
-import 'package:wastesortapp/frontend/service/authentication.dart';
+import 'package:wastesortapp/frontend/service/auth_service.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../main.dart';
 import '../../../theme/fonts.dart';
 import '../../utils/phone_size.dart';
+import '../../widget/custom_dialog.dart';
 import '../../widget/my_textfield.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
-  _SignUpScreenState createState() => _SignUpScreenState();
+  _RegisterScreenState createState() => _RegisterScreenState();
 }
 
-class _SignUpScreenState extends State<RegisterScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+class _RegisterScreenState extends State<RegisterScreen> {
+  final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
-  Future<void> signUp() async {
-    if (passwordController.text != confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Passwords do not match.')),
+  bool _isLoading = false;
+
+  Future<void> signUp(BuildContext context) async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
+
+    if (!_isValidEmail(email)) {
+      _showErrorDialog(context, "Invalid Email", "The email address you entered is not valid. Please check for typos or missing characters and try again.");
+      return;
+    }
+
+    if (password.isEmpty || confirmPassword.isEmpty) {
+      _showErrorDialog(
+          context, "Empty Password", "Both password fields must be filled in to create an account."
       );
       return;
     }
 
-    try {
-      await _auth.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login successfully!')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+    if (password != confirmPassword) {
+      _showErrorDialog(context, "Password Mismatch", "The passwords you entered do not match. Please make sure both passwords are identical.");
+      return;
     }
+
+    setState(() => _isLoading = true);
+
+    final result = await _authService.signUp(email: email, password: password);
+
+    setState(() => _isLoading = false);
+
+    if (result != null) {
+      _showErrorDialog(context, "Register Error", result);
+    } else {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        _navigateToMainScreen(context, user.uid);
+      }
+    }
+  }
+
+  bool _isValidEmail(String email) {
+    return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}\$").hasMatch(email);
+  }
+
+  void _navigateToMainScreen(BuildContext context, String userId) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
+    );
+  }
+
+  void _showErrorDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => CustomErrorDialog(
+        title: title,
+        message: message,
+      ),
+    );
   }
 
   @override
@@ -124,7 +164,7 @@ class _SignUpScreenState extends State<RegisterScreen> {
                   SizedBox(height: 50),
 
                   GestureDetector(
-                    onTap: signUp,
+                    onTap: () => signUp(context),
                     child: Container(
                       width: double.infinity,
                       height: 50,

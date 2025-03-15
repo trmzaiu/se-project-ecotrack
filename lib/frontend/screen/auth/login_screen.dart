@@ -2,70 +2,64 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
-import 'package:wastesortapp/frontend/service/authentication.dart';
+import 'package:wastesortapp/frontend/service/auth_service.dart';
 import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 import '../../../main.dart';
+import '../../widget/custom_dialog.dart';
 import '../../widget/my_textfield.dart';
 import '../../service/google_auth_service.dart';
 import '../../widget/square_tile.dart';
 import 'forgot_pw_email.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
-
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final GoogleAuthService _googleAuthService = GoogleAuthService();
-  final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
 
   bool _isLoading = false;
 
-  @override
-  void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> signUserIn(BuildContext context) async {
+  Future<void> signIn(BuildContext context) async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    debugPrint("Email: $email");
-    print("Password: $password");
+    if (email.isEmpty) {
+      _showErrorDialog(context, "Empty Email", "Please enter your email address to continue. This field cannot be left blank.");
+      return;
+    }
 
     if (!_isValidEmail(email)) {
-      _showErrorDialog(context, "Invalid Email", "Please enter a valid email address.");
+      _showErrorDialog(context, "Invalid Email", "The email address you entered is not in the correct format. Please check and try again.");
       return;
     }
 
     if (password.isEmpty) {
-      _showErrorDialog(context, "Invalid Password", "Password cannot be empty.");
+      _showErrorDialog(context, "Empty Password", "Please enter your password to continue. This field cannot be left blank.");
       return;
     }
 
     setState(() => _isLoading = true);
 
-    try {
-      String result = await _authService.signIn(email: email, password: password);
-      if (result == "Success") {
-        _navigateToMainScreen(context, FirebaseAuth.instance.currentUser?.uid ?? '');
-      } else {
-        _showErrorDialog(context, "Login Failed", result);
+    final result = await _authService.signIn(email: email, password: password);
+
+    setState(() => _isLoading = false);
+
+    if (result != null) {
+      _showErrorDialog(context, "Login Error", result);
+    } else {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        _navigateToMainScreen(context, user.uid);
       }
-    } catch (e) {
-      _showErrorDialog(context, "Login Error", "An unexpected error occurred: $e");
-    } finally {
-      setState(() => _isLoading = false);
     }
   }
 
@@ -73,16 +67,18 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      UserCredential? userCredential = await _googleAuthService.signInWithGoogle();
-      if (userCredential != null) {
-        _navigateToMainScreen(context, userCredential.user?.uid ?? '');
+      final userCredential = await _googleAuthService.signInWithGoogle();
+
+      setState(() => _isLoading = false);
+
+      if (userCredential?.user != null) {
+        _navigateToMainScreen(context, userCredential!.user!.uid);
       } else {
         _showErrorDialog(context, "Google Sign-In Failed", "Please try again.");
       }
     } catch (e) {
-      _showErrorDialog(context, "Google Sign-In Error", "An error occurred: $e");
-    } finally {
       setState(() => _isLoading = false);
+      _showErrorDialog(context, "Google Sign-In Error", "An error occurred: $e");
     }
   }
 
@@ -100,18 +96,10 @@ class _LoginScreenState extends State<LoginScreen> {
   void _showErrorDialog(BuildContext context, String title, String message) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK"),
-            ),
-          ],
-        );
-      },
+      builder: (context) => CustomErrorDialog(
+        title: title,
+        message: message,
+      ),
     );
   }
 
@@ -209,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(height: 30),
 
                   GestureDetector(
-                    onTap: () => signUserIn(context),
+                    onTap: () => signIn(context),
                     child: Container(
                       width: double.infinity,
                       height: 50,
