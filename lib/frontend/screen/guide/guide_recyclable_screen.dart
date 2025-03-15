@@ -467,11 +467,11 @@ class RecyclableScreen extends StatelessWidget {
                                   ),
                                   child: Center( // Căn emoji vào giữa hộp
                                     child: Text(
-                                      '🍎',
+                                      '🧽',
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontFamily: 'Urbanist',
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w900,
                                       ),
                                     ),
                                   ),
@@ -481,12 +481,12 @@ class RecyclableScreen extends StatelessWidget {
                                 // Nội dung hướng dẫn
                                 Expanded(
                                   child: Text(
-                                    'Separate food scraps for composting.',
+                                    'Rinse plastic, glass, metal before recycling.',
                                     style: TextStyle(
                                       color: Color(0xFF2C6E49),
                                       fontSize: 14,
                                       fontFamily: 'Urbanist',
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ),
@@ -511,11 +511,11 @@ class RecyclableScreen extends StatelessWidget {
                                   ),
                                   child: Center( // Căn emoji vào giữa hộp
                                     child: Text(
-                                      '✂️',
+                                      '📦',
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontFamily: 'Urbanist',
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w900,
                                       ),
                                     ),
                                   ),
@@ -525,12 +525,12 @@ class RecyclableScreen extends StatelessWidget {
                                 // Nội dung hướng dẫn
                                 Expanded(
                                   child: Text(
-                                    'Cut large organic waste into smaller pieces.',
+                                    'Flatten cardboard and paper to save space.',
                                     style: TextStyle(
                                       color: Color(0xFF2C6E49),
                                       fontSize: 14,
                                       fontFamily: 'Urbanist',
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ),
@@ -553,7 +553,7 @@ class RecyclableScreen extends StatelessWidget {
                                   ),
                                   child: Center( // Căn emoji vào giữa hộp
                                     child: Text(
-                                      '🌾',
+                                      '🔄',
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontFamily: 'Urbanist',
@@ -567,12 +567,12 @@ class RecyclableScreen extends StatelessWidget {
                                 // Nội dung hướng dẫn
                                 Expanded(
                                   child: Text(
-                                    'Use organic waste for compost or fertilizer.',
+                                    'Sort materials (plastic, paper, glass, metal).',
                                     style: TextStyle(
                                       color: Color(0xFF2C6E49),
                                       fontSize: 14,
                                       fontFamily: 'Urbanist',
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ),
@@ -583,7 +583,7 @@ class RecyclableScreen extends StatelessWidget {
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                // Hộp màu xanh lá cây chứa emoji 🌿
+                                // Hộp màu xanh lá cây chứa emoji 🏷
                                 Container(
                                   width: 30,
                                   height: 30,
@@ -595,7 +595,7 @@ class RecyclableScreen extends StatelessWidget {
                                   ),
                                   child: Center( // Căn emoji vào giữa hộp
                                     child: Text(
-                                      '🌿',
+                                      '🏷',
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontFamily: 'Urbanist',
@@ -609,12 +609,12 @@ class RecyclableScreen extends StatelessWidget {
                                 // Nội dung hướng dẫn
                                 Expanded(
                                   child: Text(
-                                    'Store in biodegradable bags to reduce odor.',
+                                    'Remove bottle caps if required.',
                                     style: TextStyle(
                                       color: Color(0xFF2C6E49),
                                       fontSize: 14,
                                       fontFamily: 'Urbanist',
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ),
@@ -656,7 +656,7 @@ class RecyclableScreen extends StatelessWidget {
                                       color: Color(0xFF2C6E49),
                                       fontSize: 14,
                                       fontFamily: 'Urbanist',
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ),
@@ -759,7 +759,7 @@ class RecyclableScreen extends StatelessWidget {
                                       color: Color(0xFF2C6E49),
                                       fontSize: 14,
                                       fontFamily: 'Urbanist',
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ),
@@ -803,7 +803,7 @@ class RecyclableScreen extends StatelessWidget {
                                       color: Color(0xFF2C6E49),
                                       fontSize: 14,
                                       fontFamily: 'Urbanist',
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ),
@@ -830,7 +830,7 @@ class RecyclableScreen extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontFamily: 'Urbanist',
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w900,
                                       ),
                                     ),
                                   ),
@@ -845,7 +845,7 @@ class RecyclableScreen extends StatelessWidget {
                                       color: Color(0xFF2C6E49),
                                       fontSize: 14,
                                       fontFamily: 'Urbanist',
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ),
@@ -887,7 +887,7 @@ class RecyclableScreen extends StatelessWidget {
                                       color: Color(0xFF2C6E49),
                                       fontSize: 14,
                                       fontFamily: 'Urbanist',
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ),
@@ -914,7 +914,7 @@ class RecyclableScreen extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontFamily: 'Urbanist',
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w900,
                                       ),
                                     ),
                                   ),
@@ -929,7 +929,7 @@ class RecyclableScreen extends StatelessWidget {
                                       color: Color(0xFF2C6E49),
                                       fontSize: 14,
                                       fontFamily: 'Urbanist',
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ),
