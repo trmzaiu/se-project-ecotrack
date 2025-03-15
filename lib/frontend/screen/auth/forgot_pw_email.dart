@@ -1,17 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:wastesortapp/frontend/screen/auth/opening_screen.dart';
 import 'package:wastesortapp/frontend/widget/my_textfield.dart';
 import 'package:wastesortapp/frontend/screen/auth/forgot_pw_code.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class ForgotPasswordScreenMail extends StatelessWidget {
+import '../../service/reset_pw_service.dart';
+
+
+class ForgotPasswordScreenMail extends StatefulWidget {
   ForgotPasswordScreenMail({super.key});
 
   final emailController = TextEditingController();
+  @override
+  _ForgotPasswordScreenMailState createState() =>
+      _ForgotPasswordScreenMailState();
+}
 
-  void resetPassword() {
-    // Implement password reset logic here
+class _ForgotPasswordScreenMailState extends State<ForgotPasswordScreenMail> {
+  final PasswordResetService _resetService = PasswordResetService();
+
+  String _errorMessage = "";
+
+  void resetPassword() async {
+    String email = widget.emailController.text.trim();
+
+    if (email.isEmpty) {
+      setState(() {
+        _errorMessage = "Please enter your email address.";
+      });
+      return;
+    }
+
+    bool success = await _resetService.sendPasswordResetEmail(email);
+
+    if (success) {
+      // Navigate to next screen if email is sent
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => OpeningScreen()),
+      );
+    } else {
+      setState(() {
+        _errorMessage = "Failed to send password reset link. Please try again.";
+      });
+    }
   }
 
   @override
@@ -29,8 +63,7 @@ class ForgotPasswordScreenMail extends StatelessWidget {
                     height: 350,
                     decoration: BoxDecoration(
                       color: AppColors.secondary,
-                      borderRadius:
-                      BorderRadius.vertical(bottom: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
                       image: DecorationImage(
                         image: AssetImage("lib/assets/images/reset_password.png"),
                         fit: BoxFit.cover,
@@ -43,7 +76,7 @@ class ForgotPasswordScreenMail extends StatelessWidget {
 
             // Reset Password Form
             Positioned(
-             width: 414,
+              width: 414,
               height: 800,
               bottom: -100,
               child: Container(
@@ -81,67 +114,27 @@ class ForgotPasswordScreenMail extends StatelessWidget {
                           fontSize: 36,
                           fontWeight: FontWeight.w700,
                           color: AppColors.secondary),
-
                     ),
                     SizedBox(height: 10),
-
                     Text(
-                      "Please enter your email address to receive a verification code.",
+                      "Please enter your email address to receive a reset password link.",
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.urbanist(color: AppColors.secondary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500),
-
+                      style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500),
                     ),
                     SizedBox(height: 30),
-
-                    Container(
-                      width: 330,
-                      height: 49,
-                      decoration: ShapeDecoration(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            left: 0,
-                            top: 0,
-                            child: Container(
-                              width: 330,
-                              height: 49,
-                              decoration: ShapeDecoration(
-                                color: Color(0xFFFFFCFB),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            left: 18.33,
-                            top: 16,
-                            child: SizedBox(
-                              width: 148.50,
-                              child: Text(
-                                'Email',
-                                style: TextStyle(
-                                  color: Color(0xFF9C9385),
-                                  fontSize: 16,
-                                  fontFamily: 'Urbanist',
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                    TextField(
+                      controller: widget.emailController,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        errorText: _errorMessage.isEmpty ? null : _errorMessage,
                       ),
                     ),
                     SizedBox(height: 30),
-
                     GestureDetector(
-                      onTap: () {
-                        Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => VerificationScreen()),
-                        );
-                      },
+                      onTap: resetPassword,
                       child: Container(
                         width: 330,
                         height: 49,
@@ -160,13 +153,13 @@ class ForgotPasswordScreenMail extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 20),
-
                     GestureDetector(
                       onTap: () {
-                        Navigator.push(context,
+                        Navigator.push(
+                          context,
                           MaterialPageRoute(builder: (context) => LoginScreen()),
                         );
-    },
+                      },
                       child: Text(
                         "Back to Login",
                         style: GoogleFonts.urbanist(
