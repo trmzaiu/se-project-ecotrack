@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "122725272901",
+    "firebase_url": "https://waste-sort-app-487aa-default-rtdb.firebaseio.com",
     "project_id": "waste-sort-app-487aa",
     "storage_bucket": "waste-sort-app-487aa.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.example.wastesortapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "122725272901-9e1civ6kcc3arfgdi4nf8i6jujbujoq9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wastesortapp",
+            "certificate_hash": "d52839d2ed1a57b99a85de56787391552add5b0e"
+          }
+        },
+        {
+          "client_id": "122725272901-1pbm4t3e0d31c5elts474j0elnvgn23r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB4Au_f_jGOW1DhDk8jKt63FFAMnvyBhYY"
@@ -20,7 +34,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "122725272901-1pbm4t3e0d31c5elts474j0elnvgn23r.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "122725272901-5q61jo73m0khabv4ti5pdo097582pr0i.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.wastesortapp"
+              }
+            }
+          ]
         }
       }
     }
