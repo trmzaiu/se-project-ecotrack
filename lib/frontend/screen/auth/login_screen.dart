@@ -8,27 +8,42 @@ import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/theme/fonts.dart';
-
-import '../../widget/my_textfield.dart';
 import '../../../main.dart';
+import '../../widget/my_textfield.dart';
 import '../../service/google_auth_service.dart';
 import '../../widget/square_tile.dart';
 import 'forgot_pw_email.dart';
 
-class LoginScreen extends StatelessWidget {
-  LoginScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   final GoogleAuthService _googleAuthService = GoogleAuthService();
+  final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
 
-  void signUserIn(BuildContext context) async {
-    final authService = AuthenticationService(FirebaseAuth.instance);
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> signUserIn(BuildContext context) async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    // Validate email format
-    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
+    debugPrint("Email: $email");
+    print("Password: $password");
+
+    if (!_isValidEmail(email)) {
       _showErrorDialog(context, "Invalid Email", "Please enter a valid email address.");
       return;
     }
@@ -38,51 +53,48 @@ class LoginScreen extends StatelessWidget {
       return;
     }
 
-    // Attempt login
+    setState(() => _isLoading = true);
+
     try {
-      String result = await authService.signIn(email: email, password: password);
+      String result = await _authService.signIn(email: email, password: password);
       if (result == "Success") {
-        String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
-        );
+        _navigateToMainScreen(context, FirebaseAuth.instance.currentUser?.uid ?? '');
       } else {
         _showErrorDialog(context, "Login Failed", result);
       }
     } catch (e) {
       _showErrorDialog(context, "Login Error", "An unexpected error occurred: $e");
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
-  void signInWithGoogle(BuildContext context) async {
-    UserCredential? userCredential = await _googleAuthService
-        .signInWithGoogle();
-    if (userCredential != null) {
-      String userId = userCredential.user?.uid ?? '';
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Google Sign-In Failed")),
-      );
-    }
+  Future<void> signInWithGoogle(BuildContext context) async {
+    setState(() => _isLoading = true);
+
     try {
       UserCredential? userCredential = await _googleAuthService.signInWithGoogle();
       if (userCredential != null) {
-        String userId = userCredential.user?.uid ?? '';
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen(userId: userId)),
-        );
+        _navigateToMainScreen(context, userCredential.user?.uid ?? '');
       } else {
         _showErrorDialog(context, "Google Sign-In Failed", "Please try again.");
       }
     } catch (e) {
       _showErrorDialog(context, "Google Sign-In Error", "An error occurred: $e");
+    } finally {
+      setState(() => _isLoading = false);
     }
+  }
+
+  bool _isValidEmail(String email) {
+    return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
+  }
+
+  void _navigateToMainScreen(BuildContext context, String userId) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
+    );
   }
 
   void _showErrorDialog(BuildContext context, String title, String message) {
@@ -94,10 +106,8 @@ class LoginScreen extends StatelessWidget {
           content: Text(message),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text("OK"),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("OK"),
             ),
           ],
         );

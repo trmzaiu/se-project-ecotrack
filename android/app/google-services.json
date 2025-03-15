@@ -15,14 +15,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "122725272901-8gkpfv6ngeb9hhn1i70asfhjmkj2o01s.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.wastesortapp",
-            "certificate_hash": "aa716b22c1b6bce82b5ba19a32b1b50d4b0d08fc"
-          }
-        },
-        {
           "client_id": "122725272901-1pbm4t3e0d31c5elts474j0elnvgn23r.apps.googleusercontent.com",
           "client_type": 3
         }
