@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wastesortapp/theme/colors.dart'; // Chỉ giữ cái này
+import 'package:wastesortapp/frontend/screen/home/goodtoknow.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -8,13 +9,15 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
       ),
+
+
       body: SafeArea(
         child: Container(
           width: double.infinity,
           height: double.infinity,
           decoration: BoxDecoration(color: AppColors.background),
-          child: Stack(
-            children: [
+            child: Stack(
+              children: [
               // Tiêu đề "Hello, EcoTrack"
 
               Positioned(
@@ -240,55 +243,23 @@ class HomeScreen extends StatelessWidget {
               ),
 
 
-
-
-            Positioned(
-              top: 415,
-              left: 40,
-              child: Container(
-                height: 140,
-                width: 300,
-                decoration: BoxDecoration(
-                  color: Colors.white, // Nền trắng
-                  borderRadius: BorderRadius.circular(15), // Bo góc
-                  boxShadow: [ // Thêm đổ bóng nếu muốn
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      spreadRadius: 2,
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: Padding(
-                        padding: EdgeInsets.only(top:0), // Điều chỉnh padding nếu cần
-                        child: Image.asset(
-                          'lib/assets/images/goodtoknow.png',
-                          width: 300, // Fit full ngang
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ],
-                  
-
-
-
-
-                ),
-              ),
-            )
+                GoodToKnowSection(),
 
 
 
 
 
-            ],
+
+
+
+
+
+
+
+              ],
           ),
         ),
+
       ),
     );
   }
@@ -329,7 +300,13 @@ class CategoryBox extends StatelessWidget {
       ),
     );
   }
-}
+
+  }
+
+
+
+
+
 
 
 
