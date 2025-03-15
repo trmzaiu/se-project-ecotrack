@@ -3,16 +3,18 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
-class CustomErrorDialog extends StatelessWidget {
+class CustomDialog extends StatelessWidget {
   final String title;
   final String message;
-  final List<Widget>? actions;
+  final String buttonTitle;
+  final VoidCallback? onPressed;
 
-  const CustomErrorDialog({
+  const CustomDialog({
     Key? key,
     required this.title,
     required this.message,
-    this.actions,
+    required this.buttonTitle,
+    this.onPressed,
   }) : super(key: key);
 
   @override
@@ -24,7 +26,7 @@ class CustomErrorDialog extends StatelessWidget {
         style: GoogleFonts.urbanist(
           fontSize: 20,
           color: AppColors.secondary,
-          fontWeight: AppFontWeight.bold
+          fontWeight: AppFontWeight.bold,
         ),
       ),
       content: Text(
@@ -32,14 +34,14 @@ class CustomErrorDialog extends StatelessWidget {
         style: GoogleFonts.urbanist(
           fontSize: 14,
           color: AppColors.tertiary,
-          fontWeight: AppFontWeight.regular
+          fontWeight: AppFontWeight.regular,
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: onPressed ?? () => Navigator.of(context).pop(),
           child: Container(
-            width: 50,
+            width: 100,
             height: 32,
             alignment: Alignment.center,
             decoration: BoxDecoration(
@@ -47,7 +49,7 @@ class CustomErrorDialog extends StatelessWidget {
               borderRadius: BorderRadius.circular(15),
             ),
             child: Text(
-              "OK",
+              buttonTitle,
               style: GoogleFonts.urbanist(
                 fontSize: 14,
                 color: AppColors.surface,

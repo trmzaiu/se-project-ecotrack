@@ -96,9 +96,10 @@ class _LoginScreenState extends State<LoginScreen> {
   void _showErrorDialog(BuildContext context, String title, String message) {
     showDialog(
       context: context,
-      builder: (context) => CustomErrorDialog(
+      builder: (context) => CustomDialog(
         title: title,
         message: message,
+        buttonTitle: "Try Again",
       ),
     );
   }

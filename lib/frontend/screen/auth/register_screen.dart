@@ -31,19 +31,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final confirmPassword = confirmPasswordController.text.trim();
 
     if (!_isValidEmail(email)) {
-      _showErrorDialog(context, "Invalid Email", "The email address you entered is not valid. Please check for typos or missing characters and try again.");
+      _showErrorDialog(
+          context,
+          "Invalid Email",
+          "The email address you entered is not valid. Please check for typos or missing characters and try again."
+      );
       return;
     }
 
     if (password.isEmpty || confirmPassword.isEmpty) {
       _showErrorDialog(
-          context, "Empty Password", "Both password fields must be filled in to create an account."
+          context,
+          "Empty Password",
+          "Both password fields must be filled in to create an account."
       );
       return;
     }
 
     if (password != confirmPassword) {
-      _showErrorDialog(context, "Password Mismatch", "The passwords you entered do not match. Please make sure both passwords are identical.");
+      _showErrorDialog(
+          context,
+          "Password Mismatch",
+          "The passwords you entered do not match. Please make sure both passwords are identical."
+      );
       return;
     }
 
@@ -56,12 +66,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (result != null) {
       _showErrorDialog(context, "Register Error", result);
     } else {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        _navigateToMainScreen(context, user.uid);
-      }
+      _showSuccessDialog(context, "Resgister Success Full", "");
     }
   }
+
 
   bool _isValidEmail(String email) {
     return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}\$").hasMatch(email);
@@ -77,9 +85,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _showErrorDialog(BuildContext context, String title, String message) {
     showDialog(
       context: context,
-      builder: (context) => CustomErrorDialog(
+      builder: (context) => CustomDialog(
         title: title,
         message: message,
+        buttonTitle: "Try Again",
+      ),
+    );
+  }
+
+  void _showSuccessDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        title: title,
+        message: message,
+        buttonTitle: "Continue",
+        onPressed: () {
+          Navigator.of(context).pop();
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            _navigateToMainScreen(context, user.uid);
+          }
+        },
       ),
     );
   }
