@@ -45,7 +45,7 @@ class LoginScreen extends StatelessWidget {
         String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen(userId: userId)),
+          MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
         );
       } else {
         _showErrorDialog(context, "Login Failed", result);
