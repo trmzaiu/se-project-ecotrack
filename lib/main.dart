@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import 'frontend/screen/camera/camera_screen.dart';
+import 'frontend/screen/evidence/evidence_screen.dart';
 import 'frontend/screen/guide/guide_screen.dart';
 import 'frontend/screen/home/home_screen.dart';
 import 'frontend/screen/splash_screen.dart';
@@ -47,7 +48,21 @@ class _MainScreenState extends State<MainScreen> {
     if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => CameraScreen()),
+        PageRouteBuilder(
+          transitionDuration: Duration(milliseconds: 300),
+          pageBuilder: (context, animation, secondaryAnimation) => CameraScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            var begin = Offset(0.0, 1.0);
+            var end = Offset.zero;
+            var curve = Curves.easeOut;
+
+            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        ),
       );
     } else {
       setState(() {

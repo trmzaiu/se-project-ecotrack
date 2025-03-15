@@ -29,10 +29,17 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     Future.delayed(Duration(seconds: 3), () {
       if (mounted) {
-        debugPrint('Navigating to HomeScreen');
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MainScreen()),
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => MainScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+            transitionDuration: Duration(milliseconds: 1000),
+          ),
         );
       }
     });

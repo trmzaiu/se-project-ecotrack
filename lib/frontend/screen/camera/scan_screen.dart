@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wastesortapp/theme/colors.dart';
-import 'package:wastesortapp/theme/fonts.dart';
 
 import '../../../ScanAI/processImage.dart';
+import '../../../theme/colors.dart';
+import '../../../theme/fonts.dart';
 import '../evidence/upload_evidence_screen.dart';
 
 class ScanScreen extends StatefulWidget {
@@ -18,50 +18,65 @@ class ScanScreen extends StatefulWidget {
   _ScanScreenState createState() => _ScanScreenState();
 }
 
-class _ScanScreenState extends State<ScanScreen> {
+class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateMixin {
+  late AnimationController controller;
   bool _isScanning = false;
   String? _scanResult;
-  double _progress = 0.0;
   bool _scanCompleted = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 1),
+    );
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
 
   void _scanImage() async {
     setState(() {
       _isScanning = true;
       _scanResult = null;
-      _progress = 0.0;
       _scanCompleted = false;
     });
 
-    int startTime = DateTime.now().millisecondsSinceEpoch;
-
-    Timer timer = Timer.periodic(Duration(milliseconds: 50), (t) {
-      setState(() {
-        int elapsed = DateTime.now().millisecondsSinceEpoch - startTime;
-        _progress = (elapsed / 4000).clamp(0.0, 0.98);
-      });
-    });
+    controller.repeat(reverse: true);
 
     String? result = await ApiService.classifyImage(File(widget.imagePath));
-
-    timer.cancel();
 
     setState(() {
       _isScanning = false;
       _scanCompleted = true;
       _scanResult = result;
-      _progress = 1.0;
     });
+
+    controller.stop();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black12,
       body: Stack(
         children: [
-          SizedBox.expand(
-            child: FittedBox(
-              fit: BoxFit.cover,
-              child: Image.file(File(widget.imagePath)),
+          Center(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Image.file(
+                  File(widget.imagePath),
+                  // width: constraints.maxWidth,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                );
+              },
             ),
           ),
 
@@ -76,6 +91,13 @@ class _ScanScreenState extends State<ScanScreen> {
                       fontSize: 24,
                       fontWeight: AppFontWeight.semiBold,
                       color: AppColors.surface,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                          color: Colors.black.withOpacity(0.5),
+                        ),
+                      ],
                     ),
                   ),
                   SizedBox(height: 24),
@@ -83,36 +105,12 @@ class _ScanScreenState extends State<ScanScreen> {
                     width: 250,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: Stack(
-                        children: [
-                          Container(
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: Color(0xFFDEF3E7),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-
-                          FractionallySizedBox(
-                            widthFactor: _progress,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Container(
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Color(0xFF55D48D),
-                                      Color(0xFF40A16B),
-                                    ],
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                      child: LinearProgressIndicator(
+                        minHeight: 10,
+                        backgroundColor: Color(0xFFDEF3E7),
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
@@ -126,7 +124,7 @@ class _ScanScreenState extends State<ScanScreen> {
               child: Stack(
                 children: [
                   Container(
-                    width: 290,
+                    width: 280,
                     height: 82,
                     margin: EdgeInsets.only(bottom: 160),
                     decoration: BoxDecoration(
@@ -285,7 +283,7 @@ class _ScanScreenState extends State<ScanScreen> {
               right: 20,
               child: GestureDetector(
                 onTap: () {
-                  Navigator.popUntil(context, (route) => route.isFirst);
+                  _scanCompleted ? Navigator.popUntil(context, (route) => route.isFirst) : Navigator.pop(context);
                 },
                 child: Container(
                   height: 30,

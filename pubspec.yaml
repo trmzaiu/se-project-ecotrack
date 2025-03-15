@@ -13,7 +13,6 @@ dependencies:
     sdk: flutter
   http: ^1.1.0
   cupertino_icons: ^1.0.8
-
   flutter_svg: ^2.0.17
 
   # Cloudinary
@@ -34,6 +33,10 @@ dependencies:
   open_filex: ^4.7.0
   path_provider: ^2.0.0
 
+  dotted_border: ^2.0.0
+  dropdown_button2: ^2.3.9
+  photo_manager: ^3.6.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -46,20 +49,3 @@ flutter:
     - lib/assets/images/
 
   uses-material-design: true
-
-  fonts:
-    - family: Nunito
-      fonts:
-        - asset: lib/assets/fonts/nunito.ttf
-    - family: Domine
-      fonts:
-        - asset: lib/assets/fonts/domine.ttf
-    - family: Madisonian
-      fonts:
-        - asset: lib/assets/fonts/abc.ttf
-    - family: Urbanist
-      fonts:
-        - asset: lib/assets/fonts/urbanist.ttf
-    - family: Rancher
-      fonts:
-        - asset: lib/assets/fonts/rancher.ttf
