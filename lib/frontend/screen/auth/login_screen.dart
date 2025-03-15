@@ -82,6 +82,25 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> signInWithFacebook(BuildContext context) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final userCredential = await _googleAuthService.signInWithFacebook();
+
+      setState(() => _isLoading = false);
+
+      if (userCredential.user != null) {
+        _navigateToMainScreen(context, userCredential!.user!.uid);
+      } else {
+        _showErrorDialog(context, "Facebook Sign-In Failed", "Please try again.");
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showErrorDialog(context, "Facebook Sign-In Error", "An error occurred: $e");
+    }
+  }
+
   bool _isValidEmail(String email) {
     return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
   }
@@ -247,7 +266,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: SquareTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
                       ),
                       SizedBox(width: 50),
-                      SquareTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
+                      GestureDetector(
+                        onTap: () => signInWithFacebook(context),
+                        child: SquareTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
+                      ),
                       SizedBox(width: 50),
                       SquareTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
                     ],

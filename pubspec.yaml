@@ -35,6 +35,7 @@ dependencies:
   path_provider: ^2.0.0
   google_sign_in: ^6.3.0
   photo_manager: ^3.6.4
+  flutter_facebook_auth: ^7.1.1
 
 dev_dependencies:
   flutter_test:
