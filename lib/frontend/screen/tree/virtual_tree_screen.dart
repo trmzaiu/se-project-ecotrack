@@ -6,6 +6,8 @@ import 'dart:math';
 import 'package:flutter_svg/svg.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
+import 'leaderboard_screen.dart';
+
 class VirtualTreeScreen extends StatefulWidget {
   const VirtualTreeScreen({super.key});
 
@@ -190,10 +192,20 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
         scrolledUnderElevation: 0,
         actions: [
           // SizedBox(width: 20),
-          SvgPicture.asset(
-            'lib/assets/icons/ic_leaderboard.svg',
-            width: 30,
-            height: 30,
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LeaderboardScreen(),
+                ),
+              );
+            },
+            child: SvgPicture.asset(
+              'lib/assets/icons/ic_leaderboard.svg',
+              width: 30,
+              height: 30,
+            ),
           ),
           SizedBox(width: 20),
         ],

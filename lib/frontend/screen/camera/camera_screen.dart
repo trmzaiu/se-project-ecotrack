@@ -26,7 +26,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
     if (statuses[Permission.camera] != PermissionStatus.granted ||
         statuses[Permission.storage] != PermissionStatus.granted) {
-      print('❌ Permissions not granted');
+      debugPrint('❌ Permissions not granted');
     }
   }
 
@@ -149,6 +149,7 @@ class _CameraScreenState extends State<CameraScreen> {
             // previewFit: CameraPreviewFit.fitWidth,
             sensorConfig: SensorConfig.single(
               aspectRatio: CameraAspectRatios.ratio_16_9,
+              flashMode: FlashMode.auto,
             ),
             saveConfig: SaveConfig.photoAndVideo(
               initialCaptureMode: CaptureMode.photo,
@@ -159,7 +160,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
                 await Directory(extDir.path).create(recursive: true);
 
-                print("📸 Image will be saved to: $filePath");
+                debugPrint("📸 Image will be saved to: $filePath");
 
                 return SingleCaptureRequest(filePath, sensors.first);
               },
