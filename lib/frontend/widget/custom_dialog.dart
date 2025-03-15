@@ -6,11 +6,13 @@ import 'package:wastesortapp/theme/fonts.dart';
 class CustomErrorDialog extends StatelessWidget {
   final String title;
   final String message;
+  final List<Widget>? actions;
 
   const CustomErrorDialog({
     Key? key,
     required this.title,
     required this.message,
+    this.actions,
   }) : super(key: key);
 
   @override
