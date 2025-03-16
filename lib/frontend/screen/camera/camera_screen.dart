@@ -20,12 +20,9 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Future<void> _requestPermissions() async {
     Map<Permission, PermissionStatus> statuses = await [
-      Permission.camera,
-      Permission.storage,
-    ].request();
+      Permission.camera].request();
 
-    if (statuses[Permission.camera] != PermissionStatus.granted ||
-        statuses[Permission.storage] != PermissionStatus.granted) {
+    if (statuses[Permission.camera] != PermissionStatus.granted) {
       debugPrint('❌ Permissions not granted');
     }
   }
@@ -126,7 +123,7 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<bool> _checkPermissions() async {
-    return await Permission.camera.isGranted && await Permission.storage.isGranted;
+    return await Permission.camera.isGranted;
   }
 
   @override
