@@ -1,9 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:wastesortapp/frontend/screen/auth/opening_screen.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
 import 'package:wastesortapp/frontend/service/auth_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
+import 'package:wastesortapp/frontend/widget/my_button.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/theme/fonts.dart';
@@ -11,7 +13,7 @@ import '../../../main.dart';
 import '../../widget/custom_dialog.dart';
 import '../../widget/my_textfield.dart';
 import '../../widget/square_tile.dart';
-import 'forgot_pw_email.dart';
+import 'forgot_password_sheet.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -21,9 +23,11 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController emailResetController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _isShowSheet = true;
 
   Future<void> signIn(BuildContext context) async {
     final email = emailController.text.trim();
@@ -98,6 +102,37 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> resetPassword(BuildContext context) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final email = emailResetController.text.trim();
+      print("Email: $email");
+
+      if (email.isEmpty) {
+        throw "Please enter your email address.";
+      }
+
+      if (!_isValidEmail(email)) {
+        throw "The email address you entered is not in a valid format. Please check and try again.";
+      }
+
+      final success = await _authService.sendPasswordResetEmail(email);
+
+      setState(() => _isLoading = false);
+
+      if (success) {
+        _showSuccessDialog(context, "Success", 'The email has been sent, please check your email.');
+      } else {
+        throw "Failed to send password reset email. Please try again.";
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showErrorDialog(context, "Password Reset Error", e.toString());
+    }
+  }
+
+
   bool _isValidEmail(String email) {
     return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
   }
@@ -120,6 +155,52 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  void _showSuccessDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        title: title,
+        message: message,
+        buttonTitle: "Continue",
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => OpeningScreen()),
+          );
+        },
+      ),
+    );
+  }
+
+  void handleForgotPassword(String email) {
+    if (email.isEmpty) {
+      _showErrorDialog(context, "Empty Email", "Please enter your email.");
+      return;
+    }
+
+    resetPassword(context);
+  }
+
+  void _toggleSheet(BuildContext context) {
+    setState(() {
+      _isShowSheet = false;
+    });
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ForgotPasswordSheet(
+        onResetPassword: handleForgotPassword,
+        emailController: emailResetController,
+      ),
+    ).whenComplete(() {
+      setState(() {
+        _isShowSheet = true;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double phoneHeight= getPhoneHeight(context);
@@ -137,11 +218,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: AppColors.secondary,
                     borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
                   ),
-                  child: Center(
-                    child: Image.asset(
-                      "lib/assets/images/trash.png", width: 370,
-                    ),
-                  )
+                  child: _isShowSheet ?
+                    Center(
+                      child: Image.asset(
+                        "lib/assets/images/trash.png", width: 370,
+                      ),
+                    ) :
+                    Center()
                 ),
               ],
             ),
@@ -196,10 +279,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     alignment: Alignment.centerRight,
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ForgotPasswordScreenMail()),
-                        );
+                        _toggleSheet(context);
                       },
                       child: Text(
                         "Forgot your password?",
@@ -213,26 +293,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: 30),
 
-                  GestureDetector(
-                    onTap: () => signIn(context),
-                    child: Container(
-                      width: double.infinity,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "Login",
-                        style: GoogleFonts.urbanist(
-                            color: AppColors.surface,
-                            fontSize: 18,
-                            fontWeight: AppFontWeight.bold
-                        ),
-                      ),
-                    ),
-                  ),
+                  MyButton(text: 'Login', onTap: () => signIn(context)),
 
                   SizedBox(height: 30),
 

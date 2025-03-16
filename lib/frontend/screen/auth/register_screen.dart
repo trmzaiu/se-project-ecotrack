@@ -10,6 +10,7 @@ import '../../../main.dart';
 import '../../../theme/fonts.dart';
 import '../../utils/phone_size.dart';
 import '../../widget/custom_dialog.dart';
+import '../../widget/my_button.dart';
 import '../../widget/my_textfield.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -190,26 +191,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   SizedBox(height: 50),
 
-                  GestureDetector(
-                    onTap: () => signUp(context),
-                    child: Container(
-                      width: double.infinity,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "Create Account",
-                        style: GoogleFonts.urbanist(
-                            color: AppColors.surface,
-                            fontSize: 18,
-                            fontWeight: AppFontWeight.bold
-                        ),
-                      ),
-                    ),
-                  ),
+                  MyButton(text: 'Create Account', onTap: () => signUp(context)),
+
                   SizedBox(height: 15),
                 ],
               ),

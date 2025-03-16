@@ -23,7 +23,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   void resetPassword() {
     setState(() {
       if (passwordController.text != confirmPasswordController.text) {
-        errorMessage = "Passwords do not match"; // Set error message
+        errorMessage = "Passwords do not match";
       } else {
         errorMessage = null;
         // Proceed with password reset logic
