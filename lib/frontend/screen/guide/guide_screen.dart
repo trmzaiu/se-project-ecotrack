@@ -95,7 +95,7 @@ class _GuideScreenState extends State<GuideScreen> {
             height: phoneHeight,
             child: Column(
               children: [
-                BarTitle(title: 'Guide', showBackButton: false),
+                BarTitle(title: 'Guide', showNotification: true),
                 SizedBox(
                   height: 540,
                   child: PageView.builder(

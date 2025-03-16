@@ -5,6 +5,8 @@ import 'package:wastesortapp/theme/colors.dart';
 
 import '../../../theme/fonts.dart';
 import '../../utils/phone_size.dart';
+import '../../widget/bar_noti_title.dart';
+import '../../widget/bar_title.dart';
 import '../../widget/guideline_item.dart';
 import '../../widget/waste_item.dart';
 
@@ -20,6 +22,9 @@ class GuideDetailScreen extends StatefulWidget {
 class _GuideDetailScreenState extends State<GuideDetailScreen> {
   bool isGoodExpanded = false;
   bool isBadExpanded = false;
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _bestPracticesKey = GlobalKey();
+  final GlobalKey _mistPracticesKey = GlobalKey();
 
   final List<Map<String, dynamic>> wasteData = [
     {
@@ -51,24 +56,28 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
       'imagePath': 'lib/assets/images/recycle_bin_plastic.png',
       'title': 'Plastic',
       'svgColor': AppColors.board1,
+      'detail': 'Bottles, containers, jugs, clean plastic bags.',
     },
     {
       'slide': 0,
       'imagePath': 'lib/assets/images/recycle_bin_paper.png',
       'title': 'Paper',
       'svgColor': AppColors.board4,
+      'detail': 'Newspapers, magazines, cardboard, office paper.',
     },
     {
       'slide': 0,
       'imagePath': 'lib/assets/images/recycle_bin_glass.png',
       'title': 'Glass',
       'svgColor': AppColors.board2,
+      'detail': 'Bottles, jars (clear, green, brown).',
     },
     {
       'slide': 0,
       'imagePath': 'lib/assets/images/recycle_bin_metal.png',
       'title': 'Metal',
       'svgColor': AppColors.board3,
+      'detail': 'Aluminum cans, tin cans, foil (clean), metal lids.',
     },
 
     // Slide 1: Organic Waste
@@ -77,24 +86,28 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
       'imagePath': 'lib/assets/images/organic_bin_scrap.png',
       'title': 'Scrap',
       'svgColor': AppColors.board2,
+      'detail': 'Fruit peel, eggshell, vegetable leftover.',
     },
     {
       'slide': 1,
       'imagePath': 'lib/assets/images/organic_bin_residue.png',
       'title': 'Residue',
       'svgColor': AppColors.board1,
+      'detail': 'Coffee grounds, tea bags, nutshells.',
     },
     {
       'slide': 1,
       'imagePath': 'lib/assets/images/organic_bin_manure.png',
       'title': 'Manure',
       'svgColor': AppColors.board3,
+      'detail': 'Animal dung, compostable pet waste.',
     },
     {
       'slide': 1,
       'imagePath': 'lib/assets/images/organic_bin_clipping.png',
       'title': 'Clipping',
       'svgColor': AppColors.board4,
+      'detail': 'Grass, leaves, small branches.',
     },
 
     // Slide 2: Hazardous Waste
@@ -103,24 +116,28 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
       'imagePath': 'lib/assets/images/hazardous_bin_medical.png',
       'title': 'Medical',
       'svgColor': AppColors.board4,
+      'detail': 'Expired medicine, needles, syringes.',
     },
     {
       'slide': 2,
       'imagePath': 'lib/assets/images/hazardous_bin_electronic.png',
       'title': 'Electronic',
       'svgColor': AppColors.board3,
+      'detail': 'Old phones, batteries, laptops, cables.',
     },
     {
       'slide': 2,
       'imagePath': 'lib/assets/images/hazardous_bin_chemical.png',
       'title': 'Chemical',
       'svgColor': AppColors.board2,
+      'detail': 'Paint, pesticides, motor oil, cleaning agents.',
     },
     {
       'slide': 2,
       'imagePath': 'lib/assets/images/hazardous_bin_industrial.png',
       'title': 'Industrial',
       'svgColor': AppColors.board1,
+      'detail': 'Heavy metals, solvents, asbestos.',
     },
 
     // Slide 3: General Waste
@@ -129,24 +146,28 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
       'imagePath': 'lib/assets/images/general_bin_sanitary.png',
       'title': 'Hygiene',
       'svgColor': AppColors.board3,
+      'detail': 'Diapers, tissues, sanitary pads.',
     },
     {
       'slide': 3,
       'imagePath': 'lib/assets/images/general_bin_packaging.png',
       'title': 'Packaging',
       'svgColor': AppColors.board2,
+      'detail': 'Chip bags, styrofoam, food wrappers.',
     },
     {
       'slide': 3,
       'imagePath': 'lib/assets/images/general_bin_oversized.png',
       'title': 'Oversize',
       'svgColor': AppColors.board1,
+      'detail': 'Broken furniture, mattresses, large plastics.',
     },
     {
       'slide': 3,
       'imagePath': 'lib/assets/images/general_bin_fabric.png',
       'title': 'Fabric',
       'svgColor': AppColors.board4,
+      'detail': 'Old clothes, worn-out shoes, rags.',
     },
   ];
 
@@ -502,6 +523,32 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
         .toList();
   }
 
+  void _scrollToExpanded(GlobalKey key) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(Duration(milliseconds: 300), () {
+        final renderBox = key.currentContext?.findRenderObject() as RenderBox?;
+        if (renderBox != null) {
+          final position = renderBox.localToGlobal(Offset.zero).dy + _scrollController.offset;
+
+          final screenHeight = MediaQuery.of(context).size.height;
+          final expandedHeight = renderBox.size.height;
+
+          final isVisible = position >= _scrollController.offset &&
+              position + expandedHeight <= _scrollController.offset + screenHeight;
+
+          if (!isVisible) {
+            final targetOffset = position - 20;
+            _scrollController.animateTo(
+              targetOffset - (screenHeight - expandedHeight - 50),
+              duration: Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+            );
+          }
+        }
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double phoneWidth = getPhoneWidth(context);
@@ -515,40 +562,13 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
         color: AppColors.background,
         child: Column(
           children: [
-            Padding(
-              padding: EdgeInsets.only(top: 40, left: 20),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'About',
-                      style: GoogleFonts.urbanist(
-                        color: AppColors.tertiary,
-                        fontSize: 20,
-                        fontWeight: AppFontWeight.medium,
-                        height: 1.5,
-                      ),
-                    ),
-                    Text(
-                      waste['title'],
-                      style: GoogleFonts.urbanist(
-                        color: AppColors.secondary,
-                        fontSize: 30,
-                        fontWeight: AppFontWeight.bold,
-                        height: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            BarNotiTitle(title_small: 'About', title_big: waste['title']),
 
             SizedBox(height: 25),
 
             Expanded(
               child: SingleChildScrollView(
+                controller: _scrollController,
                 scrollDirection: Axis.vertical,
                 child: Column(
                   children: [
@@ -640,6 +660,7 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                         scrollDirection: Axis.horizontal,
                         clipBehavior: Clip.none,
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: wasteItem.map((item) {
                             return Padding(
                               padding: EdgeInsets.only(right: 20),
@@ -647,6 +668,7 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                                 imagePath: item['imagePath'],
                                 title: item['title'],
                                 svgColor: item['svgColor'],
+                                detail: item['detail'],
                               ),
                             );
                           }).toList(),
@@ -675,9 +697,13 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                     SizedBox(height: 10),
 
                     GestureDetector(
+                      key: _bestPracticesKey,
                       onTap: () {
                         setState(() {
                           isGoodExpanded = !isGoodExpanded;
+                          if (isGoodExpanded) {
+                            _scrollToExpanded(_bestPracticesKey);
+                          }
                         });
                       },
                       child: Column(
@@ -718,7 +744,6 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                           ),
                           AnimatedSize(
                             duration: Duration(milliseconds: 500),
-                            curve: Curves.easeInOut,
                             child: Container(
                               width: phoneWidth - 40,
                               decoration: BoxDecoration(
@@ -757,9 +782,13 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                     SizedBox(height: 15),
 
                     GestureDetector(
+                        key: _mistPracticesKey,
                         onTap: () {
                           setState(() {
                             isBadExpanded = !isBadExpanded;
+                            if (isBadExpanded) {
+                              _scrollToExpanded(_mistPracticesKey);
+                            }
                           });
                         },
                         child: Column(
@@ -801,7 +830,6 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                             ),
                             AnimatedSize(
                               duration: Duration(milliseconds: 500),
-                              curve: Curves.easeInOut,
                               child: Container(
                                 width: phoneWidth - 40,
                                 decoration: BoxDecoration(
@@ -846,7 +874,6 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
           ],
         ),
       ),
-
     );
   }
 }
