@@ -21,7 +21,7 @@ dependencies:
 
   # Firebase
   firebase_core: ^3.12.0
-  firebase_auth: ^5.5.0
+  firebase_auth: ^5.5.1
   firebase_database: ^11.3.3
   cloud_firestore: ^5.6.4
 
@@ -32,6 +32,9 @@ dependencies:
   camerawesome: ^2.0.0
   open_filex: ^4.7.0
   path_provider: ^2.0.0
+  google_sign_in: ^6.3.0
+  photo_manager: ^3.6.4
+  flutter_facebook_auth: ^7.1.1
 
   dotted_border: ^2.0.0
   dropdown_button2: ^2.3.9

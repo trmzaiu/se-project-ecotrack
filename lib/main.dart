@@ -8,9 +8,17 @@ import 'frontend/screen/guide/guide_screen.dart';
 import 'frontend/screen/home/home_screen.dart';
 import 'frontend/screen/splash_screen.dart';
 import 'frontend/screen/tree/virtual_tree_screen.dart';
-import 'frontend/screen/user/profile_screen.dart';
+import 'frontend/screen/auth/opening_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:wastesortapp/database/firebase_options.dart';
+import 'package:wastesortapp/frontend/screen/user/profile_screen.dart';
 
-void main() {
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 
@@ -25,10 +33,15 @@ class MyApp extends StatelessWidget {
       ),
       home: SplashScreen(),
     );
+
   }
 }
 
 class MainScreen extends StatefulWidget {
+  final String userId; // Receive userId
+
+  const MainScreen({Key? key, required this.userId}) : super(key: key);
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -36,13 +49,19 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    HomeScreen(),
-    GuideScreen(),
-    CameraScreen(),
-    VirtualTreeScreen(),
-    ProfileScreen(),
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      HomeScreen(userId: widget.userId),
+      GuideScreen(),
+      CameraScreen(),
+      VirtualTreeScreen(),
+      ProfileScreen(userId: widget.userId),
+    ];
+  }
 
   void _onItemTapped(int index) {
     if (index == 2) {
