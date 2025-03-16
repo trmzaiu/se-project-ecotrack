@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
@@ -11,6 +12,12 @@ import 'frontend/screen/tree/virtual_tree_screen.dart';
 import 'frontend/screen/user/profile_screen.dart';
 
 void main() {
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    systemNavigationBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+    systemNavigationBarIconBrightness: Brightness.dark,
+  ));
   runApp(MyApp());
 }
 
@@ -21,7 +28,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'EcoTrack',
       theme: ThemeData(
-        primaryColor: AppColors.primary,
+
       ),
       home: SplashScreen(),
     );

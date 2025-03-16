@@ -6,10 +6,12 @@ import '../../../theme/fonts.dart';
 
 class BarTitle extends StatelessWidget {
   final String title;
+  final bool showBackButton;
 
   const BarTitle({
     Key? key,
     required this.title,
+    this.showBackButton = true,
   }) : super(key: key);
 
   @override
@@ -18,18 +20,20 @@ class BarTitle extends StatelessWidget {
       padding: EdgeInsets.only(top: 60),
       child: Stack(
         children: [
-          Positioned(
-            left: 15,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.pop(context);
-              },
-              child: SvgPicture.asset(
-                'lib/assets/icons/ic_back.svg',
-                height: 20,
+          if (showBackButton)
+            Positioned(
+              left: 15,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: SvgPicture.asset(
+                  'lib/assets/icons/ic_back.svg',
+                  height: 20,
+                ),
               ),
             ),
-          ),
+
           Center(
             child: Text(
               title,
