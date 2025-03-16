@@ -62,7 +62,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _pages = [
-      HomeScreen(userId: widget.userId),
+      HomeScreen(),
       GuideScreen(),
       CameraScreen(),
       VirtualTreeScreen(),
