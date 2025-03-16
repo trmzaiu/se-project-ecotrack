@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
 import 'package:wastesortapp/frontend/service/auth_service.dart';
-import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,7 +10,6 @@ import 'package:wastesortapp/theme/fonts.dart';
 import '../../../main.dart';
 import '../../widget/custom_dialog.dart';
 import '../../widget/my_textfield.dart';
-import '../../service/google_auth_service.dart';
 import '../../widget/square_tile.dart';
 import 'forgot_pw_email.dart';
 
@@ -24,7 +22,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final GoogleAuthService _googleAuthService = GoogleAuthService();
 
   bool _isLoading = false;
 
@@ -67,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final userCredential = await _googleAuthService.signInWithGoogle();
+      final userCredential = await _authService.signInWithGoogle();
 
       setState(() => _isLoading = false);
 
@@ -86,12 +83,12 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final userCredential = await _googleAuthService.signInWithFacebook();
+      final userCredential = await _authService.signInWithFacebook();
 
       setState(() => _isLoading = false);
 
       if (userCredential.user != null) {
-        _navigateToMainScreen(context, userCredential!.user!.uid);
+        _navigateToMainScreen(context, userCredential.user!.uid);
       } else {
         _showErrorDialog(context, "Facebook Sign-In Failed", "Please try again.");
       }

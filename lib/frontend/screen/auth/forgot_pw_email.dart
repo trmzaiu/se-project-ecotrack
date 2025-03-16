@@ -1,12 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:wastesortapp/frontend/screen/auth/opening_screen.dart';
 import 'package:wastesortapp/frontend/widget/my_textfield.dart';
-import 'package:wastesortapp/frontend/screen/auth/forgot_pw_code.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../service/reset_pw_service.dart';
+import '../../service/auth_service.dart';
 
 
 class ForgotPasswordScreenMail extends StatefulWidget {
@@ -19,7 +19,7 @@ class ForgotPasswordScreenMail extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenMailState extends State<ForgotPasswordScreenMail> {
-  final PasswordResetService _resetService = PasswordResetService();
+  final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
 
   String _errorMessage = "";
 
@@ -33,7 +33,7 @@ class _ForgotPasswordScreenMailState extends State<ForgotPasswordScreenMail> {
       return;
     }
 
-    bool success = await _resetService.sendPasswordResetEmail(email);
+    bool success = await _authService.sendPasswordResetEmail(email);
 
     if (success) {
       // Navigate to next screen if email is sent

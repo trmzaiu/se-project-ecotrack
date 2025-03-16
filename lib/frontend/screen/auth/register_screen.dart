@@ -72,7 +72,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
 
   bool _isValidEmail(String email) {
-    return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}\$").hasMatch(email);
+    return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
   }
 
   void _navigateToMainScreen(BuildContext context, String userId) {

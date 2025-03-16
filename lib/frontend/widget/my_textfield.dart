@@ -26,13 +26,13 @@ class MyTextField extends StatelessWidget {
       child: Align(
         alignment: Alignment.center,
         child: TextField(
-          controller: controller, // ✅ Fixed here
+          controller: controller,
           obscureText: obscureText,
           textAlignVertical: TextAlignVertical.center,
           style: GoogleFonts.urbanist(fontSize: 13, color: AppColors.tertiary),
           decoration: InputDecoration(
             isDense: true,
-            contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 15), // Fine-tuning
+            contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 15),
             border: InputBorder.none,
             hintText: hintText,
             hintStyle: GoogleFonts.urbanist(fontSize: 13, color: AppColors.tertiary.withOpacity(0.8)),
