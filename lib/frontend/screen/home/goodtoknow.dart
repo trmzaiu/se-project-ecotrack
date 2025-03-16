@@ -25,93 +25,90 @@ class GoodToKnowSection extends StatefulWidget {
 
 class _GoodToKnowSectionState extends State<GoodToKnowSection> {
   final ScrollController _scrollController = ScrollController();
-  double leftPadding = 40;
+  bool hasScrolled = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(() {
-      setState(() {
-        leftPadding = _scrollController.offset > 10 ? 0 : 40;
-      });
+      if (_scrollController.offset > 10 && !hasScrolled) {
+        setState(() {
+          hasScrolled = true;
+        });
+      } else if (_scrollController.offset <= 10 && hasScrolled) {
+        setState(() {
+          hasScrolled = false;
+        });
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedPositioned(
-      duration: Duration(milliseconds: 300),
+    return Positioned(
       top: 415,
-      left: leftPadding,
+      left: 0,
       right: 0,
       child: SizedBox(
         height: 150,
-        width: MediaQuery.of(context).size.width - 80,
+        width: MediaQuery.of(context).size.width,
         child: SingleChildScrollView(
           controller: _scrollController,
           scrollDirection: Axis.horizontal,
           child: Row(
-            children: goodToKnowItems.map((item) => Container(
-              margin: EdgeInsets.only(right: 10),
-              height: 150,
-              width: 300,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-              ),
-
-              child: Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 0), // Điều chỉnh padding nếu cần
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(15),  // Bo góc trên trái
-                          topRight: Radius.circular(15), // Bo góc trên phải
-                        ),
-                        child: Image.asset(
-                          item['image']!,
-                          width: 300, // Fit full ngang
-                          fit: BoxFit.cover,
-                        ),
+            children: [
+              SizedBox(width: hasScrolled ? 0 : 40), // Ban đầu có 40px, khi lướt mất đi
+              ...goodToKnowItems.map((item) => Container(
+                margin: EdgeInsets.only(right: 10),
+                height: 150,
+                width: 300,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(15),
+                        topRight: Radius.circular(15),
+                      ),
+                      child: Image.asset(
+                        item['image']!,
+                        width: 300,
+                        fit: BoxFit.cover,
                       ),
                     ),
-                  ),
-
-
-
-                  // Văn bản
-                  Padding(
-                    padding: EdgeInsets.only(left: 15, right: 15, top: 95),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item['title']!,
-                          style: TextStyle(
-                            color: Color(0xFF7C3F3E),
-                            fontSize: 14,
-                            fontFamily: 'Urbanist',
-                            fontWeight: FontWeight.w900,
+                    Padding(
+                      padding: EdgeInsets.only(left: 15, right: 15, top: 95),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item['title']!,
+                            style: TextStyle(
+                              color: Color(0xFF7C3F3E),
+                              fontSize: 14,
+                              fontFamily: 'Urbanist',
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
-                        ),
-                        Text(
-                          item['date']!,
-                          style: TextStyle(
-                            color: Color(0xFF5E926F),
-                            fontSize: 12,
-                            fontFamily: 'Urbanist',
-                            fontWeight: FontWeight.w600,
+                          Text(
+                            item['date']!,
+                            style: TextStyle(
+                              color: Color(0xFF5E926F),
+                              fontSize: 12,
+                              fontFamily: 'Urbanist',
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            )).toList(),
+                  ],
+                ),
+              )).toList(),
+            ],
           ),
         ),
       ),
