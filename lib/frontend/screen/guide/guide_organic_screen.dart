@@ -389,84 +389,557 @@ class OrganicScreen extends StatelessWidget {
               ),
             ),
             Container(
-              width: 383,
-              margin: EdgeInsets.only(top: 540, left: 16), // Cách lề trên 20px
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Khung "BEST PRACTICES" với ảnh recycle_bin_rectangle.png
-
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: Stack(
-                      children: [
-                        Image.asset(
-                          'lib/assets/images/recycle_bin_rectangle.png', // Ảnh đầu tiên
-                          width: 383,
-                          height: 88,
-                          fit: BoxFit.cover,
-                        ),
-                        Positioned(
-                          left: 30,
-                          top: 16,
-                          child: SizedBox(
-                            width: 243.48,
-                            child: Text(
-                              'BEST PRACTICES',
-                              style: TextStyle(
-                                color: Color(0xFFFFFCFB),
-                                fontSize: 27,
-                                fontFamily: 'Urbanist',
-                                fontWeight: FontWeight.w800,
-                                height: 1.17,
-                                letterSpacing: 1.20,
+                width: 383,
+                margin: EdgeInsets.only(top: 540, left: 16), // Cách lề trên 20px
+                child: SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Khung "BEST PRACTICES"
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Stack(
+                          children: [
+                            Image.asset(
+                              'lib/assets/images/recycle_bin_rectangle.png', // Ảnh đầu tiên
+                              width: 383,
+                              height: 88,
+                              fit: BoxFit.cover,
+                            ),
+                            Positioned(
+                              left: 30,
+                              top: 16,
+                              child: SizedBox(
+                                width: 243.48,
+                                child: Text(
+                                  'BEST PRACTICES',
+                                  style: TextStyle(
+                                    color: Color(0xFFFFFCFB),
+                                    fontSize: 27,
+                                    fontFamily: 'Urbanist',
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.17,
+                                    letterSpacing: 1.20,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
 
-                  SizedBox(height: 16), // Khoảng cách giữa hai khung
-
-                  // Khung "COMMON MISTAKES" với ảnh recycle_bin_rectangle2.png
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: Stack(
-                      children: [
-                        Image.asset(
-                          'lib/assets/images/recycle_bin_rectangle2.png', // Ảnh thứ hai
-                          width: 383,
-                          height: 88,
-                          fit: BoxFit.cover,
+                      // 🔹 Box mô tả nội dung Best Practices (Chứa cả 2 hướng dẫn)
+                      Container(
+                        width: 383,
+                        margin: EdgeInsets.only(top: 8), // Khoảng cách với header
+                        padding: EdgeInsets.all(12), // Padding bên trong
+                        decoration: BoxDecoration(
+                          color: Color(0xFFFFFCFB), // Màu nền nhẹ
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 5,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
                         ),
-                        Positioned(
-                          left: 77,
-                          top: 16,
-                          child: SizedBox(
-                            width: 243.48,
-                            child: Text(
-                              'COMMON MISTAKES',
-                              textAlign: TextAlign.right,
-                              style: TextStyle(
-                                color: Color(0xFFFFFCFB),
-                                fontSize: 27,
-                                fontFamily: 'Urbanist',
-                                fontWeight: FontWeight.w800,
-                                height: 1.17,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start, // Canh trái nội dung
+                          children: [
+                            // Hàng 1: Separate food scraps for composting
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Hộp màu xanh lá cây chứa emoji 🍎
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: ShapeDecoration(
+                                    color: Color(0x992C6E49), // Màu nền hộp xanh lá
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  child: Center( // Căn emoji vào giữa hộp
+                                    child: Text(
+                                      '🍎',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Urbanist',
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10), // Khoảng cách giữa emoji và nội dung văn bản
+
+                                // Nội dung hướng dẫn
+                                Expanded(
+                                  child: Text(
+                                    'Separate food scraps for composting.',
+                                    style: TextStyle(
+                                      color: Color(0xFF2C6E49),
+                                      fontSize: 14,
+                                      fontFamily: 'Urbanist',
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            SizedBox(height: 8), // Khoảng cách giữa hai dòng hướng dẫn
+
+                            // Hàng 2: Cut large organic waste into smaller pieces
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Hộp màu xanh lá cây chứa emoji ✂️
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: ShapeDecoration(
+                                    color: Color(0x992C6E49), // Màu nền hộp xanh lá
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  child: Center( // Căn emoji vào giữa hộp
+                                    child: Text(
+                                      '✂️',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Urbanist',
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10), // Khoảng cách giữa emoji và nội dung văn bản
+
+                                // Nội dung hướng dẫn
+                                Expanded(
+                                  child: Text(
+                                    'Cut large organic waste into smaller pieces.',
+                                    style: TextStyle(
+                                      color: Color(0xFF2C6E49),
+                                      fontSize: 14,
+                                      fontFamily: 'Urbanist',
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            // Hàng 3
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Hộp màu xanh lá cây chứa emoji ✂️
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: ShapeDecoration(
+                                    color: Color(0x992C6E49), // Màu nền hộp xanh lá
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  child: Center( // Căn emoji vào giữa hộp
+                                    child: Text(
+                                      '🌾',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Urbanist',
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10), // Khoảng cách giữa emoji và nội dung văn bản
+
+                                // Nội dung hướng dẫn
+                                Expanded(
+                                  child: Text(
+                                    'Use organic waste for compost or fertilizer.',
+                                    style: TextStyle(
+                                      color: Color(0xFF2C6E49),
+                                      fontSize: 14,
+                                      fontFamily: 'Urbanist',
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            // Hàng 4
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Hộp màu xanh lá cây chứa emoji 🌿
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: ShapeDecoration(
+                                    color: Color(0x992C6E49), // Màu nền hộp xanh lá
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  child: Center( // Căn emoji vào giữa hộp
+                                    child: Text(
+                                      '🌿',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Urbanist',
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10), // Khoảng cách giữa emoji và nội dung văn bản
+
+                                // Nội dung hướng dẫn
+                                Expanded(
+                                  child: Text(
+                                    'Store in biodegradable bags to reduce odor.',
+                                    style: TextStyle(
+                                      color: Color(0xFF2C6E49),
+                                      fontSize: 14,
+                                      fontFamily: 'Urbanist',
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            // Hàng 5
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Hộp màu xanh lá cây chứa emoji 🗑
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: ShapeDecoration(
+                                    color: Color(0x992C6E49), // Màu nền hộp xanh lá
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  child: Center( // Căn emoji vào giữa hộp
+                                    child: Text(
+                                      '🗑',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Urbanist',
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10), // Khoảng cách giữa emoji và nội dung văn bản
+
+                                // Nội dung hướng dẫn
+                                Expanded(
+                                  child: Text(
+                                    'Use a compost bin for nutrient-rich soil.',
+                                    style: TextStyle(
+                                      color: Color(0xFF2C6E49),
+                                      fontSize: 14,
+                                      fontFamily: 'Urbanist',
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+
+
+
+
+                      SizedBox(height: 16), // Khoảng cách giữa hai khung
+
+                      // Khung "COMMON MISTAKES" với ảnh recycle_bin_rectangle2.png
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Stack(
+                          children: [
+                            Image.asset(
+                              'lib/assets/images/recycle_bin_rectangle2.png', // Ảnh thứ hai
+                              width: 383,
+                              height: 88,
+                              fit: BoxFit.cover,
+                            ),
+                            Positioned(
+                              left: 77,
+                              top: 16,
+                              child: SizedBox(
+                                width: 243.48,
+                                child: Text(
+                                  'COMMON MISTAKES',
+                                  textAlign: TextAlign.right,
+                                  style: TextStyle(
+                                    color: Color(0xFFFFFCFB),
+                                    fontSize: 27,
+                                    fontFamily: 'Urbanist',
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.17,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
 
+                      ),
+                      // 🔹 Box mô tả nội dung Best Practices (Chứa cả 2 hướng dẫn)
+                      Container(
+                        width: 383,
+                        margin: EdgeInsets.only(top: 8), // Khoảng cách với header
+                        padding: EdgeInsets.all(12), // Padding bên trong
+                        decoration: BoxDecoration(
+                          color: Color(0xFFFFFCFB), // Màu nền nhẹ
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 5,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start, // Canh trái nội dung
+                          children: [
+                            // Hàng 1:
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Hộp màu nâu cây chứa emoji
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: ShapeDecoration(
+                                    color: Color(0x997C3F3E), // Màu nền hộp xanh lá
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  child: Center( // Căn emoji vào giữa hộp
+                                    child: Text(
+                                      '🥩',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Urbanist',
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10), // Khoảng cách giữa emoji và nội dung văn bản
+
+                                // Nội dung hướng dẫn
+                                Expanded(
+                                  child: Text(
+                                    'No dairy, meat, or oily food (unless allowed).',
+                                    style: TextStyle(
+                                      color: Color(0xFF2C6E49),
+                                      fontSize: 14,
+                                      fontFamily: 'Urbanist',
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            SizedBox(height: 8), // Khoảng cách giữa hai dòng hướng dẫn
+
+                            // Hàng 2: Cut large organic waste into smaller pieces
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Hộp màu xanh lá cây chứa emoji 🌱
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: ShapeDecoration(
+                                    color: Color(0x997C3F3E), // Màu nền hộp xanh lá
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  child: Center( // Căn emoji vào giữa hộp
+                                    child: Text(
+                                      '🌱',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Urbanist',
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10), // Khoảng cách giữa emoji và nội dung văn bản
+
+                                // Nội dung hướng dẫn
+                                Expanded(
+                                  child: Text(
+                                    'No diseased plants or invasive weeds.',
+                                    style: TextStyle(
+                                      color: Color(0xFF2C6E49),
+                                      fontSize: 14,
+                                      fontFamily: 'Urbanist',
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            // Hàng 3
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Hộp màu xanh lá cây chứa emoji 🐀
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: ShapeDecoration(
+                                    color: Color(0x997C3F3E), // Màu nền hộp xanh lá
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  child: Center( // Căn emoji vào giữa hộp
+                                    child: Text(
+                                      '🐀',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Urbanist',
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10), // Khoảng cách giữa emoji và nội dung văn bản
+
+                                // Nội dung hướng dẫn
+                                Expanded(
+                                  child: Text(
+                                    'No exposed waste—avoid attracting pests.',
+                                    style: TextStyle(
+                                      color: Color(0xFF2C6E49),
+                                      fontSize: 14,
+                                      fontFamily: 'Urbanist',
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            // Hàng 4
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Hộp màu xanh lá cây chứa emoji 🔩
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: ShapeDecoration(
+                                    color: Color(0x997C3F3E), // Màu nền hộp xanh lá
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  child: Center( // Căn emoji vào giữa hộp
+                                    child: Text(
+                                      '🔩',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Urbanist',
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10), // Khoảng cách giữa emoji và nội dung văn bản
+
+                                // Nội dung hướng dẫn
+                                Expanded(
+                                  child: Text(
+                                    'No mixing with plastic or metal.',
+                                    style: TextStyle(
+                                      color: Color(0xFF2C6E49),
+                                      fontSize: 14,
+                                      fontFamily: 'Urbanist',
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            // Hàng 5
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Hộp màu xanh lá cây chứa emoji 🗑
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: ShapeDecoration(
+                                    color: Color(0x997C3F3E), // Màu nền hộp xanh lá
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  child: Center( // Căn emoji vào giữa hộp
+                                    child: Text(
+                                      '🗑',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Urbanist',
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10), // Khoảng cách giữa emoji và nội dung văn bản
+
+                                // Nội dung hướng dẫn
+                                Expanded(
+                                  child: Text(
+                                    'No tossing in trash if composting is available.',
+                                    style: TextStyle(
+                                      color: Color(0xFF2C6E49),
+                                      fontSize: 14,
+                                      fontFamily: 'Urbanist',
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                )
             )
 
           ],
