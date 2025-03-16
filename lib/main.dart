@@ -57,7 +57,7 @@ class _MainScreenState extends State<MainScreen> {
       HomeScreen(userId: widget.userId),
       GuideScreen(),
       CameraScreen(),
-      VirtualTreeScreen(),
+      VirtualTreeScreen(userId: widget.userId),
       ProfileScreen(userId: widget.userId),
     ];
   }

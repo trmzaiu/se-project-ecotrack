@@ -7,6 +7,8 @@ class Users {
   final String? region;
   final int? water;
   final int? tree;
+  final int? levelOfTree;
+  final double? progress;
 
   Users({
     required this.uid,
@@ -16,7 +18,9 @@ class Users {
     this.photoUrl,
     this.region,
     this.water,
-    this.tree
+    this.tree,
+    this.levelOfTree,
+    this.progress
   });
 
   // Convert User object to a Map for Firestore
@@ -30,7 +34,9 @@ class Users {
       'photoUrl': photoUrl,
       'region': region,
       'water': water,
-      'tree': tree
+      'tree': tree,
+      'levelOfTree': levelOfTree,
+      'progress': progress
     };
   }
 
@@ -46,6 +52,8 @@ class Users {
       region: map['region'],
       water: map['water'],
       tree: map['tree'],
+      levelOfTree: map['levelOfTree'],
+      progress: map['progress']
     );
   }
 }
