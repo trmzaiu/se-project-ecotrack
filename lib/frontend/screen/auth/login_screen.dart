@@ -34,17 +34,17 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = passwordController.text.trim();
 
     if (email.isEmpty) {
-      _showErrorDialog(context, "Empty Email", "Please enter your email address to continue. This field cannot be left blank.");
+      _showErrorDialog(context, "Please enter your email address!");
       return;
     }
 
     if (!_isValidEmail(email)) {
-      _showErrorDialog(context, "Invalid Email", "The email address you entered is not in the correct format. Please check and try again.");
+      _showErrorDialog(context, "The email address is invalid format!");
       return;
     }
 
     if (password.isEmpty) {
-      _showErrorDialog(context, "Empty Password", "Please enter your password to continue. This field cannot be left blank.");
+      _showErrorDialog(context, "Please enter your password!");
       return;
     }
 
@@ -55,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (result != null) {
-      _showErrorDialog(context, "Login Error", result);
+      _showErrorDialog(context, result);
     } else {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
@@ -75,11 +75,11 @@ class _LoginScreenState extends State<LoginScreen> {
       if (userCredential?.user != null) {
         _navigateToMainScreen(context, userCredential!.user!.uid);
       } else {
-        _showErrorDialog(context, "Google Sign-In Failed", "Please try again.");
+        _showErrorDialog(context, "Google Sign-In Failed");
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      _showErrorDialog(context, "Google Sign-In Error", "An error occurred: $e");
+      _showErrorDialog(context, "Google Sign-In Error: $e");
     }
   }
 
@@ -94,11 +94,11 @@ class _LoginScreenState extends State<LoginScreen> {
       if (userCredential.user != null) {
         _navigateToMainScreen(context, userCredential.user!.uid);
       } else {
-        _showErrorDialog(context, "Facebook Sign-In Failed", "Please try again.");
+        _showErrorDialog(context, "Facebook Sign-In Failed");
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      _showErrorDialog(context, "Facebook Sign-In Error", "An error occurred: $e");
+      _showErrorDialog(context, "Facebook Sign-In Error: $e");
     }
   }
 
@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       if (!_isValidEmail(email)) {
-        throw "The email address you entered is not in a valid format. Please check and try again.";
+        throw "The email is in invalid format!";
       }
 
       final success = await _authService.sendPasswordResetEmail(email);
@@ -122,13 +122,13 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoading = false);
 
       if (success) {
-        _showSuccessDialog(context, "Success", 'The email has been sent, please check your email.');
+        _showSuccessDialog(context, "Please check your email!");
       } else {
-        throw "Failed to send password reset email. Please try again.";
+        throw "Failed to send password reset email!";
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      _showErrorDialog(context, "Password Reset Error", e.toString());
+      _showErrorDialog(context, e.toString());
     }
   }
 
@@ -144,23 +144,23 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _showErrorDialog(BuildContext context, String title, String message) {
+  void _showErrorDialog(BuildContext context, String message) {
     showDialog(
       context: context,
       builder: (context) => CustomDialog(
-        title: title,
         message: message,
+        status: false,
         buttonTitle: "Try Again",
       ),
     );
   }
 
-  void _showSuccessDialog(BuildContext context, String title, String message) {
+  void _showSuccessDialog(BuildContext context, String message) {
     showDialog(
       context: context,
       builder: (context) => CustomDialog(
-        title: title,
         message: message,
+        status: true,
         buttonTitle: "Continue",
         onPressed: () {
           Navigator.pushReplacement(
@@ -174,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void handleForgotPassword(String email) {
     if (email.isEmpty) {
-      _showErrorDialog(context, "Empty Email", "Please enter your email.");
+      _showErrorDialog(context, "Please enter your email.");
       return;
     }
 

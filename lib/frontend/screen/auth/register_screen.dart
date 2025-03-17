@@ -34,8 +34,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_isValidEmail(email)) {
       _showErrorDialog(
           context,
-          "Invalid Email",
-          "The email address you entered is not valid. Please check for typos or missing characters and try again."
+          "The email address is invalid format!",
       );
       return;
     }
@@ -43,8 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (password.isEmpty || confirmPassword.isEmpty) {
       _showErrorDialog(
           context,
-          "Empty Password",
-          "Both password fields must be filled in to create an account."
+          "Please enter your password!",
       );
       return;
     }
@@ -52,8 +50,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (password != confirmPassword) {
       _showErrorDialog(
           context,
-          "Password Mismatch",
-          "The passwords you entered do not match. Please make sure both passwords are identical."
+          "Your password is mismatch!",
       );
       return;
     }
@@ -65,9 +62,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = false);
 
     if (result != null) {
-      _showErrorDialog(context, "Register Error", result);
+      _showErrorDialog(context, "Register Error: $result");
     } else {
-      _showSuccessDialog(context, "Resgister Success Full", "");
+      _showSuccessDialog(context, "Resgister Success Full");
     }
   }
 
@@ -83,23 +80,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void _showErrorDialog(BuildContext context, String title, String message) {
+  void _showErrorDialog(BuildContext context, String message) {
     showDialog(
       context: context,
       builder: (context) => CustomDialog(
-        title: title,
         message: message,
+        status: false,
         buttonTitle: "Try Again",
       ),
     );
   }
 
-  void _showSuccessDialog(BuildContext context, String title, String message) {
+  void _showSuccessDialog(BuildContext context, String message) {
     showDialog(
       context: context,
       builder: (context) => CustomDialog(
-        title: title,
         message: message,
+        status: true,
         buttonTitle: "Continue",
         onPressed: () {
           Navigator.of(context).pop();
