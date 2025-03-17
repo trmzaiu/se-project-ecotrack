@@ -37,7 +37,14 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'EcoTrack',
       theme: ThemeData(
-        primaryColor: AppColors.primary,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          primary: AppColors.primary,
+          secondary: AppColors.secondary,
+          tertiary: AppColors.tertiary,
+          surface: AppColors.surface,
+          scrim: AppColors.accent
+        ),
       ),
       home: SplashScreen(),
     );

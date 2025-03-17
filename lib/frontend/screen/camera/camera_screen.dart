@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
@@ -10,37 +11,115 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:wastesortapp/frontend/screen/camera/scan_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
+import '../../../theme/fonts.dart';
+
 class CameraScreen extends StatefulWidget {
   @override
   _CameraScreenState createState() => _CameraScreenState();
 }
 
-class _CameraScreenState extends State<CameraScreen> {
+class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver{
   String? _latestImagePath;
   bool _isPermissionGranted = false;
+  bool _hasRequested = false;
+  bool _isCheckingPermission = true;
+  bool _isInitializing = true;
 
   @override
   void initState() {
     super.initState();
-    _checkPermission();
-    _getLatestImage();
+    WidgetsBinding.instance.addObserver(this);
+    _initialize();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (_isPermissionGranted && mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _initialize() async {
+    try {
+      await _checkPermission();
+
+      if (_isPermissionGranted) {
+        await _getLatestImage();
+      }
+
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error during initialization: $e');
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
+    }
   }
 
   Future<void> _checkPermission() async {
-    final status = await Permission.camera.status;
-    if (status.isGranted) {
-      setState(() {
-        _isPermissionGranted = true;
-      });
+    try {
+      final status = await Permission.camera.status;
+      if (status.isGranted) {
+        if (mounted) {
+          setState(() {
+            _isPermissionGranted = true;
+            _isCheckingPermission = false;
+          });
+        }
+      } else if (!_hasRequested) {
+        await _requestPermission();
+        _hasRequested = true;
+      } else {
+        if (mounted) {
+          setState(() {
+            _isCheckingPermission = false;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error checking permission: $e');
+      if (mounted) {
+        setState(() {
+          _isCheckingPermission = false;
+        });
+      }
     }
   }
 
   Future<void> _requestPermission() async {
-    final status = await Permission.camera.request();
-    if (status.isGranted) {
-      setState(() {
-        _isPermissionGranted = true;
-      });
+    try {
+      final status = await Permission.camera.request();
+      if (status.isGranted && mounted) {
+        setState(() {
+          _isPermissionGranted = true;
+          _isCheckingPermission = false;
+        });
+      } else if (mounted) {
+        setState(() {
+          _isCheckingPermission = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error requesting permission: $e');
+      if (mounted) {
+        setState(() {
+          _isCheckingPermission = false;
+        });
+      }
     }
   }
 
@@ -127,14 +206,45 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    if (_isInitializing) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(color: AppColors.primary),
+                SizedBox(height: 20),
+                Text(
+                  "Initializing camera...",
+                  style: GoogleFonts.urbanist(
+                      fontSize: 16,
+                      fontWeight: AppFontWeight.regular,
+                      color: AppColors.surface
+                  ),
+                )
+              ],
+            )
+        ),
+      );
+    }
+
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: _isPermissionGranted
         ? CameraAwesomeBuilder.awesome(
+          progressIndicator: Container(
+            color: Colors.black,
+            child: Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+          ),
+          previewAlignment: Alignment.center,
           enablePhysicalButton: true,
           // previewFit: CameraPreviewFit.fitWidth,
           sensorConfig: SensorConfig.single(
             aspectRatio: CameraAspectRatios.ratio_16_9,
-            flashMode: FlashMode.auto,
           ),
           saveConfig: SaveConfig.photoAndVideo(
             initialCaptureMode: CaptureMode.photo,
@@ -185,11 +295,11 @@ class _CameraScreenState extends State<CameraScreen> {
               backgroundColor: Color(0x4D333333),
               iconSize: 24,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.all(11),
+              padding: EdgeInsets.all(11),
               buttonBuilder: (child, onTap) => ClipOval(
                 child: Material(
                   color: Colors.transparent,
-                  shape: const CircleBorder(),
+                  shape: CircleBorder(),
                   child: InkWell(
                     splashColor: Colors.transparent,
                     highlightColor: Colors.transparent,
@@ -201,7 +311,7 @@ class _CameraScreenState extends State<CameraScreen> {
             ),
           ),
           topActionsBuilder: (state) => Padding(
-            padding: const EdgeInsets.only(top: 20, right: 20),
+            padding: EdgeInsets.only(top: 20, right: 20),
             child: Align(
               alignment: Alignment.topRight,
               child: GestureDetector(
@@ -228,13 +338,13 @@ class _CameraScreenState extends State<CameraScreen> {
           ),
           middleContentBuilder: (state) => Column(
             children: [
-              const Spacer(),
+              Spacer(),
               Builder(builder: (context) {
                 return Container(
                   color: AwesomeThemeProvider.of(context)
                       .theme
                       .bottomActionsBackgroundColor,
-                  child: const Align(
+                  child: Align(
                     alignment: Alignment.bottomCenter,
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 10),
@@ -245,7 +355,7 @@ class _CameraScreenState extends State<CameraScreen> {
             ],
           ),
           bottomActionsBuilder: (state) => Padding(
-            padding: const EdgeInsets.only(bottom: 50),
+            padding: EdgeInsets.only(bottom: 50),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -274,16 +384,50 @@ class _CameraScreenState extends State<CameraScreen> {
           ),
         )
       : Container(
-        color: AppColors.background,
+        color: Colors.black,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("Camera permission is required to use this feature."),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _requestPermission,
-                child: Text("Grant Permission"),
+              Text(
+                "Camera Access",
+                style: GoogleFonts.urbanist(
+                    fontSize: 28,
+                    fontWeight: AppFontWeight.bold,
+                    color: AppColors.surface
+                ),
+              ),
+              SizedBox(height: 5),
+              Text(
+                "Please grant camera access \nto capture photos.",
+                style: GoogleFonts.urbanist(
+                    fontSize: 18,
+                    fontWeight: AppFontWeight.regular,
+                    color: AppColors.tertiary,
+                    height: 1.2
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 30),
+              GestureDetector(
+                onTap: _requestPermission,
+                child: Container(
+                  width: 200,
+                  height: 50,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    "Grant Permission",
+                    style: GoogleFonts.urbanist(
+                        fontSize: 16,
+                        fontWeight: AppFontWeight.regular,
+                        color: AppColors.surface
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
