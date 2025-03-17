@@ -17,13 +17,30 @@ class CameraScreen extends StatefulWidget {
 
 class _CameraScreenState extends State<CameraScreen> {
   String? _latestImagePath;
+  bool _isPermissionGranted = false;
 
-  Future<void> _requestPermissions() async {
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.camera].request();
+  @override
+  void initState() {
+    super.initState();
+    _checkPermission();
+    _getLatestImage();
+  }
 
-    if (statuses[Permission.camera] != PermissionStatus.granted) {
-      debugPrint('❌ Permissions not granted');
+  Future<void> _checkPermission() async {
+    final status = await Permission.camera.status;
+    if (status.isGranted) {
+      setState(() {
+        _isPermissionGranted = true;
+      });
+    }
+  }
+
+  Future<void> _requestPermission() async {
+    final status = await Permission.camera.request();
+    if (status.isGranted) {
+      setState(() {
+        _isPermissionGranted = true;
+      });
     }
   }
 
@@ -59,29 +76,6 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
-  Future<AnalysisImage> processImage(AnalysisImage analysisImage) async {
-    return analysisImage;
-  }
-
-  Route _createSlideRoute(Widget page) {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(1.0, 0.0);
-        const end = Offset.zero;
-        const curve = Curves.easeOut;
-
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        var offsetAnimation = animation.drive(tween);
-
-        return SlideTransition(
-          position: offsetAnimation,
-          child: child,
-        );
-      },
-    );
-  }
-
   Future<void> _getLatestImage() async {
     final permitted = await PhotoManager.requestPermissionExtend();
     if (!permitted.isAuth) return;
@@ -108,187 +102,193 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _handlePermissions();
+  Future<AnalysisImage> processImage(AnalysisImage analysisImage) async {
+    return analysisImage;
   }
 
-  Future<void> _handlePermissions() async {
-    await _requestPermissions();
-    if (await _checkPermissions()) {
-      await _getLatestImage();
-      setState(() {});
-    }
-  }
+  Route _createSlideRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(1.0, 0.0);
+        const end = Offset.zero;
+        const curve = Curves.easeOut;
 
-  Future<bool> _checkPermissions() async {
-    return await Permission.camera.isGranted;
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var offsetAnimation = animation.drive(tween);
+
+        return SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: _checkPermissions(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: AppColors.primary,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-            )
-          );
-        }
+    return Scaffold(
+      body: _isPermissionGranted
+        ? CameraAwesomeBuilder.awesome(
+          enablePhysicalButton: true,
+          // previewFit: CameraPreviewFit.fitWidth,
+          sensorConfig: SensorConfig.single(
+            aspectRatio: CameraAspectRatios.ratio_16_9,
+            flashMode: FlashMode.auto,
+          ),
+          saveConfig: SaveConfig.photoAndVideo(
+            initialCaptureMode: CaptureMode.photo,
+            photoPathBuilder: (sensors) async {
+              final Directory extDir = await getTemporaryDirectory();
+              final String filePath =
+                  '${extDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-        if (snapshot.data == true) {
-          return CameraAwesomeBuilder.awesome(
-            enablePhysicalButton: true,
-            // previewFit: CameraPreviewFit.fitWidth,
-            sensorConfig: SensorConfig.single(
-              aspectRatio: CameraAspectRatios.ratio_16_9,
-              flashMode: FlashMode.auto,
-            ),
-            saveConfig: SaveConfig.photoAndVideo(
-              initialCaptureMode: CaptureMode.photo,
-              photoPathBuilder: (sensors) async {
-                final Directory extDir = await getTemporaryDirectory();
-                final String filePath =
-                    '${extDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+              await Directory(extDir.path).create(recursive: true);
 
-                await Directory(extDir.path).create(recursive: true);
+              debugPrint("📸 Image will be saved to: $filePath");
 
-                debugPrint("📸 Image will be saved to: $filePath");
-
-                return SingleCaptureRequest(filePath, sensors.first);
-              },
-            ),
-            onMediaCaptureEvent: (event) {
-              if (event.status == MediaCaptureStatus.success && event.isPicture) {
-                event.captureRequest.when(
-                  single: (single) {
-                    if (!mounted) return;
-
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      Navigator.of(context).push(
-                        _createSlideRoute(
-                          ScanScreen(imagePath: single.file?.path ?? ""),
-                        ),
-                      );
-                    });
-                  },
-                );
-              }
+              return SingleCaptureRequest(filePath, sensors.first);
             },
-            onImageForAnalysis: (analysisImage) async {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                processImage(analysisImage);
-              });
-            },
-            onMediaTap: (mediaCapture) {
-              mediaCapture.captureRequest.when(
+          ),
+          onMediaCaptureEvent: (event) {
+            if (event.status == MediaCaptureStatus.success && event.isPicture) {
+              event.captureRequest.when(
                 single: (single) {
-                  debugPrint('single: ${single.file?.path}');
+                  if (!mounted) return;
+
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Navigator.of(context).push(
+                      _createSlideRoute(
+                        ScanScreen(imagePath: single.file?.path ?? ""),
+                      ),
+                    );
+                  });
                 },
               );
-            },
-            theme: AwesomeTheme(
-              bottomActionsBackgroundColor: Colors.transparent,
-              buttonTheme: AwesomeButtonTheme(
-                backgroundColor: Color(0x4D333333),
-                iconSize: 24,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.all(11),
-                buttonBuilder: (child, onTap) => ClipOval(
-                  child: Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      onTap: onTap,
-                      child: child,
+            }
+          },
+          onImageForAnalysis: (analysisImage) async {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              processImage(analysisImage);
+            });
+          },
+          onMediaTap: (mediaCapture) {
+            mediaCapture.captureRequest.when(
+              single: (single) {
+                debugPrint('single: ${single.file?.path}');
+              },
+            );
+          },
+          theme: AwesomeTheme(
+            bottomActionsBackgroundColor: Colors.transparent,
+            buttonTheme: AwesomeButtonTheme(
+              backgroundColor: Color(0x4D333333),
+              iconSize: 24,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.all(11),
+              buttonBuilder: (child, onTap) => ClipOval(
+                child: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    onTap: onTap,
+                    child: child,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          topActionsBuilder: (state) => Padding(
+            padding: const EdgeInsets.only(top: 20, right: 20),
+            child: Align(
+              alignment: Alignment.topRight,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  width: 35,
+                  height: 35,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0x4D333333),
+                  ),
+                  child: Center(
+                    child: SvgPicture.asset(
+                      'lib/assets/icons/ic_close.svg',
+                      width: 40,
+                      height: 40,
                     ),
                   ),
                 ),
               ),
             ),
-            topActionsBuilder: (state) => Padding(
-              padding: const EdgeInsets.only(top: 20, right: 20),
-              child: Align(
-                alignment: Alignment.topRight,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    width: 35,
-                    height: 35,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0x4D333333),
-                    ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'lib/assets/icons/ic_close.svg',
-                        width: 40,
-                        height: 40,
-                      ),
+          ),
+          middleContentBuilder: (state) => Column(
+            children: [
+              const Spacer(),
+              Builder(builder: (context) {
+                return Container(
+                  color: AwesomeThemeProvider.of(context)
+                      .theme
+                      .bottomActionsBackgroundColor,
+                  child: const Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
                     ),
                   ),
-                ),
-              ),
-            ),
-            middleContentBuilder: (state) => Column(
+                );
+              }),
+            ],
+          ),
+          bottomActionsBuilder: (state) => Padding(
+            padding: const EdgeInsets.only(bottom: 50),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Spacer(),
-                Builder(builder: (context) {
-                  return Container(
-                    color: AwesomeThemeProvider.of(context)
-                        .theme
-                        .bottomActionsBackgroundColor,
-                    child: const Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10),
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: Container(
+                    width: 45,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(9),
+                      image: DecorationImage(
+                        image: _latestImagePath != null
+                            ? FileImage(File(_latestImagePath!))
+                            : AssetImage("lib/assets/images/default.png") as ImageProvider,
+                        fit: BoxFit.cover,
                       ),
                     ),
-                  );
-                }),
+                  ),
+                ),
+                SizedBox(width: 70),
+                AwesomeCaptureButton(state: state),
+                SizedBox(width: 70),
+                AwesomeFlashButton(state: state),
               ],
             ),
-            bottomActionsBuilder: (state) => Padding(
-              padding: const EdgeInsets.only(bottom: 50),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: Container(
-                      width: 45,
-                      height: 45,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(9),
-                        image: DecorationImage(
-                          image: _latestImagePath != null
-                              ? FileImage(File(_latestImagePath!))
-                              : AssetImage("lib/assets/images/default.png") as ImageProvider,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 70),
-                  AwesomeCaptureButton(state: state),
-                  SizedBox(width: 70),
-                  AwesomeFlashButton(state: state),
-                ],
+          ),
+        )
+      : Container(
+        color: AppColors.background,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Camera permission is required to use this feature."),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _requestPermission,
+                child: Text("Grant Permission"),
               ),
-            ),
-          );
-        } else {
-          return Center(child: Text(""));
-        }
-      }
+            ],
+          ),
+        ),
+      )
     );
   }
 }
