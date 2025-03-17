@@ -75,7 +75,19 @@ class ForgotPasswordSheet extends StatelessWidget {
             SizedBox(
               width: 330,
               child: MyButton(text: 'Continue', onTap: () => onResetPassword(emailController.text.trim())),
-            )
+            ),
+            SizedBox(height: 15), // Add space between button and "Resend" link
+            GestureDetector(
+              onTap: () => onResetPassword(emailController.text.trim()), // Handle resend email functionality
+              child: Text(
+                "Resend Verification Link",
+                style: GoogleFonts.urbanist(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.secondary,
+                ),
+              ),
+            ),
           ],
         ),
       ),
