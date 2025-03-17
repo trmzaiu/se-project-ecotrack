@@ -100,6 +100,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: _pages[_selectedIndex],
       bottomNavigationBar: Stack(
         clipBehavior: Clip.none,
@@ -129,7 +130,7 @@ class _MainScreenState extends State<MainScreen> {
                   _buildNavItem('lib/assets/icons/ic_home.svg', 'Home', 0),
                   _buildNavItem('lib/assets/icons/ic_guide.svg', 'Guide', 1),
                   SizedBox(width: 50),
-                  _buildNavItem('lib/assets/icons/ic_virtual_tree.svg', 'Virtual Tree', 3),
+                  _buildNavItem('lib/assets/icons/ic_virtual_tree.svg', 'Tree', 3),
                   _buildNavItem('lib/assets/icons/ic_profile.svg', 'Profile', 4),
                 ],
               ),
@@ -137,7 +138,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           Positioned(
             bottom: 10,
-            left: MediaQuery.of(context).size.width / 2 - 52,
+            left: MediaQuery.of(context).size.width / 2 - 85/2,
             child: Stack(
               alignment: Alignment.center,
               children: [
