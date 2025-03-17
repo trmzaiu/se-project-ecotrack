@@ -1,5 +1,5 @@
 class Users {
-  final String uid;
+  final String userId;
   final String name;
   final String email;
   final DateTime? dob;
@@ -11,7 +11,7 @@ class Users {
   final double? progress;
 
   Users({
-    required this.uid,
+    required this.userId,
     required this.name,
     required this.email,
     this.dob,
@@ -27,7 +27,7 @@ class Users {
   // Use to store date to Firestore
   Map<String, dynamic> toMap() {
     return {
-      'uid': uid,
+      'userId': userId,
       'name': name,
       'email': email,
       'dob': dob?.toIso8601String(),
@@ -44,7 +44,7 @@ class Users {
   // Retrieve data from Firestore
   factory Users.fromMap(Map<String, dynamic> map) {
     return Users(
-      uid: map['uid'] ?? '',
+      userId: map['userId'] ?? '',
       name: map['name'] ?? '',
       email: map['email'] ?? '',
       dob: map['dob'] != null ? DateTime.parse(map['dob']) : null,

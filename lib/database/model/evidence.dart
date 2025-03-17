@@ -1,24 +1,32 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Evidence {
-  final String uid;
-  final String evid;
-  final String cateid;
-  final String url;
+  final String userId;
+  final String evidenceId;
+  final String category;
+  final List<String> url;
+  final String? description;
+  final DateTime? date;
 
   Evidence({
-    required this.uid,
-    required this.evid,
-    required this.cateid,
-    required this.url
+    required this.userId,
+    required this.evidenceId,
+    required this.category,
+    required this.url,
+    this.description,
+    this.date,
   });
 
   // Convert User object to a Map for Firestore
   // Use to store date to Firestore
   Map<String, dynamic> toMap() {
     return {
-      'uid': uid,
-      'evid': evid,
-      'cateid': cateid,
-      'url': url
+      'userId': userId,
+      'evidenceId': evidenceId,
+      'category': category,
+      'url': url,
+      'description': description,
+      'date': date != null ? Timestamp.fromDate(date!) : null,
     };
   }
 }
