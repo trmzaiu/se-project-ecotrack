@@ -721,8 +721,8 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                                     : BorderRadius.circular(15),
                               ),
                               image: DecorationImage(
-                                  image: isGoodExpanded ? AssetImage('lib/assets/images/best_practices2.png') : AssetImage('lib/assets/images/best_practices.png'),
-                                  fit: BoxFit.cover
+                                image: isGoodExpanded ? AssetImage('lib/assets/images/best_practices2.png') : AssetImage('lib/assets/images/best_practices.png'),
+                                fit: BoxFit.cover
                               ),
                             ),
                             child: Padding(
