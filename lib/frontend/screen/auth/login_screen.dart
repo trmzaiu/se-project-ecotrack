@@ -132,7 +132,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-
   bool _isValidEmail(String email) {
     return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
   }

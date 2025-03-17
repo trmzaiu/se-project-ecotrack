@@ -3,6 +3,7 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wastesortapp/database/model/user.dart';
+import 'package:email_otp/email_otp.dart';
 
 class AuthenticationService {
   final FirebaseAuth _firebaseAuth;
@@ -128,13 +129,27 @@ class AuthenticationService {
 
   Future<bool> sendPasswordResetEmail(String email) async {
     try {
-      // Check if the email exists in Firebase
-      await _firebaseAuth.sendPasswordResetEmail(email: email);
-      return true; // Successfully sent the email
+      EmailOTP.config(
+        appName: 'EcoTrack',
+        otpType: OTPType.numeric,
+        expiry : 30000,
+        emailTheme: EmailTheme.v6,
+        appEmail: 'wastesortapp@gmail.com',
+        otpLength: 4,
+      );
+
+      bool result = await EmailOTP.sendOTP(email: email);
+      if (result) {
+        print("OTP sent successfully!");
+        return true;
+      } else {
+        print("Failed to send OTP.");
+        return false;
+      }
     } catch (e) {
       // Handle errors
       print("Error sending password reset email: $e");
-      return false; // Failed to send the email
+      return false;
     }
   }
 
