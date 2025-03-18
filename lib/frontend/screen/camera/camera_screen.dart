@@ -327,7 +327,6 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Text in the center
                     FadingText(),
                     // Top-left corner
                     Positioned(
@@ -337,6 +336,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                         width: 30,
                         height: 30,
                         decoration: BoxDecoration(
+                          color: Colors.transparent,
                           border: Border(
                             top: BorderSide(color: AppColors.surface, width: 3),
                             left: BorderSide(color: AppColors.surface, width: 3),
@@ -344,9 +344,18 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                           borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(10),
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 30,
+                              spreadRadius: 4,
+                              offset: Offset(-3, -3),
+                            ),
+                          ],
                         ),
                       ),
                     ),
+
                     // Top-right corner
                     Positioned(
                       top: 0,
@@ -362,6 +371,14 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                           borderRadius: BorderRadius.only(
                             topRight: Radius.circular(10),
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 30,
+                              spreadRadius: 4,
+                              offset: Offset(3, -3),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -380,6 +397,14 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                           borderRadius: BorderRadius.only(
                             bottomLeft: Radius.circular(10),
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 30,
+                              spreadRadius: 4,
+                              offset: Offset(3, 3),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -398,6 +423,14 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                           borderRadius: BorderRadius.only(
                             bottomRight: Radius.circular(10),
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 30,
+                              spreadRadius: 4,
+                              offset: Offset(-3, 3),
+                            ),
+                          ],
                         ),
                       ),
                     ),
