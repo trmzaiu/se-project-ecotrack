@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import 'frontend/screen/camera/camera_screen.dart';
@@ -63,42 +64,26 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-
-  late final List<Widget> _pages;
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
-    _pages = [
-      HomeScreen(),
-      GuideScreen(),
-      CameraScreen(),
-      VirtualTreeScreen(userId: widget.userId),
-      ProfileScreen(userId: widget.userId),
-    ];
   }
 
   void _onItemTapped(int index) {
     if (index == 2) {
-      Navigator.push(
-        context,
-        PageRouteBuilder(
-          transitionDuration: Duration(milliseconds: 300),
-          pageBuilder: (context, animation, secondaryAnimation) => CameraScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            var begin = Offset(0.0, 1.0);
-            var end = Offset.zero;
-            var curve = Curves.easeOut;
-
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+      Navigator.of(context).push(
+        moveUpRoute(
+          CameraScreen(),
         ),
       );
     } else {
+      _pageController.animateToPage(
+        index,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
       setState(() {
         _selectedIndex = index;
       });
@@ -109,7 +94,17 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: _pages[_selectedIndex],
+      body: PageView(
+        controller: _pageController,
+        physics: BouncingScrollPhysics(),
+        children: [
+          HomeScreen(),
+          GuideScreen(),
+          Container(),
+          VirtualTreeScreen(userId: widget.userId),
+          ProfileScreen(userId: widget.userId),
+        ],
+      ),
       bottomNavigationBar: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -131,7 +126,7 @@ class _MainScreenState extends State<MainScreen> {
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5),
+              padding: EdgeInsets.symmetric(horizontal: 5.0, vertical: 5),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [

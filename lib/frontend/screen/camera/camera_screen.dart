@@ -13,6 +13,7 @@ import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import '../../../theme/fonts.dart';
+import '../../utils/route_transition.dart';
 import '../../widget/fading_text.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -176,25 +177,6 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     }
   }
 
-  Route _createSlideRoute(Widget page) {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(1.0, 0.0);
-        const end = Offset.zero;
-        const curve = Curves.easeOut;
-
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        var offsetAnimation = animation.drive(tween);
-
-        return SlideTransition(
-          position: offsetAnimation,
-          child: child,
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     double phoneWidth = getPhoneWidth(context);
@@ -262,7 +244,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                   if (!mounted) return;
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     Navigator.of(context).push(
-                      _createSlideRoute(
+                      moveLeftRoute(
                         ScanScreen(imagePath: single.file?.path ?? ""),
                       ),
                     );

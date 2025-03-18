@@ -12,9 +12,12 @@ class GuideScreen extends StatefulWidget {
   _GuideScreenState createState() => _GuideScreenState();
 }
 
-class _GuideScreenState extends State<GuideScreen> {
+class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClientMixin {
   int _currentIndex = 0;
   late PageController _pageController;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {

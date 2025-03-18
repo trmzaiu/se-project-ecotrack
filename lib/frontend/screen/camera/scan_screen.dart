@@ -8,6 +8,7 @@ import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import '../../../ScanAI/processImage.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
+import '../../utils/route_transition.dart';
 import '../../widget/scan_animation.dart';
 import '../evidence/upload_evidence_screen.dart';
 
@@ -237,10 +238,9 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                     top: 19,
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => UploadScreen(imagePath: widget.imagePath),
+                        Navigator.of(context).push(
+                          moveLeftRoute(
+                            UploadScreen(imagePath: widget.imagePath),
                           ),
                         );
                       },
@@ -299,10 +299,9 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                     alignment: Alignment.center,
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => UploadScreen(imagePath: widget.imagePath),
+                        Navigator.of(context).push(
+                          moveLeftRoute(
+                            UploadScreen(imagePath: widget.imagePath),
                           ),
                         );
                       },
