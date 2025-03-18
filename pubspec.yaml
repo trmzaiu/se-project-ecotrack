@@ -36,6 +36,7 @@ dependencies:
   google_sign_in: ^6.3.0
   photo_manager: ^3.6.4
   flutter_facebook_auth: ^7.1.1
+  email_otp: ^3.0.2
 
 dev_dependencies:
   flutter_test:

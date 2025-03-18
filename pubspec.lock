@@ -193,6 +193,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+  email_otp:
+    dependency: "direct main"
+    description:
+      name: email_otp
+      sha256: ecc64244b782566f66a06d4b4837533d5edb7cc6ce5888b7fc5959a747247b9f
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.2"
   facebook_auth_desktop:
     dependency: transitive
     description:
