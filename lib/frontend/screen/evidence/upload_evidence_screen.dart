@@ -15,6 +15,7 @@ import '../../../database/CloudinaryConfig.dart';
 import '../../../database/model/evidence.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
+import '../../service/evidence_service.dart';
 import '../../utils/phone_size.dart';
 import '../camera/camera_screen.dart';
 
@@ -72,91 +73,17 @@ class _UploadScreenState extends State<UploadScreen> {
       _scrollToEnd();
     }
   }
-  Future<void> _submitData() async {
-    if (selectedImages.isEmpty) {
-      _showSnackbar("No image selected.");
-      return;
-    }
+  void _submit() {
+    setState(() => isUploading = true);
 
-    if (selectedCategory == null) {
-      _showSnackbar("Please select a category.");
-      return;
-    }
-
-    setState(() {
-      isUploading = true;
+    EvidenceService(context).submitData(
+      selectedImages: selectedImages,
+      selectedCategory: selectedCategory,
+      descriptionController: descriptionController,
+    ).then((_) {
+      setState(() => isUploading = false);
     });
-
-    try {
-      List<String> uploadedImageUrls = [];
-
-      for (File image in selectedImages) {
-        String? imageUrl = await CloudinaryConfig().uploadImage(image);
-        if (imageUrl != null) {
-          uploadedImageUrls.add(imageUrl);
-        }
-      }
-
-      if (uploadedImageUrls.isEmpty) {
-        _showSnackbar("Image upload failed.");
-        return;
-      }
-
-      String evidenceId = FirebaseFirestore.instance
-          .collection('evidences')
-          .doc()
-          .id;
-
-      Evidence evidence = Evidence(
-        userId: FirebaseAuth.instance.currentUser!.uid,
-        evidenceId: evidenceId,
-        category: selectedCategory!,
-        imagesUrl: uploadedImageUrls,
-        description: descriptionController.text.trim(),
-        date: DateTime.now(),
-        status: "Pending",
-      );
-
-      await FirebaseFirestore.instance
-          .collection('evidences')
-          .doc(evidenceId)
-          .set(evidence.toMap());
-
-      _showSnackbar("Upload successful!", success: true);
-
-      Future.delayed(Duration(milliseconds: 500), () {
-        if (mounted) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => EvidenceScreen()),
-                (route) => false,
-          );
-        }
-      });
-    } catch (e) {
-      _showSnackbar("Error uploading: $e");
-    } finally {
-      setState(() {
-        isUploading = false;
-      });
-    }
   }
-
-  void _showSnackbar(String message, {bool success = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Center(
-            child: Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-          backgroundColor: success ? Colors.green : Colors.red,
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
   void _showImageSelection() {
     showModalBottomSheet(
       backgroundColor: AppColors.background,
@@ -464,7 +391,7 @@ class _UploadScreenState extends State<UploadScreen> {
                       SizedBox(height: 25),
                       Center(
                         child: GestureDetector(
-                          onTap: isUploading ? null : _submitData,
+                          onTap: isUploading ? null : _submit,
                           child: Container(
                             width: phoneWidth - 112,
                             height: 50,
