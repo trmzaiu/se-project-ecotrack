@@ -12,6 +12,7 @@ import 'package:wastesortapp/frontend/screen/camera/scan_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import '../../../theme/fonts.dart';
+import '../../widget/fading_text.dart';
 
 class CameraScreen extends StatefulWidget {
   @override
@@ -22,7 +23,6 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   String? _latestImagePath;
   bool _isPermissionGranted = false;
   bool _hasRequested = false;
-  bool _isCheckingPermission = true;
   bool _isInitializing = true;
 
   @override
@@ -77,7 +77,6 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
         if (mounted) {
           setState(() {
             _isPermissionGranted = true;
-            _isCheckingPermission = false;
           });
         }
       } else if (!_hasRequested) {
@@ -86,7 +85,6 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       } else {
         if (mounted) {
           setState(() {
-            _isCheckingPermission = false;
           });
         }
       }
@@ -94,7 +92,6 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       debugPrint('Error checking permission: $e');
       if (mounted) {
         setState(() {
-          _isCheckingPermission = false;
         });
       }
     }
@@ -106,18 +103,15 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       if (status.isGranted && mounted) {
         setState(() {
           _isPermissionGranted = true;
-          _isCheckingPermission = false;
         });
       } else if (mounted) {
         setState(() {
-          _isCheckingPermission = false;
         });
       }
     } catch (e) {
       debugPrint('Error requesting permission: $e');
       if (mounted) {
         setState(() {
-          _isCheckingPermission = false;
         });
       }
     }
@@ -181,10 +175,6 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     }
   }
 
-  Future<AnalysisImage> processImage(AnalysisImage analysisImage) async {
-    return analysisImage;
-  }
-
   Route _createSlideRoute(Widget page) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => page,
@@ -240,9 +230,8 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
               child: CircularProgressIndicator(color: AppColors.primary),
             ),
           ),
-          previewAlignment: Alignment.center,
-          enablePhysicalButton: true,
-          // previewFit: CameraPreviewFit.fitWidth,
+          previewFit: CameraPreviewFit.fitWidth,
+          previewAlignment: Alignment(0,0.6),
           sensorConfig: SensorConfig.single(
             aspectRatio: CameraAspectRatios.ratio_16_9,
           ),
@@ -265,7 +254,6 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
               event.captureRequest.when(
                 single: (single) {
                   if (!mounted) return;
-
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     Navigator.of(context).push(
                       _createSlideRoute(
@@ -277,24 +265,11 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
               );
             }
           },
-          onImageForAnalysis: (analysisImage) async {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              processImage(analysisImage);
-            });
-          },
-          onMediaTap: (mediaCapture) {
-            mediaCapture.captureRequest.when(
-              single: (single) {
-                debugPrint('single: ${single.file?.path}');
-              },
-            );
-          },
           theme: AwesomeTheme(
             bottomActionsBackgroundColor: Colors.transparent,
             buttonTheme: AwesomeButtonTheme(
-              backgroundColor: Color(0x4D333333),
+              backgroundColor: Color(0x80494848),
               iconSize: 24,
-              foregroundColor: Colors.white,
               padding: EdgeInsets.all(11),
               buttonBuilder: (child, onTap) => ClipOval(
                 child: Material(
@@ -311,7 +286,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
             ),
           ),
           topActionsBuilder: (state) => Padding(
-            padding: EdgeInsets.only(top: 20, right: 20),
+            padding: EdgeInsets.only(top: 10, right: 20),
             child: Align(
               alignment: Alignment.topRight,
               child: GestureDetector(
@@ -321,10 +296,10 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                 child: Container(
                   width: 35,
                   height: 35,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0x4D333333),
-                  ),
+                  // decoration: BoxDecoration(
+                  //   shape: BoxShape.circle,
+                  //   color: Color(0x80494848),
+                  // ),
                   child: Center(
                     child: SvgPicture.asset(
                       'lib/assets/icons/ic_close.svg',
@@ -336,28 +311,95 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
               ),
             ),
           ),
-          middleContentBuilder: (state) => Column(
-            children: [
-              Spacer(),
-              Builder(builder: (context) {
-                return Container(
-                  color: AwesomeThemeProvider.of(context)
-                      .theme
-                      .bottomActionsBackgroundColor,
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
+          middleContentBuilder: (state) => Center(
+            child: SizedBox(
+              width: 300,
+              height: 400,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Text in the center
+                  FadingText(),
+                  // Top-left corner
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(color: AppColors.surface, width: 3),
+                          left: BorderSide(color: AppColors.surface, width: 3),
+                        ),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                        ),
+                      ),
                     ),
                   ),
-                );
-              }),
-            ],
+                  // Top-right corner
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(color: AppColors.surface, width: 3),
+                          right: BorderSide(color: AppColors.surface, width: 3),
+                        ),
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Bottom-left corner
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: AppColors.surface, width: 3),
+                          left: BorderSide(color: AppColors.surface, width: 3),
+                        ),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Bottom-right corner
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: AppColors.surface, width: 3),
+                          right: BorderSide(color: AppColors.surface, width: 3),
+                        ),
+                        borderRadius: BorderRadius.only(
+                          bottomRight: Radius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
           bottomActionsBuilder: (state) => Padding(
-            padding: EdgeInsets.only(bottom: 50),
+            padding: EdgeInsets.only(bottom: 40),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 GestureDetector(
                   onTap: _pickImage,
@@ -375,9 +417,9 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                     ),
                   ),
                 ),
-                SizedBox(width: 70),
+                // SizedBox(width: 70),
                 AwesomeCaptureButton(state: state),
-                SizedBox(width: 70),
+                // SizedBox(width: 70),
                 AwesomeFlashButton(state: state),
               ],
             ),

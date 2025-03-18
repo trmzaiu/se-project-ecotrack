@@ -6,7 +6,6 @@ import 'package:wastesortapp/theme/colors.dart';
 import '../../../theme/fonts.dart';
 import '../../utils/phone_size.dart';
 import '../../widget/bar_noti_title.dart';
-import '../../widget/bar_title.dart';
 import '../../widget/guideline_item.dart';
 import '../../widget/waste_item.dart';
 
