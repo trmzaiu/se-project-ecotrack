@@ -1,23 +1,80 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/theme/colors.dart';
-
-import '../../widget/my_button.dart';
+import '../../service/auth_service.dart';
+import '../../widget/custom_dialog.dart';
 import '../../widget/my_textfield.dart';
+import '../../widget/section_tile.dart';
 
-class ForgotPasswordSheet extends StatelessWidget {
-  final Function(String) onResetPassword;
-  final TextEditingController emailController;
+class ForgotPasswordSheet extends StatefulWidget {
+  final VoidCallback onNext;
 
-  ForgotPasswordSheet({
-    Key? key,
-    required this.onResetPassword,
-    required this.emailController,
-  }) : super(key: key);
+  const ForgotPasswordSheet({required this.onNext, Key? key}) : super(key: key);
+
+  @override
+  _ForgotPasswordSheetState createState() => _ForgotPasswordSheetState();
+}
+
+class _ForgotPasswordSheetState extends State<ForgotPasswordSheet> {
+  final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
+  final TextEditingController emailController = TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    super.dispose();
+  }
+
+  bool _isLoading = false;
+
+  Future<void> sendEmail(BuildContext context) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final email = emailController.text.trim();
+      if (email.isEmpty) throw "Please enter your email address.";
+      print('Email: $email');
+      // if (!_isValidEmail(email)) throw "The email is in invalid format!";
+
+      final success = await _authService.sendPasswordResetEmail(email);
+
+      setState(() => _isLoading = false);
+
+      if (success) {
+        // _showSuccessDialog(context, "Please check your email!");
+      } else {
+        throw "Failed to send password reset email!";
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showErrorDialog(context, e.toString());
+    }
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        message: message,
+        status: false,
+        buttonTitle: "Try Again",
+      ),
+    );
+  }
+
+  void _showSuccessDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        message: message,
+        status: true,
+        buttonTitle: "Ok",
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
       minChildSize: 0.3,
@@ -41,52 +98,29 @@ class ForgotPasswordSheet extends StatelessWidget {
                 ),
               ),
             ),
+
             SizedBox(height: 70),
-            Text(
-              "Mail Address Here",
-              style: GoogleFonts.urbanist(
-                fontSize: 34,
-                fontWeight: FontWeight.bold,
-                color: AppColors.secondary
-              ),
-            ),
-            SizedBox(height: 8),
-            SizedBox(
-              width: 292,
-              child: Text(
-                "Please enter your email address to receive a verification link.",
-                style: GoogleFonts.urbanist(
-                  fontSize: 14,
-                  color: AppColors.tertiary
+
+            SectionTitle(
+              title: "Mail Address Here",
+              description: "Please enter your email address to \nreceive a verification code.",
+              text: _isLoading ? 'Loading...' : 'Continue',
+              onSubmit: _isLoading
+                  ? () {}
+                  : () async {
+                await sendEmail(context);
+                widget.onNext();
+              },
+              children: [
+                SizedBox(
+                  width: 330,
+                  child: MyTextField(
+                    controller: emailController,
+                    hintText: "Email",
+                    obscureText: false,
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            SizedBox(height: 35),
-            SizedBox(
-              width: 330,
-              child: MyTextField(
-                controller: emailController,
-                hintText: "Email",
-                obscureText: false,
-              ),
-            ),
-            SizedBox(height: 30),
-            SizedBox(
-              width: 330,
-              child: MyButton(text: 'Continue', onTap: () => onResetPassword(emailController.text.trim())),
-            ),
-            SizedBox(height: 15), // Add space between button and "Resend" link
-            GestureDetector(
-              onTap: () => onResetPassword(emailController.text.trim()), // Handle resend email functionality
-              child: Text(
-                "Resend Verification Link",
-                style: GoogleFonts.urbanist(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.secondary,
-                ),
-              ),
+              ],
             ),
           ],
         ),
