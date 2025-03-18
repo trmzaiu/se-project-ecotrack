@@ -283,7 +283,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
               right: 20,
               child: GestureDetector(
                 onTap: () {
-                  _scanCompleted ? Navigator.popUntil(context, (route) => route.isFirst) : Navigator.pop(context);
+                  Navigator.pop(context);
                 },
                 child: Container(
                   height: 30,
