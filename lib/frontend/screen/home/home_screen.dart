@@ -7,10 +7,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true, //  Giúp nội dung tràn lên đỉnh màn hình
-      appBar: AppBar(
-        backgroundColor: Colors.transparent, // Làm trong suốt nếu cần
-        elevation: 0,
-      ),
+
       body: Container(
         width: double.infinity,
         decoration: BoxDecoration(color: AppColors.background),
