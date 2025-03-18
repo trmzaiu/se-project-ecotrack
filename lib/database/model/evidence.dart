@@ -3,18 +3,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Evidence {
   final String userId;
   final String evidenceId;
-  final String category;
-  final List<String> url;
+  final String? category;
+  final List<String> imagesUrl;
   final String? description;
   final DateTime? date;
+  final String status;
 
   Evidence({
     required this.userId,
     required this.evidenceId,
-    required this.category,
-    required this.url,
+    this.category,
+    required this.imagesUrl,
     this.description,
     this.date,
+    required this.status,
   });
 
   // Convert User object to a Map for Firestore
@@ -24,9 +26,10 @@ class Evidence {
       'userId': userId,
       'evidenceId': evidenceId,
       'category': category,
-      'url': url,
+      'imagesUrl': imagesUrl,
       'description': description,
       'date': date != null ? Timestamp.fromDate(date!) : null,
+      'status': status,
     };
   }
 }
