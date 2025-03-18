@@ -231,7 +231,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
             ),
           ),
           previewFit: CameraPreviewFit.fitWidth,
-          previewAlignment: Alignment(0,0.6),
+          previewAlignment: Alignment(0,-0.6),
           sensorConfig: SensorConfig.single(
             aspectRatio: CameraAspectRatios.ratio_16_9,
           ),
@@ -397,7 +397,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
             ),
           ),
           bottomActionsBuilder: (state) => Padding(
-            padding: EdgeInsets.only(bottom: 40),
+            padding: EdgeInsets.only(bottom: 25),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
