@@ -237,7 +237,12 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                     top: 19,
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UploadScreen(imagePath: widget.imagePath),
+                          ),
+                        );
                       },
                       child: Container(
                         width: 45,
@@ -248,7 +253,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                         ),
                         child: Center(
                           child: SvgPicture.asset(
-                            'lib/assets/icons/ic_backward.svg',
+                            'lib/assets/icons/ic_arrow_right.svg',
                             height: 24,
                           ),
                         ),
@@ -333,7 +338,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
               right: 15,
               child: GestureDetector(
                 onTap: () {
-                  _scanCompleted ? Navigator.popUntil(context, (route) => route.isFirst) : Navigator.pop(context);
+                  Navigator.pop(context);
                 },
                 child: Container(
                   height: 35,
