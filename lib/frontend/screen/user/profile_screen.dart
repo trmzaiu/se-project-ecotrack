@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wastesortapp/frontend/screen/user/setting_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -10,10 +11,18 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: AppColors.primary,
       ),
       body: Center(
-        child: Text(
-          'Welcome to Waste Sorting App!',
-          style: TextStyle(fontSize: 20),
-        ),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SettingScreen()),
+            );
+          },
+          child: Text(
+            'Welcome ',
+            style: TextStyle(fontSize: 20),
+          ),
+        )
       ),
     );
   }
