@@ -33,30 +33,17 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    if (email.isEmpty) {
-      _showErrorDialog(context, "Please enter your email address!");
-      return;
-    }
-
-    if (!_isValidEmail(email)) {
-      _showErrorDialog(context, "The email address is invalid format!");
-      return;
-    }
-
-    if (password.isEmpty) {
-      _showErrorDialog(context, "Please enter your password!");
-      return;
-    }
-
     setState(() => _isLoading = true);
 
-    final result = await _authService.signIn(email: email, password: password);
+    final bool isSuccess = await _authService.signIn(
+      context: context,
+      email: email,
+      password: password,
+    );
 
     setState(() => _isLoading = false);
 
-    if (result != null) {
-      _showErrorDialog(context, result);
-    } else {
+    if (isSuccess) {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         _navigateToMainScreen(context, user.uid);
@@ -144,14 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showErrorDialog(BuildContext context, String message) {
-    showDialog(
-      context: context,
-      builder: (context) => CustomDialog(
-        message: message,
-        status: false,
-        buttonTitle: "Try Again",
-      ),
-    );
+
   }
 
   void _showSuccessDialog(BuildContext context, String message) {
