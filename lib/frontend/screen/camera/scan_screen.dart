@@ -98,6 +98,9 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    double statusHeight = getStatusHeight(context);
+    double phoneWidth = getPhoneWidth(context);
+    double phoneHeight = getPhoneHeight(context);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -112,7 +115,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                 return Center(child: Text("Error loading image"));
               } else {
                 return Align(
-                  alignment: Alignment(0, 0.6),
+                  alignment: Alignment.center,
                   child: Image.file(snapshot.data!),
                 );
               }
@@ -120,7 +123,6 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
           ),
 
           if (_isScanning) ...[
-            ScanAnimation(),
             Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -146,10 +148,10 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: LinearProgressIndicator(
-                        minHeight: 10,
+                        minHeight: 8,
                         backgroundColor: Color(0xFFDEF3E7),
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                        color: AppColors.primary,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.board2),
+                        color: AppColors.board2,
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -157,6 +159,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                 ],
               ),
             ),
+            ScanAnimation(),
           ],
 
           if (_scanCompleted && _scanResult != null)
@@ -258,7 +261,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
 
           if (!_isScanning && !_scanCompleted)
             Padding(
-              padding: EdgeInsets.only(bottom: 50),
+              padding: EdgeInsets.only(bottom: (phoneHeight - (phoneWidth*(16/9)) - (statusHeight + 2.5) - 80)),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -267,7 +270,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                     child: GestureDetector(
                       onTap: _isScanning ? null : _scanImage,
                       child: Container(
-                        width: 356,
+                        width: phoneWidth - 60,
                         padding: EdgeInsets.symmetric(vertical: 15),
                         decoration: BoxDecoration(
                           color: AppColors.primary.withOpacity(0.95),
@@ -286,7 +289,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                       ),
                     ),
                   ),
-                  SizedBox(height: 15),
+                  SizedBox(height: 20),
                   Align(
                     alignment: Alignment.center,
                     child: GestureDetector(
@@ -326,18 +329,24 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
 
           if (!_isScanning)
             Positioned(
-              top: 30,
-              right: 20,
+              top: statusHeight + 20,
+              right: 15,
               child: GestureDetector(
                 onTap: () {
                   _scanCompleted ? Navigator.popUntil(context, (route) => route.isFirst) : Navigator.pop(context);
                 },
                 child: Container(
                   height: 35,
-                  // decoration: BoxDecoration(
-                  //   shape: BoxShape.circle,
-                  //   color: Color(0x80494848),
-                  // ),
+                  decoration: BoxDecoration(
+                    // shape: BoxShape.circle,
+                    // color: Color(0x80494848),
+                    boxShadow: [BoxShadow(
+                      color: Color(0x80494848),
+                      offset: Offset(0,0),
+                      blurRadius: 35,
+                      spreadRadius: 1
+                    )]
+                  ),
                   child: SvgPicture.asset(
                     'lib/assets/icons/ic_close.svg',
                     width: 40,

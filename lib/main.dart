@@ -16,8 +16,8 @@ void main() async{
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     systemNavigationBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.dark,
-    systemNavigationBarIconBrightness: Brightness.dark,
+    statusBarIconBrightness: Brightness.light,
+    systemNavigationBarIconBrightness: Brightness.light,
   ));
 
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +41,10 @@ class MyApp extends StatelessWidget {
           tertiary: AppColors.tertiary,
           surface: AppColors.surface,
           scrim: AppColors.accent
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
         ),
       ),
       home: SplashScreen(),

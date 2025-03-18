@@ -16,7 +16,7 @@ class _ScanAnimationState extends State<ScanAnimation> with SingleTickerProvider
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 2),
+      duration: Duration(seconds: 3),
     )..repeat(reverse: true);
 
     _animation = Tween<double>(begin: -1.0, end: 1.0).animate(_controller);
@@ -40,10 +40,10 @@ class _ScanAnimationState extends State<ScanAnimation> with SingleTickerProvider
           child: Container(
             height: 3,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.7),
+              color: AppColors.board2.withOpacity(0.7),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.5),
+                  color: AppColors.board2.withOpacity(0.5),
                   blurRadius: 10,
                   spreadRadius: 3,
                   offset: Offset(0, 3),

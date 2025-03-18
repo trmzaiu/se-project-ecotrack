@@ -9,6 +9,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:wastesortapp/frontend/screen/camera/scan_screen.dart';
+import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import '../../../theme/fonts.dart';
@@ -196,6 +197,9 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
   @override
   Widget build(BuildContext context) {
+    double phoneWidth = getPhoneWidth(context);
+    double phoneHeight = getPhoneHeight(context);
+    double statusHeight = getStatusHeight(context);
 
     if (_isInitializing) {
       return Scaffold(
@@ -231,9 +235,11 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
             ),
           ),
           previewFit: CameraPreviewFit.fitWidth,
-          previewAlignment: Alignment(0,-0.6),
+          previewAlignment: Alignment(0, - 0.55),
           sensorConfig: SensorConfig.single(
             aspectRatio: CameraAspectRatios.ratio_16_9,
+            sensor: Sensor.position(SensorPosition.back),
+            zoom: 0.0
           ),
           saveConfig: SaveConfig.photoAndVideo(
             initialCaptureMode: CaptureMode.photo,
@@ -286,7 +292,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
             ),
           ),
           topActionsBuilder: (state) => Padding(
-            padding: EdgeInsets.only(top: 10, right: 20),
+            padding: EdgeInsets.only(top: 20, right: 15),
             child: Align(
               alignment: Alignment.topRight,
               child: GestureDetector(
@@ -296,10 +302,10 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                 child: Container(
                   width: 35,
                   height: 35,
-                  // decoration: BoxDecoration(
-                  //   shape: BoxShape.circle,
-                  //   color: Color(0x80494848),
-                  // ),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0x80494848),
+                  ),
                   child: Center(
                     child: SvgPicture.asset(
                       'lib/assets/icons/ic_close.svg',
@@ -311,93 +317,97 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
               ),
             ),
           ),
-          middleContentBuilder: (state) => Center(
-            child: SizedBox(
-              width: 300,
-              height: 400,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Text in the center
-                  FadingText(),
-                  // Top-left corner
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          top: BorderSide(color: AppColors.surface, width: 3),
-                          left: BorderSide(color: AppColors.surface, width: 3),
-                        ),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Top-right corner
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          top: BorderSide(color: AppColors.surface, width: 3),
-                          right: BorderSide(color: AppColors.surface, width: 3),
-                        ),
-                        borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(10),
+          middleContentBuilder: (state) => Container(
+            height: phoneHeight,
+            padding: EdgeInsets.only(top: statusHeight + 2.5, bottom: (phoneHeight - (phoneWidth*(16/9)) - (statusHeight + 2.5))),
+            child: Center(
+              child: SizedBox(
+                width: 300,
+                height: 300,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Text in the center
+                    FadingText(),
+                    // Top-left corner
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            top: BorderSide(color: AppColors.surface, width: 3),
+                            left: BorderSide(color: AppColors.surface, width: 3),
+                          ),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  // Bottom-left corner
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(color: AppColors.surface, width: 3),
-                          left: BorderSide(color: AppColors.surface, width: 3),
-                        ),
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Bottom-right corner
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(color: AppColors.surface, width: 3),
-                          right: BorderSide(color: AppColors.surface, width: 3),
-                        ),
-                        borderRadius: BorderRadius.only(
-                          bottomRight: Radius.circular(10),
+                    // Top-right corner
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            top: BorderSide(color: AppColors.surface, width: 3),
+                            right: BorderSide(color: AppColors.surface, width: 3),
+                          ),
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(10),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    // Bottom-left corner
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: AppColors.surface, width: 3),
+                            left: BorderSide(color: AppColors.surface, width: 3),
+                          ),
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Bottom-right corner
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: AppColors.surface, width: 3),
+                            right: BorderSide(color: AppColors.surface, width: 3),
+                          ),
+                          borderRadius: BorderRadius.only(
+                            bottomRight: Radius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
           bottomActionsBuilder: (state) => Padding(
-            padding: EdgeInsets.only(bottom: 25),
+            padding: EdgeInsets.only(bottom: (phoneHeight - (phoneWidth*(16/9)) - (statusHeight) - 80)/2),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
