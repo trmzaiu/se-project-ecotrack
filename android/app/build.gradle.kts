@@ -45,3 +45,9 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    implementation ("com.facebook.android:facebook-android-sdk:18.0.2")
+    implementation ("com.facebook.android:facebook-login:18.0.2")
+    implementation ("com.facebook.android:facebook-share:18.0.2")
+}

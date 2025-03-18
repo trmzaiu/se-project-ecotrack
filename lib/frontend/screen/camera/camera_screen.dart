@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
@@ -10,23 +11,115 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:wastesortapp/frontend/screen/camera/scan_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
+import '../../../theme/fonts.dart';
+
 class CameraScreen extends StatefulWidget {
   @override
   _CameraScreenState createState() => _CameraScreenState();
 }
 
-class _CameraScreenState extends State<CameraScreen> {
+class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver{
   String? _latestImagePath;
+  bool _isPermissionGranted = false;
+  bool _hasRequested = false;
+  bool _isCheckingPermission = true;
+  bool _isInitializing = true;
 
-  Future<void> _requestPermissions() async {
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.camera,
-      Permission.storage,
-    ].request();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initialize();
+  }
 
-    if (statuses[Permission.camera] != PermissionStatus.granted ||
-        statuses[Permission.storage] != PermissionStatus.granted) {
-      debugPrint('❌ Permissions not granted');
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (_isPermissionGranted && mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _initialize() async {
+    try {
+      await _checkPermission();
+
+      if (_isPermissionGranted) {
+        await _getLatestImage();
+      }
+
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error during initialization: $e');
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _checkPermission() async {
+    try {
+      final status = await Permission.camera.status;
+      if (status.isGranted) {
+        if (mounted) {
+          setState(() {
+            _isPermissionGranted = true;
+            _isCheckingPermission = false;
+          });
+        }
+      } else if (!_hasRequested) {
+        await _requestPermission();
+        _hasRequested = true;
+      } else {
+        if (mounted) {
+          setState(() {
+            _isCheckingPermission = false;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error checking permission: $e');
+      if (mounted) {
+        setState(() {
+          _isCheckingPermission = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _requestPermission() async {
+    try {
+      final status = await Permission.camera.request();
+      if (status.isGranted && mounted) {
+        setState(() {
+          _isPermissionGranted = true;
+          _isCheckingPermission = false;
+        });
+      } else if (mounted) {
+        setState(() {
+          _isCheckingPermission = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error requesting permission: $e');
+      if (mounted) {
+        setState(() {
+          _isCheckingPermission = false;
+        });
+      }
     }
   }
 
@@ -62,29 +155,6 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
-  Future<AnalysisImage> processImage(AnalysisImage analysisImage) async {
-    return analysisImage;
-  }
-
-  Route _createSlideRoute(Widget page) {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(1.0, 0.0);
-        const end = Offset.zero;
-        const curve = Curves.easeOut;
-
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        var offsetAnimation = animation.drive(tween);
-
-        return SlideTransition(
-          position: offsetAnimation,
-          child: child,
-        );
-      },
-    );
-  }
-
   Future<void> _getLatestImage() async {
     final permitted = await PhotoManager.requestPermissionExtend();
     if (!permitted.isAuth) return;
@@ -111,187 +181,258 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _handlePermissions();
+  Future<AnalysisImage> processImage(AnalysisImage analysisImage) async {
+    return analysisImage;
   }
 
-  Future<void> _handlePermissions() async {
-    await _requestPermissions();
-    if (await _checkPermissions()) {
-      await _getLatestImage();
-      setState(() {});
-    }
-  }
+  Route _createSlideRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(1.0, 0.0);
+        const end = Offset.zero;
+        const curve = Curves.easeOut;
 
-  Future<bool> _checkPermissions() async {
-    return await Permission.camera.isGranted && await Permission.storage.isGranted;
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var offsetAnimation = animation.drive(tween);
+
+        return SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: _checkPermissions(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: AppColors.primary,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+
+    if (_isInitializing) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(color: AppColors.primary),
+                SizedBox(height: 20),
+                Text(
+                  "Initializing camera...",
+                  style: GoogleFonts.urbanist(
+                      fontSize: 16,
+                      fontWeight: AppFontWeight.regular,
+                      color: AppColors.surface
+                  ),
+                )
+              ],
             )
-          );
-        }
+        ),
+      );
+    }
 
-        if (snapshot.data == true) {
-          return CameraAwesomeBuilder.awesome(
-            enablePhysicalButton: true,
-            // previewFit: CameraPreviewFit.fitWidth,
-            sensorConfig: SensorConfig.single(
-              aspectRatio: CameraAspectRatios.ratio_16_9,
-              flashMode: FlashMode.auto,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: _isPermissionGranted
+        ? CameraAwesomeBuilder.awesome(
+          progressIndicator: Container(
+            color: Colors.black,
+            child: Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
             ),
-            saveConfig: SaveConfig.photoAndVideo(
-              initialCaptureMode: CaptureMode.photo,
-              photoPathBuilder: (sensors) async {
-                final Directory extDir = await getTemporaryDirectory();
-                final String filePath =
-                    '${extDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+          ),
+          previewAlignment: Alignment.center,
+          enablePhysicalButton: true,
+          // previewFit: CameraPreviewFit.fitWidth,
+          sensorConfig: SensorConfig.single(
+            aspectRatio: CameraAspectRatios.ratio_16_9,
+          ),
+          saveConfig: SaveConfig.photoAndVideo(
+            initialCaptureMode: CaptureMode.photo,
+            photoPathBuilder: (sensors) async {
+              final Directory extDir = await getTemporaryDirectory();
+              final String filePath =
+                  '${extDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-                await Directory(extDir.path).create(recursive: true);
+              await Directory(extDir.path).create(recursive: true);
 
-                debugPrint("📸 Image will be saved to: $filePath");
+              debugPrint("📸 Image will be saved to: $filePath");
 
-                return SingleCaptureRequest(filePath, sensors.first);
-              },
-            ),
-            onMediaCaptureEvent: (event) {
-              if (event.status == MediaCaptureStatus.success && event.isPicture) {
-                event.captureRequest.when(
-                  single: (single) {
-                    if (!mounted) return;
-
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      Navigator.of(context).push(
-                        _createSlideRoute(
-                          ScanScreen(imagePath: single.file?.path ?? ""),
-                        ),
-                      );
-                    });
-                  },
-                );
-              }
+              return SingleCaptureRequest(filePath, sensors.first);
             },
-            onImageForAnalysis: (analysisImage) async {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                processImage(analysisImage);
-              });
-            },
-            onMediaTap: (mediaCapture) {
-              mediaCapture.captureRequest.when(
+          ),
+          onMediaCaptureEvent: (event) {
+            if (event.status == MediaCaptureStatus.success && event.isPicture) {
+              event.captureRequest.when(
                 single: (single) {
-                  debugPrint('single: ${single.file?.path}');
+                  if (!mounted) return;
+
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Navigator.of(context).push(
+                      _createSlideRoute(
+                        ScanScreen(imagePath: single.file?.path ?? ""),
+                      ),
+                    );
+                  });
                 },
               );
-            },
-            theme: AwesomeTheme(
-              bottomActionsBackgroundColor: Colors.transparent,
-              buttonTheme: AwesomeButtonTheme(
-                backgroundColor: Color(0x4D333333),
-                iconSize: 24,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.all(11),
-                buttonBuilder: (child, onTap) => ClipOval(
-                  child: Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      onTap: onTap,
-                      child: child,
+            }
+          },
+          onImageForAnalysis: (analysisImage) async {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              processImage(analysisImage);
+            });
+          },
+          onMediaTap: (mediaCapture) {
+            mediaCapture.captureRequest.when(
+              single: (single) {
+                debugPrint('single: ${single.file?.path}');
+              },
+            );
+          },
+          theme: AwesomeTheme(
+            bottomActionsBackgroundColor: Colors.transparent,
+            buttonTheme: AwesomeButtonTheme(
+              backgroundColor: Color(0x4D333333),
+              iconSize: 24,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.all(11),
+              buttonBuilder: (child, onTap) => ClipOval(
+                child: Material(
+                  color: Colors.transparent,
+                  shape: CircleBorder(),
+                  child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    onTap: onTap,
+                    child: child,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          topActionsBuilder: (state) => Padding(
+            padding: EdgeInsets.only(top: 20, right: 20),
+            child: Align(
+              alignment: Alignment.topRight,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  width: 35,
+                  height: 35,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0x4D333333),
+                  ),
+                  child: Center(
+                    child: SvgPicture.asset(
+                      'lib/assets/icons/ic_close.svg',
+                      width: 40,
+                      height: 40,
                     ),
                   ),
                 ),
               ),
             ),
-            topActionsBuilder: (state) => Padding(
-              padding: const EdgeInsets.only(top: 20, right: 20),
-              child: Align(
-                alignment: Alignment.topRight,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    width: 35,
-                    height: 35,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0x4D333333),
-                    ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'lib/assets/icons/ic_close.svg',
-                        width: 40,
-                        height: 40,
-                      ),
+          ),
+          middleContentBuilder: (state) => Column(
+            children: [
+              Spacer(),
+              Builder(builder: (context) {
+                return Container(
+                  color: AwesomeThemeProvider.of(context)
+                      .theme
+                      .bottomActionsBackgroundColor,
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
                     ),
                   ),
-                ),
-              ),
-            ),
-            middleContentBuilder: (state) => Column(
+                );
+              }),
+            ],
+          ),
+          bottomActionsBuilder: (state) => Padding(
+            padding: EdgeInsets.only(bottom: 50),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Spacer(),
-                Builder(builder: (context) {
-                  return Container(
-                    color: AwesomeThemeProvider.of(context)
-                        .theme
-                        .bottomActionsBackgroundColor,
-                    child: const Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10),
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: Container(
+                    width: 45,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(9),
+                      image: DecorationImage(
+                        image: _latestImagePath != null
+                            ? FileImage(File(_latestImagePath!))
+                            : AssetImage("lib/assets/images/default.png") as ImageProvider,
+                        fit: BoxFit.cover,
                       ),
                     ),
-                  );
-                }),
+                  ),
+                ),
+                SizedBox(width: 70),
+                AwesomeCaptureButton(state: state),
+                SizedBox(width: 70),
+                AwesomeFlashButton(state: state),
               ],
             ),
-            bottomActionsBuilder: (state) => Padding(
-              padding: const EdgeInsets.only(bottom: 50),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: Container(
-                      width: 45,
-                      height: 45,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(9),
-                        image: DecorationImage(
-                          image: _latestImagePath != null
-                              ? FileImage(File(_latestImagePath!))
-                              : AssetImage("lib/assets/images/default.png") as ImageProvider,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
+          ),
+        )
+      : Container(
+        color: Colors.black,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Camera Access",
+                style: GoogleFonts.urbanist(
+                    fontSize: 28,
+                    fontWeight: AppFontWeight.bold,
+                    color: AppColors.surface
+                ),
+              ),
+              SizedBox(height: 5),
+              Text(
+                "Please grant camera access \nto capture photos.",
+                style: GoogleFonts.urbanist(
+                    fontSize: 18,
+                    fontWeight: AppFontWeight.regular,
+                    color: AppColors.tertiary,
+                    height: 1.2
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 30),
+              GestureDetector(
+                onTap: _requestPermission,
+                child: Container(
+                  width: 200,
+                  height: 50,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    "Grant Permission",
+                    style: GoogleFonts.urbanist(
+                        fontSize: 16,
+                        fontWeight: AppFontWeight.regular,
+                        color: AppColors.surface
                     ),
                   ),
-                  SizedBox(width: 70),
-                  AwesomeCaptureButton(state: state),
-                  SizedBox(width: 70),
-                  AwesomeFlashButton(state: state),
-                ],
+                ),
               ),
-            ),
-          );
-        } else {
-          return Center(child: Text(""));
-        }
-      }
+            ],
+          ),
+        ),
+      )
     );
   }
 }

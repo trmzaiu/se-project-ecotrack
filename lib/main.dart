@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
@@ -8,9 +10,23 @@ import 'frontend/screen/guide/guide_screen.dart';
 import 'frontend/screen/home/home_screen.dart';
 import 'frontend/screen/splash_screen.dart';
 import 'frontend/screen/tree/virtual_tree_screen.dart';
-import 'frontend/screen/user/profile_screen.dart';
+import 'frontend/screen/auth/opening_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:wastesortapp/database/firebase_options.dart';
+import 'package:wastesortapp/frontend/screen/user/profile_screen.dart';
 
-void main() {
+void main() async{
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    systemNavigationBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+    systemNavigationBarIconBrightness: Brightness.dark,
+  ));
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 
@@ -21,7 +37,14 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'EcoTrack',
       theme: ThemeData(
-        primaryColor: AppColors.primary,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          primary: AppColors.primary,
+          secondary: AppColors.secondary,
+          tertiary: AppColors.tertiary,
+          surface: AppColors.surface,
+          scrim: AppColors.accent
+        ),
       ),
       home: SplashScreen(),
     );
@@ -29,6 +52,10 @@ class MyApp extends StatelessWidget {
 }
 
 class MainScreen extends StatefulWidget {
+  final String userId; // Receive userId
+
+  const MainScreen({Key? key, required this.userId}) : super(key: key);
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -36,13 +63,19 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    HomeScreen(),
-    GuideScreen(),
-    CameraScreen(),
-    VirtualTreeScreen(),
-    ProfileScreen(),
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      HomeScreen(),
+      GuideScreen(),
+      CameraScreen(),
+      VirtualTreeScreen(userId: widget.userId),
+      ProfileScreen(userId: widget.userId),
+    ];
+  }
 
   void _onItemTapped(int index) {
     if (index == 2) {
@@ -74,6 +107,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: _pages[_selectedIndex],
       bottomNavigationBar: Stack(
         clipBehavior: Clip.none,
@@ -103,7 +137,7 @@ class _MainScreenState extends State<MainScreen> {
                   _buildNavItem('lib/assets/icons/ic_home.svg', 'Home', 0),
                   _buildNavItem('lib/assets/icons/ic_guide.svg', 'Guide', 1),
                   SizedBox(width: 50),
-                  _buildNavItem('lib/assets/icons/ic_virtual_tree.svg', 'Virtual Tree', 3),
+                  _buildNavItem('lib/assets/icons/ic_virtual_tree.svg', 'Tree', 3),
                   _buildNavItem('lib/assets/icons/ic_profile.svg', 'Profile', 4),
                 ],
               ),
@@ -111,7 +145,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           Positioned(
             bottom: 10,
-            left: MediaQuery.of(context).size.width / 2 - 52,
+            left: MediaQuery.of(context).size.width / 2 - 85/2,
             child: Stack(
               alignment: Alignment.center,
               children: [
