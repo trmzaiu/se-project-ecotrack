@@ -57,11 +57,11 @@ class _GoodToKnowSectionState extends State<GoodToKnowSection> {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              SizedBox(width: hasScrolled ? 0 : 40), // Ban đầu có 40px, khi lướt mất đi
+              SizedBox(width: hasScrolled ? 0 : 25), // Ban đầu có 40px, khi lướt mất đi
               ...goodToKnowItems.map((item) => Container(
                 margin: EdgeInsets.only(right: 10),
-                height: 150,
-                width: 300,
+                height: 200,
+                width: 350,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
@@ -75,12 +75,12 @@ class _GoodToKnowSectionState extends State<GoodToKnowSection> {
                       ),
                       child: Image.asset(
                         item['image']!,
-                        width: 300,
+                        width: 350,
                         fit: BoxFit.cover,
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(left: 15, right: 15, top: 95),
+                      padding: EdgeInsets.only(left: 15, right: 15, top: 105),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -88,7 +88,7 @@ class _GoodToKnowSectionState extends State<GoodToKnowSection> {
                             item['title']!,
                             style: TextStyle(
                               color: Color(0xFF7C3F3E),
-                              fontSize: 14,
+                              fontSize: 16,
                               fontFamily: 'Urbanist',
                               fontWeight: FontWeight.w900,
                             ),
