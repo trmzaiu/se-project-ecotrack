@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:wastesortapp/frontend/screen/evidence/evidence_detail_screen.dart';
 import 'package:wastesortapp/frontend/screen/evidence/upload_evidence_screen.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
+import '../../../database/model/evidence.dart';
 import '../../../theme/colors.dart';
+import '../../service/evidence_service.dart';
 import '../../widget/bar_title.dart';
 
 class EvidenceScreen extends StatefulWidget {
@@ -147,150 +150,135 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
   }
 
   Widget _buildTabContent(String category) {
-    List<Map<String, String>> evidenceList = [
-      {"title": "Recyclable", "date": "Mar 1, 2025", "status": "Pending", "image": "lib/assets/images/img.png"},
-      {"title": "Organic", "date": "Feb 28, 2025", "status": "Accepted", "image": "lib/assets/images/caution.png"},
-      // {"title": "General", "date": "Feb 27, 2025", "status": "Rejected", "image": "lib/assets/images/caution.png"},
-      {"title": "General", "date": "Feb 5, 2025", "status": "Accepted", "image": "lib/assets/images/caution.png"},
-    ];
+    return StreamBuilder<List<Evidence>>(
+      stream: EvidenceService(context).fetchEvidences(),
+      builder: (context, snapshot) {
+        // if (snapshot.connectionState == ConnectionState.waiting) {
+        //   return Center(child: CircularProgressIndicator());
+        // }
+        if (snapshot.hasError) {
+          return Center(child: Text("Error fetching evidences"));
+        }
+        List<Evidence> evidenceList = snapshot.data!;
 
-    List<Map<String, String>> filteredList = category == "All"
-        ? evidenceList
-        : evidenceList.where((item) => item["status"] == category).toList();
+        List<Evidence> filteredList = category == "All"
+            ? evidenceList
+            : evidenceList.where((item) => item.status == category).toList();
 
-    bool hasEvidence = evidenceList.isNotEmpty;
-    bool hasApprovedEvidence = evidenceList.any((item) => item["status"] == "Accepted");
-    bool hasDisapprovedEvidence = evidenceList.any((item) => item["status"] == "Rejected");
-
-    if (!hasEvidence) {
-      return Center(
-        child: Text(
-          'You have no evidence yet',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.urbanist(
-            color: Color(0xFF7C3F3E),
-            fontSize: 16,
-            fontWeight: AppFontWeight.medium,
-          ),
-        ),
-      );
-    }
-
-    if (category == "Accepted" && !hasApprovedEvidence) {
-      return Center(
-        child: Text(
-          "No approved evidence available",
-          textAlign: TextAlign.center,
-          style: GoogleFonts.urbanist(
-            color: Color(0xFF7C3F3E),
-            fontSize: 16,
-            fontWeight: AppFontWeight.medium,
-          ),
-        ),
-      );
-    }
-
-    if (category == "Rejected" && !hasDisapprovedEvidence) {
-      return Center(
-        child: Text(
-          "No disapproved evidence available",
-          textAlign: TextAlign.center,
-          style: GoogleFonts.urbanist(
-            color: Color(0xFF7C3F3E),
-            fontSize: 16,
-            fontWeight: AppFontWeight.medium,
-          ),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: EdgeInsets.all(30),
-      itemCount: filteredList.length,
-      itemBuilder: (context, index) {
-        var item = filteredList[index];
-        Color statusColor = item["status"] == "Pending"
-            ? Colors.grey
-            : item["status"] == "Accepted"
-            ? Colors.green
-            : Colors.red;
-
-        return Container(
-          margin: EdgeInsets.only(bottom: 12),
-          padding: EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4,
-                offset: Offset(0, 2),
+        if (!snapshot.hasData || filteredList.isEmpty) {
+          return Center(
+            child: Text(
+              (category == "All")
+                  ? "No evidence available"
+                  : "No ${category.toLowerCase()} evidence available",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.urbanist(
+                color: Color(0xFF7C3F3E),
+                fontSize: 16,
+                fontWeight: AppFontWeight.medium,
               ),
-            ],
-          ),
-          child: GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => EvidenceDetailScreen()),
-              );
-            },
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    item["image"]!,
-                    width: 55,
-                    height: 55,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                SizedBox(width: 15),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item["title"]!,
-                        style: GoogleFonts.urbanist(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      Text(
-                        item["date"]!,
-                        style: GoogleFonts.urbanist(
-                          fontSize: 12,
-                          color: AppColors.tertiary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: 90,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    item["status"]!,
-                    style: GoogleFonts.urbanist(
-                      fontSize: 14,
-                      fontWeight: AppFontWeight.medium,
-                      color: statusColor,
-                    ),
-                  ),
-                ),
-              ],
             ),
-          )
+          );
+        }
+
+        return ListView.builder(
+          padding: EdgeInsets.all(30),
+          itemCount: filteredList.length,
+          itemBuilder: (context, index) {
+            var item = filteredList[index];
+            Color statusColor = item.status == "Pending"
+                ? Colors.grey
+                : item.status == "Accepted"
+                ? Colors.green
+                : Colors.red;
+            return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => EvidenceDetailScreen(
+                          category: item.category,
+                          status: item.status,
+                          point: item.point,
+                          date: DateFormat('dd MMM, yyyy').format(item.date),
+                          description: item.description,
+                          imagePaths: item.imagesUrl,
+                        )),
+                  );
+                },
+              child:  Container(
+                margin: EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        item.imagesUrl.isNotEmpty
+                            ? item.imagesUrl.first
+                            : "",
+                        width: 55,
+                        height: 55,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    SizedBox(width: 15),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.category ?? "Unknown",
+                            style: GoogleFonts.urbanist(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          Text(DateFormat('dd MMM, yyyy').format(item.date),
+                            style: GoogleFonts.urbanist(
+                              fontSize: 12,
+                              color: AppColors.tertiary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 90,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        item.status,
+                        style: GoogleFonts.urbanist(
+                          fontSize: 14,
+                          fontWeight: AppFontWeight.medium,
+                          color: statusColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            );
+          },
         );
       },
     );
