@@ -24,7 +24,14 @@ class AuthenticationService {
   bool _isValidEmail(String email) {
     return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
   }
-
+  // bool _isValidPassword(String password) {
+  //   // Custom password validation logic
+  //   return password.length >= 8 &&
+  //       RegExp(r"[A-Z]").hasMatch(password) &&
+  //       RegExp(r"[a-z]").hasMatch(password) &&
+  //       RegExp(r"[0-9]").hasMatch(password) &&
+  //       RegExp(r"[!@#\\$%^&*(),.?\":{}|<>]").hasMatch(password);
+  //   }
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(
       context: context,
@@ -44,7 +51,7 @@ class AuthenticationService {
     try {
       // Check email and password are not empty
       if (email.isEmpty || password.isEmpty) {
-        _showErrorDialog(context, "Email and password cannot be empty.");
+        _showErrorDialog(context, "Email and password cannot be empty");
         return false;
       }
 
@@ -60,7 +67,7 @@ class AuthenticationService {
     } on FirebaseAuthException catch (e) {
       // Handle Firebase exceptions
       if (e.code == 'wrong-password') {
-        _showErrorDialog(context, "Incorrect password. Please try again.");
+        _showErrorDialog(context, "Incorrect password. Please try again");
       } else {
         _showErrorDialog(context, _handleFirebaseAuthException(e));
       }
@@ -75,13 +82,26 @@ class AuthenticationService {
 
   Future<String?> signUp({required String email, required String password}) async {
     try {
+      if (!_isValidEmail(email)) {
+        return "Invalid email format";
+      }
+
+      // if (!_isValidPassword(password)) {
+      //   return "Password must be at least 8 characters long and include uppercase, lowercase, a number, and a special character.";
+      // }
+
       UserCredential userCredential = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-      saveUserToFirestore(uid: userCredential.user!.uid, name: userCredential.user!.uid, email: email);
+      print("User registered with UID: \${userCredential.user!.uid}"); // Debugging
+
+      await saveUserToFirestore(uid: userCredential.user!.uid, name: userCredential.user!.uid, email: email);
+      print("User saved to Firestore"); // Debugging
 
       return null;
     } on FirebaseAuthException catch (e) {
+      print("FirebaseAuthException: \${e.code}"); // Debugging
       return _handleFirebaseAuthException(e);
     } catch (e) {
+      print("Unexpected error during sign-up: \$e"); // Debugging
       return "An unexpected error occurred";
     }
   }
@@ -111,7 +131,7 @@ class AuthenticationService {
 
       return userCredential;
     } catch (e) {
-      throw Exception("Google Sign-In failed. Please try again later.");
+      throw Exception("Google Sign-In failed. Please try again later");
     }
   }
 
@@ -137,7 +157,7 @@ class AuthenticationService {
 
       return userCredential;
     } catch(e) {
-      throw Exception("Facebook Sign-In failed. Please try again later.");
+      throw Exception("Facebook Sign-In failed. Please try again later");
     }
   }
 
@@ -203,19 +223,19 @@ class AuthenticationService {
   String _handleFirebaseAuthException(FirebaseAuthException e) {
     switch (e.code) {
       case 'invalid-email':
-        return "Invalid email address.";
+        return "Invalid email address";
       case 'user-not-found':
-        return "No account found with this email.";
+        return "No account found with this email";
       case 'wrong-password':
-        return "Incorrect password.";
+        return "Incorrect password";
       case 'email-already-in-use':
-        return "Email is already in use.";
+        return "Email is already in use";
       case 'weak-password':
         return "Password is too weak.";
       case 'network-request-failed':
-        return "Network error. Please try again.";
+        return "Network error. Please try again";
       default:
-        return "Error: ${e.message}";
+        return " ${e.message}";
     }
   }
 }
