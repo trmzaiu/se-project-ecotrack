@@ -93,15 +93,21 @@ class _VerifyCodeSheetState extends State<VerifyCodeSheet> {
   }
 
   void _onChanged(int index, String value) {
-    if (value.length == 1 && index < 3) {
+    if (value.isEmpty) {
+      if (index > 0) {
+        for (int i = index; i < _controllers.length - 1; i++) {
+          _controllers[i].text = _controllers[i + 1].text;
+        }
+        _controllers[_controllers.length - 1].clear();
+        _focusNodes[index - 1].requestFocus();
+      }
+    } else if (value.length == 1 && index < 3) {
       _focusNodes[index].unfocus();
       _focusNodes[index + 1].requestFocus();
-    } else if (value.isEmpty && index > 0) {
-      _focusNodes[index].unfocus();
-      _focusNodes[index - 1].requestFocus();
     }
     _checkCodeCompletion();
   }
+
 
   @override
   Widget build(BuildContext context) {
