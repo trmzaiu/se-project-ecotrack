@@ -48,7 +48,7 @@ class _MainScreenState extends State<MainScreen> {
     GuideScreen(),
     CameraScreen(),
     VirtualTreeScreen(),
-    ProfileScreen(),
+    ProfileScreen(userId: '',),
   ];
 
   void _onItemTapped(int index) {
