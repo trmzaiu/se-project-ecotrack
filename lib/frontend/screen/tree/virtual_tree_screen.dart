@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
+import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import 'leaderboard_screen.dart';
@@ -210,10 +211,9 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
           // SizedBox(width: 20),
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LeaderboardScreen(),
+              Navigator.of(context).push(
+                moveUpRoute(
+                  LeaderboardScreen(),
                 ),
               );
             },

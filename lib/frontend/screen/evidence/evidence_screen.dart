@@ -255,7 +255,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            item.category ?? "Unknown",
+                            item.category,
                             style: GoogleFonts.urbanist(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

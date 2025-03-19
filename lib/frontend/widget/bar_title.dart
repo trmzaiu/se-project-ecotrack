@@ -9,12 +9,16 @@ class BarTitle extends StatelessWidget {
   final String title;
   final bool showBackButton;
   final bool showNotification;
+  final Color textColor;
+  final Color buttonColor;
 
   const BarTitle({
     Key? key,
     required this.title,
     this.showBackButton = false,
     this.showNotification = false,
+    this.textColor = AppColors.surface,
+    this.buttonColor = AppColors.surface,
   }) : super(key: key);
 
   @override
@@ -34,6 +38,7 @@ class BarTitle extends StatelessWidget {
                 child: SvgPicture.asset(
                   'lib/assets/icons/ic_back.svg',
                   height: 20,
+                  colorFilter: ColorFilter.mode(buttonColor, BlendMode.srcIn),
                 ),
               ),
             ),
@@ -43,7 +48,7 @@ class BarTitle extends StatelessWidget {
               title,
               textAlign: TextAlign.center,
               style: GoogleFonts.urbanist(
-                color: AppColors.surface,
+                color: textColor,
                 fontSize: 18,
                 fontWeight: AppFontWeight.semiBold,
                 letterSpacing: 1,
