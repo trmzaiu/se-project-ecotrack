@@ -7,11 +7,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
 import 'package:wastesortapp/theme/colors.dart';
-import 'package:wastesortapp/frontend/service/auth_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 
 class VirtualTreeScreen extends StatefulWidget {
-  final String userId; // Thêm userId vào widget
+  final String userId;
 
   const VirtualTreeScreen({super.key, required this.userId});
 
@@ -20,12 +20,13 @@ class VirtualTreeScreen extends StatefulWidget {
 }
 
 class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTickerProviderStateMixin {
+  static const Duration ANIMATION_DURATION = Duration(milliseconds: 1000);
   final TreeService _treeService = TreeService();
   late AnimationController _controller;
   int neededDrops = 0;
   int grownTrees = 0;
 
-  int leftDrops = 100;
+  int leftDrops = 0;
   int _drops = 0;
   int _trees = 0;
   int _levelOfTree = 0;
@@ -37,21 +38,54 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
     ['lib/assets/images/state3.png', 30],
     ['lib/assets/images/state4.png', 50],
   ];
-
+  StreamSubscription? _treeSubscription;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 1000),
+      duration: ANIMATION_DURATION,
     );
+
+    _loadTreeData();
   }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _loadTreeData() {
+    _treeService.getTreeProgress(widget.userId).listen((snapshot) {
+      if (snapshot.exists) {
+        var data = snapshot.data() as Map<String, dynamic>;
+        setState(() {
+          _levelOfTree = (data['levelOfTree'] as int? ?? 0).clamp(0, 3);
+          _progress = (data['progress'] as num?)?.toDouble() ?? 0.0;
+          _drops = data['water'] as int? ?? 0;
+          _trees = data['tree'] as int? ?? 0;
+          leftDrops = getLeftDrops(_levelOfTree, _progress);
+        });
+      }
+    });
+  }
+
+
+  int getLeftDrops(int state, double currentProgress) {
+    int totalDrops = 0;
+    List<int> reductions = [5, 15, 30, 50];
+
+    for (int i = 0; i < state; i++) {
+      totalDrops += reductions[i];
+    }
+
+    if (state < reductions.length) {
+      totalDrops += (currentProgress * reductions[state]).round();
+    }
+
+    return 100 - totalDrops;
   }
 
   void animateProgress(double newProgress, VoidCallback onComplete) {
@@ -92,34 +126,39 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
           showTreeDialog(grownTrees, 0);
           grownTrees = 0;
         } else {
-          showTreeDialog(0, _levelOfTree + 1);
+          // showTreeDialog(0, _levelOfTree + 1);
         }
       });
       return;
-    }
-
-    int totalNeededDrops = _state[_levelOfTree][1];
-    int currentNeededDrops = (totalNeededDrops * (1.0 - _progress)).round();
-
-    if (_drops < currentNeededDrops) {
-      double newProgress = _progress + (_drops / totalNeededDrops);
-      leftDrops = (leftDrops - _drops) % 100;
-      animateProgress(newProgress, () {});
-      _treeService.updateProgress(widget.userId, newProgress);
-      _treeService.updateWater(widget.userId, 0);
-      _drops = 0;
+    } else if (_drops == 0) {
       waterTree();
+      grownTrees++;
     } else {
-      _drops -= currentNeededDrops;
+      int totalNeededDrops = _state[_levelOfTree][1];
+      int currentNeededDrops = (totalNeededDrops * (1.0 - _progress)).round();
 
-      if (_progress < 1.0) {
-        animateProgress(1.0, () {
-          setState(() {
-            _progress = 0;
-            print("Before: value = $_levelOfTree");
-            _levelOfTree += 1;
-            _treeService.updateProgress(widget.userId, 0);
-            _treeService.updateLevelOfTree(widget.userId, _levelOfTree);
+      if (_drops < currentNeededDrops) {
+        double newProgress = _progress + (_drops / totalNeededDrops);
+        leftDrops = getLeftDrops(_levelOfTree, _progress);
+        _progress = newProgress;
+        animateProgress(newProgress, () {});
+        _drops = 0;
+        _treeService.updateProgress(widget.userId, newProgress);
+        _treeService.updateWater(widget.userId, 0);
+        waterTree();
+      } else if (_drops >= currentNeededDrops) {
+        _drops -= currentNeededDrops;
+        if (_progress <= 1.0) {
+          animateProgress(1.0, () async {
+            setState(() {
+              _progress = 0;
+              print("Before: value = $_levelOfTree");
+              _levelOfTree += 1;
+              _treeService.updateProgress(widget.userId, 0);
+              _treeService.updateLevelOfTree(widget.userId, _levelOfTree);
+
+            });
+
             print("After: value = $_levelOfTree");
 
             if (_levelOfTree >= _state.length) {
@@ -128,14 +167,13 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
               grownTrees++; // Count trees grown in this session
             }
 
+            setState(() {
+              leftDrops = getLeftDrops(_levelOfTree, _progress);
+            });
+
             waterTree(); // Continue the process
           });
-        });
-        leftDrops = (leftDrops - currentNeededDrops) % 100;
-      }
-      if (_drops == 0) {
-        waterTree();
-        grownTrees++;
+        }
       }
     }
   }
@@ -155,7 +193,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                   Text(
                       "Congratulations! You have grown ${totalTrees} ${totalTrees >
                           1 ? 'trees' : 'tree'}!",
-                      style: TextStyle(color: AppColors.secondary)
+                      style: GoogleFonts.urbanist(color: AppColors.secondary)
                   ),
                 ] else
                   ...[
@@ -163,7 +201,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                         height: 100),
                     SizedBox(height: 10),
                     Text("You are at level $state",
-                        style: TextStyle(color: AppColors.secondary)),
+                        style: GoogleFonts.urbanist(color: AppColors.secondary)),
                   ],
               ]),
           actionsAlignment: MainAxisAlignment.center,
@@ -188,7 +226,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                 elevation: WidgetStateProperty.all(1),
                 fixedSize: WidgetStateProperty.all(Size(100, 40)),
                 textStyle: WidgetStateProperty.all(
-                    TextStyle(fontSize: 13, fontWeight: FontWeight.normal)),
+                    GoogleFonts.urbanist(fontSize: 13, fontWeight: FontWeight.normal)),
               ),
               child: (totalTrees == 0) ? Text("Continue") : Text("Donate"),
             ),
@@ -199,7 +237,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext  context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -226,93 +264,72 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
           SizedBox(width: 20),
         ],
       ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: _treeService.getTreeProgress(widget.userId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return Center(child: Text("No Data Found"));
-          }
-
-          var data = snapshot.data!.data() as Map<String, dynamic>;
-          int leveloftree = data['levelOfTree'] ?? 0;
-          double progress = data['progress'] ?? 0.0;
-          int water = data['water'] ?? 0;
-          int tree = data['tree'] ?? 0;
-          _levelOfTree = leveloftree;
-          _progress = progress;
-          _drops = water;
-          _trees = tree;
-          return SingleChildScrollView(
+      body: SingleChildScrollView(
           child:
-            Column(
-              spacing: 20,
-              children: [
-                SizedBox(height: 40),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 150,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Image.asset(
-                              'lib/assets/images/drop.png', width: 25),
-                          SizedBox(width: 5),
-                          Text('$_drops', style: TextStyle(fontSize: 30,
-                              fontWeight: FontWeight.normal,
-                              color: AppColors.secondary)),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 20),
-                    SizedBox(
-                      width: 150,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Image.asset(
-                              'lib/assets/images/tree.png', width: 25),
-                          SizedBox(width: 5),
-                          Text('$_trees', style: TextStyle(fontSize: 30,
-                              fontWeight: FontWeight.normal,
-                              color: AppColors.secondary)),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-                SizedBox(
-                  height: 300,
-                  width: 300,
-                  child: CustomPaint(
-                    painter: GradientProgressPainter(progress: _progress),
-                    child: Column(
+          Column(
+            spacing: 20,
+            children: [
+              SizedBox(height: 40),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 150,
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Image.asset(_state[_levelOfTree][0], width: 200,
-                            height: 200),
-                        SizedBox(height: 20),
-                        Text(
-                          '${(progress * _state[_levelOfTree][1])
-                              .round()}/${_state[_levelOfTree][1]}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w300,
-                            color: AppColors.surface,
-                          ),
-                        ),
-                        SizedBox(height: 15),
+                        Image.asset(
+                            'lib/assets/images/drop.png', width: 25),
+                        SizedBox(width: 5),
+                        Text('$_drops', style: GoogleFonts.urbanist(fontSize: 30,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.secondary)),
                       ],
                     ),
                   ),
+                  SizedBox(width: 20),
+                  SizedBox(
+                    width: 150,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Image.asset(
+                            'lib/assets/images/tree.png', width: 25),
+                        SizedBox(width: 5),
+                        Text('$_trees', style: GoogleFonts.urbanist(fontSize: 30,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.secondary)),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+              SizedBox(
+                height: 300,
+                width: 300,
+                child: CustomPaint(
+                  painter: GradientProgressPainter(progress: _progress),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Image.asset(_state[_levelOfTree][0], width: 200,
+                          height: 200),
+                      SizedBox(height: 20),
+                      Text(
+                        '${(_progress * _state[_levelOfTree][1]).round()}/${_state[_levelOfTree][1]}',
+                        style: GoogleFonts.urbanist(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w300,
+                          color: AppColors.surface,
+                        ),
+                      ),
+                      SizedBox(height: 15),
+                    ],
+                  ),
                 ),
+              ),
 
-                SizedBox(
+              SizedBox(
                   width: 200,
                   height: 80,
                   child: Column(
@@ -320,7 +337,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('$leftDrops', style: TextStyle(
+                          Text('$leftDrops', style: GoogleFonts.urbanist(
                               fontSize: 30,
                               fontWeight: FontWeight.normal,
                               color: AppColors.secondary)),
@@ -330,46 +347,44 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                         ],
                       ),
                       Text('drops of water left',
-                          style: TextStyle(color: AppColors.secondary)),
+                          style: GoogleFonts.urbanist(color: AppColors.secondary)),
                     ],
                   )
-                ),
-                ElevatedButton(
-                  onPressed: _drops > 0
-                      ? () {
-                    waterTree();
-                  } : null,
+              ),
+              ElevatedButton(
+                onPressed: _drops > 0
+                    ? () {
+                  waterTree();
+                } : null,
 
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                          (Set<WidgetState> states) {
-                        if (states.contains(WidgetState.disabled)) {
-                          return Colors.grey;
-                        }
-                        return AppColors.primary;
-                      },
-                    ),
-                    foregroundColor: WidgetStateProperty.all(
-                        AppColors.surface),
-                    overlayColor: WidgetStateProperty.all(
-                        Color(0x4CE7E0DA)),
-                    shadowColor: WidgetStateProperty.all(
-                        Colors.transparent),
-                    shape: WidgetStateProperty.all(
-                      RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25)),
-                    ),
-                    elevation: WidgetStateProperty.all(1),
-                    fixedSize: WidgetStateProperty.all(Size(200, 50)),
-                    textStyle: WidgetStateProperty.all(TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.normal)),
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                        (Set<WidgetState> states) {
+                      if (states.contains(WidgetState.disabled)) {
+                        return Colors.grey;
+                      }
+                      return AppColors.primary;
+                    },
                   ),
-                  child: Text('Watering'),
+                  foregroundColor: WidgetStateProperty.all(AppColors.surface),
+
+                  overlayColor: WidgetStateProperty.all(
+                      Color(0x4CE7E0DA)),
+                  shadowColor: WidgetStateProperty.all(
+                      Colors.transparent),
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25)),
+                  ),
+                  elevation: WidgetStateProperty.all(1),
+                  fixedSize: WidgetStateProperty.all(Size(200, 50)),
+                  textStyle: WidgetStateProperty.all(GoogleFonts.urbanist(
+                      fontSize: 20, fontWeight: FontWeight.normal)),
                 ),
-              ],
-            )
-          );
-        },
+                child: Text('Watering'),
+              ),
+            ],
+          )
       )
     );
   }

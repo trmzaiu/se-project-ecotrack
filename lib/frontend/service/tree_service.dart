@@ -12,10 +12,11 @@ class TreeService {
 
   // Update progress
   Future<void> updateProgress(String userId, double currentProgress) async {
-    double newProgress = (currentProgress + 0.1) % 1.0;
+    if (currentProgress == 1.0) currentProgress = 0;
+    print("Progress: $currentProgress");
     await _db.collection('users')
         .doc(userId)
-        .update({'progress': newProgress});
+        .update({'progress': currentProgress});
   }
 
   Future<void> updateWater(String userId, int water) async{
