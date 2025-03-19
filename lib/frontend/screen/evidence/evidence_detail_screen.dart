@@ -34,14 +34,6 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
 
-  // final List<String> imagePaths = [
-  //   'lib/assets/images/caution.png',
-  //   'lib/assets/images/img.png',
-  //   'lib/assets/images/img.png',
-  //   'lib/assets/images/img.png',
-  // ];
-
-
   @override
   Widget build(BuildContext context) {
     double phoneWidth = getPhoneWidth(context);
@@ -50,7 +42,7 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
       backgroundColor: AppColors.secondary,
       body: Column(
         children: [
-          BarTitle(title: 'Evidence'),
+          BarTitle(title: 'Evidence', showBackButton: true),
           SizedBox(height: 30),
           Expanded(
             child: Container(
@@ -66,7 +58,7 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
               ),
               child: Column(
                 children: [
-                  SizedBox(height: 30),
+                  SizedBox(height: 35),
                   Center(
                     child: Stack(
                       alignment: Alignment.center,

@@ -171,10 +171,10 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
     ];
 
     final List<String> descriptions = [
-      "Waste that can be processed into new materials through recycling methods.",
-      "Biodegradable materials that naturally break down and return to the environment.",
-      "Harmful substances that pose risks to human health and the environment.",
-      "Non-recyclable materials that cannot be reused or naturally decomposed.",
+      "Waste that can be processed into new \nmaterials through recycling methods.",
+      "Biodegradable materials that naturally break \ndown and return to the environment.",
+      "Harmful substances that pose risks to \nhuman health and the environment.",
+      "Non-recyclable materials that cannot \nbe reused or naturally decomposed.",
     ];
 
     final List<String> images = [
@@ -207,7 +207,7 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
             textAlign: TextAlign.center,
             style: GoogleFonts.urbanist(
               color: AppColors.tertiary,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: AppFontWeight.regular,
               letterSpacing: 0.70,
             ),

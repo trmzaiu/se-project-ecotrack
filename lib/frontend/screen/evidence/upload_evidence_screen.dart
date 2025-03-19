@@ -96,7 +96,7 @@ class _UploadScreenState extends State<UploadScreen> {
           children: <Widget>[
             ListTile(
               leading: Icon(Icons.camera_alt, color: AppColors.primary),
-              title: Text('Take a new photo', style: GoogleFonts.urbanist(color: AppColors.primary, fontWeight: AppFontWeight.regular)),
+              title: Text('Take a new photo', style: GoogleFonts.urbanist(color: AppColors.tertiary, fontWeight: AppFontWeight.regular)),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
@@ -104,7 +104,7 @@ class _UploadScreenState extends State<UploadScreen> {
             ),
             ListTile(
               leading: Icon(Icons.photo_library, color: AppColors.primary),
-              title: Text('Choose from your device', style: GoogleFonts.urbanist(color: AppColors.primary, fontWeight: AppFontWeight.regular)),
+              title: Text('Choose from your device', style: GoogleFonts.urbanist(color: AppColors.tertiary, fontWeight: AppFontWeight.regular)),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);

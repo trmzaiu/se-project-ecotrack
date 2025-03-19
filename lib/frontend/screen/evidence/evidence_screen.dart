@@ -40,7 +40,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
       backgroundColor: AppColors.secondary,
       body: Column(
         children: [
-          BarTitle(title: 'Evidence'),
+          BarTitle(title: 'Evidence', showBackButton: true),
           SizedBox(height: 30),
           Expanded(
             child: Container(

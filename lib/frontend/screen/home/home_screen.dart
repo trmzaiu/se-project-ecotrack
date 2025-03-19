@@ -40,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double phoneWidth= getPhoneWidth(context);
+    double phoneWidth = getPhoneWidth(context);
 
     return Scaffold(
       body: Container(

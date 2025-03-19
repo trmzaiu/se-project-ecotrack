@@ -26,7 +26,7 @@ class BarTitle extends StatelessWidget {
         children: [
           if (showBackButton)
             Positioned(
-              left: 15,
+              left: 20,
               child: GestureDetector(
                 onTap: () {
                   Navigator.pop(context);
