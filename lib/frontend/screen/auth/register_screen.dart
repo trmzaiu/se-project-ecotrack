@@ -65,7 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (result != null) {
       _showErrorDialog(context, "Register Error: $result");
     } else {
-      _showSuccessDialog(context, "Resgister Success Full");
+      _showSuccessDialog(context, "Registered Successfully");
     }
   }
 

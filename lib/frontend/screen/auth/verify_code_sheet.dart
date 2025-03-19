@@ -6,6 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 import '../../widget/section_tile.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../service/auth_service.dart';
+import '../../widget/custom_dialog.dart';
 
 class VerifyCodeSheet extends StatefulWidget {
   final VoidCallback onNext;
@@ -19,6 +22,7 @@ class VerifyCodeSheet extends StatefulWidget {
 class _VerifyCodeSheetState extends State<VerifyCodeSheet> {
   final List<TextEditingController> _controllers = List.generate(4, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
+  final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
 
   int _secondsRemaining = 90;
   Timer? _timer;
@@ -82,10 +86,24 @@ class _VerifyCodeSheetState extends State<VerifyCodeSheet> {
     }
   }
 
-  void verifyCode() {
-    String code = _controllers.map((e) => e.text).join();
-    print("Entered code: $code");
+  Future<void> verifyCode(BuildContext context) async {
+    try {
+      String code = _controllers.map((e) => e.text).join();
+
+      final success = await _authService.verifyOTP(code);
+
+      if (success) {
+        widget.onNext();
+      } else {
+        _showErrorDialog(context, "The OTP is not correct");
+      }
+    }catch(e){
+      print("Error: $e");
+      _showErrorDialog(context, e.toString());
+    }
   }
+
+
   void _checkCodeCompletion() {
     setState(() {
       _isButtonEnabled = _controllers.every((controller) => controller.text.isNotEmpty);
@@ -106,6 +124,17 @@ class _VerifyCodeSheetState extends State<VerifyCodeSheet> {
       _focusNodes[index + 1].requestFocus();
     }
     _checkCodeCompletion();
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        message: message,
+        status: false,
+        buttonTitle: "Try Again",
+      ),
+    );
   }
 
 
@@ -142,10 +171,9 @@ class _VerifyCodeSheetState extends State<VerifyCodeSheet> {
               description: "Please enter the 4-digit code sent \nto your email address.",
               text: "Verify",
               onSubmit: _isButtonEnabled
-                  ? () {
-                    verifyCode();
-                    widget.onNext();
-                  }
+                  ? () async {
+                      await verifyCode(context);
+                    }
                   : () {},
               children: [
                 SizedBox(

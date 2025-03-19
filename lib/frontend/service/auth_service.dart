@@ -210,7 +210,6 @@ class AuthenticationService {
 
       bool result = await EmailOTP.sendOTP(email: email);
       if (result) {
-        print("OTP sent successfully!");
         return true;
       } else {
         print("Failed to send OTP.");
@@ -219,6 +218,29 @@ class AuthenticationService {
     } catch (e) {
       // Handle errors
       print("Error sending password reset email: $e");
+      return false;
+    }
+  }
+
+  Future<bool> verifyOTP(String otp) async {
+    try{
+      bool result = await EmailOTP.verifyOTP(otp: otp);
+      if (result) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print("Error verifying OTP: $e");
+      return false;
+    }
+  }
+
+  Future<bool> resetPassword(String oobCode, String newPassword) async {
+    try {
+      await _firebaseAuth.confirmPasswordReset(code: oobCode, newPassword: newPassword);
+      return true;
+    } catch (e) {
       return false;
     }
   }
