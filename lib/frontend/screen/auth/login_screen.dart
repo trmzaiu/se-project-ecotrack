@@ -17,6 +17,8 @@ import '../../widget/my_textfield.dart';
 import '../../widget/square_tile.dart';
 import 'forgot_password_sheet.dart';
 import 'package:wastesortapp/frontend/service/auth_service.dart';
+import 'package:provider/provider.dart';
+import 'package:wastesortapp/frontend/service/internet_checker_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -183,6 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     double phoneHeight= getPhoneHeight(context);
+    Provider.of<InternetCheckerProvider>(context, listen: false).setContext(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
