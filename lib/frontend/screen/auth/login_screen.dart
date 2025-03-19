@@ -16,6 +16,7 @@ import '../../widget/custom_dialog.dart';
 import '../../widget/my_textfield.dart';
 import '../../widget/square_tile.dart';
 import 'forgot_password_sheet.dart';
+import 'package:wastesortapp/frontend/service/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   @override

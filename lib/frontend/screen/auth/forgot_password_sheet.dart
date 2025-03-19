@@ -5,7 +5,7 @@ import '../../service/auth_service.dart';
 import '../../widget/custom_dialog.dart';
 import '../../widget/my_textfield.dart';
 import '../../widget/section_tile.dart';
-
+import 'package:wastesortapp/frontend/service/auth_service.dart';
 class ForgotPasswordSheet extends StatefulWidget {
   final VoidCallback onNext;
 

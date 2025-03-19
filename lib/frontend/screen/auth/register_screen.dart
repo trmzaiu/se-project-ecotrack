@@ -12,6 +12,7 @@ import '../../utils/phone_size.dart';
 import '../../widget/custom_dialog.dart';
 import '../../widget/my_button.dart';
 import '../../widget/my_textfield.dart';
+import 'package:wastesortapp/frontend/service/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -33,24 +34,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!_isValidEmail(email)) {
       _showErrorDialog(
-          context,
-          "The email address is invalid format!",
+        context,
+        "The email address is invalid format!",
       );
       return;
     }
 
     if (password.isEmpty || confirmPassword.isEmpty) {
       _showErrorDialog(
-          context,
-          "Please enter your password!",
+        context,
+        "Please enter your password!",
       );
       return;
     }
 
     if (password != confirmPassword) {
       _showErrorDialog(
-          context,
-          "Your password is mismatch!",
+        context,
+        "Your password is mismatch!",
       );
       return;
     }
@@ -121,16 +122,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               children: [
                 Container(
-                  height: 350,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary,
-                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-                  ),
-                  child: Center(
-                    child: Image.asset(
-                      "lib/assets/images/trash.png", width: 370,
+                    height: 350,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
                     ),
-                  )
+                    child: Center(
+                      child: Image.asset(
+                        "lib/assets/images/trash.png", width: 370,
+                      ),
+                    )
                 ),
               ],
             ),
@@ -205,11 +206,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: "Already have an account? ",
-                      style: GoogleFonts.urbanist(
-                        color: AppColors.primary,
-                        fontSize: 14,
-                      )
+                        text: "Already have an account? ",
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.primary,
+                          fontSize: 14,
+                        )
                     ),
                     TextSpan(
                       text: "Login",

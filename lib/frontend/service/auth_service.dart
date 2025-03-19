@@ -42,36 +42,36 @@ class AuthenticationService {
     required String password,
   }) async {
     try {
-      // Check email, password empty
+      // Check email and password are not empty
       if (email.isEmpty || password.isEmpty) {
         _showErrorDialog(context, "Email and password cannot be empty.");
         return false;
       }
 
-      // Check valid email
+      // Validate email format
       if (!_isValidEmail(email)) {
         _showErrorDialog(context, "The email address is in an invalid format!");
         return false;
       }
 
-      // Check exist email
-      // List<String> signInMethods = await _firebaseAuth.fetchSignInMethodsForEmail(email);
-      // if (signInMethods.isEmpty) {
-      //   _showErrorDialog(context, "No account found with this email.");
-      //   return false;
-      // }
-
+      // Attempt to sign in
       await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
       return true;
     } on FirebaseAuthException catch (e) {
-      // Check password
-      _showErrorDialog(context, _handleFirebaseAuthException(e));
+      // Handle Firebase exceptions
+      if (e.code == 'wrong-password') {
+        _showErrorDialog(context, "Incorrect password. Please try again.");
+      } else {
+        _showErrorDialog(context, _handleFirebaseAuthException(e));
+      }
       return false;
     } catch (e) {
-      _showErrorDialog(context, "An unexpected error occurred");
+      // Handle unexpected errors
+      _showErrorDialog(context, "An unexpected error occurred.");
       return false;
     }
   }
+
 
   Future<String?> signUp({required String email, required String password}) async {
     try {
@@ -219,3 +219,4 @@ class AuthenticationService {
     }
   }
 }
+
