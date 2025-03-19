@@ -574,7 +574,7 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        Image.asset('lib/assets/images/background.png', width: 360),
+                        Image.asset('lib/assets/images/background.png', width: phoneWidth - 40),
 
                         Positioned(
                           left: 30,

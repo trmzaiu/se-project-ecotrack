@@ -95,12 +95,13 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
 
           SizedBox(
             width: phoneWidth,
-            height: phoneHeight,
+            height: phoneHeight - 85,
             child: Column(
               children: [
                 BarTitle(title: 'Guide', showNotification: true),
+
                 SizedBox(
-                  height: 540,
+                  height: 530,
                   child: PageView.builder(
                     controller: _pageController,
                     onPageChanged: (index) {
@@ -113,6 +114,7 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
                     },
                   ),
                 ),
+
                 GestureDetector(
                   onTap: () => _goToScreen(_currentIndex),
                   child: Container(

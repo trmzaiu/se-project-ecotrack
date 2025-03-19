@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:wastesortapp/frontend/screen/evidence/evidence_screen.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 
@@ -37,6 +38,15 @@ class ProfileScreen extends StatelessWidget {
                 );
               },
               child: Text('Log Out'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => EvidenceScreen()),
+                );
+              },
+              child: Text('History'),
             ),
           ],
         ),
