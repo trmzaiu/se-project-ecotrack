@@ -1,12 +1,18 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wastesortapp/database/model/user.dart';
+import 'package:email_otp/email_otp.dart';
+
+import '../widget/custom_dialog.dart';
 
 class AuthenticationService {
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FacebookAuth _facebookAuth = FacebookAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   AuthenticationService(this._firebaseAuth);
@@ -15,14 +21,55 @@ class AuthenticationService {
 
   String? get userId => _firebaseAuth.currentUser?.uid;
 
-  Future<String?> signIn({required String email, required String password}) async {
+  bool _isValidEmail(String email) {
+    return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        message: message,
+        status: false,
+        buttonTitle: "Try Again",
+      ),
+    );
+  }
+
+  Future<bool> signIn({
+    required BuildContext context,
+    required String email,
+    required String password,
+  }) async {
     try {
+      // Check email, password empty
+      if (email.isEmpty || password.isEmpty) {
+        _showErrorDialog(context, "Email and password cannot be empty.");
+        return false;
+      }
+
+      // Check valid email
+      if (!_isValidEmail(email)) {
+        _showErrorDialog(context, "The email address is in an invalid format!");
+        return false;
+      }
+
+      // Check exist email
+      List<String> signInMethods = await _firebaseAuth.fetchSignInMethodsForEmail(email);
+      if (signInMethods.isEmpty) {
+        _showErrorDialog(context, "No account found with this email.");
+        return false;
+      }
+
       await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-      return null;
+      return true;
     } on FirebaseAuthException catch (e) {
-      return _handleFirebaseAuthException(e);
+      // Check password
+      _showErrorDialog(context, _handleFirebaseAuthException(e));
+      return false;
     } catch (e) {
-      return "An unexpected error occurred";
+      _showErrorDialog(context, "An unexpected error occurred");
+      return false;
     }
   }
 
@@ -98,6 +145,7 @@ class AuthenticationService {
     try {
       await _firebaseAuth.signOut();
       await _googleSignIn.signOut();
+      await _facebookAuth.logOut();
     } catch (e) {
       print("Error during logout: $e");
     }
@@ -128,13 +176,27 @@ class AuthenticationService {
 
   Future<bool> sendPasswordResetEmail(String email) async {
     try {
-      // Check if the email exists in Firebase
-      await _firebaseAuth.sendPasswordResetEmail(email: email);
-      return true; // Successfully sent the email
+      EmailOTP.config(
+        appName: 'EcoTrack',
+        otpType: OTPType.numeric,
+        expiry : 30000,
+        emailTheme: EmailTheme.v6,
+        appEmail: 'wastesortapp@gmail.com',
+        otpLength: 4,
+      );
+
+      bool result = await EmailOTP.sendOTP(email: email);
+      if (result) {
+        print("OTP sent successfully!");
+        return true;
+      } else {
+        print("Failed to send OTP.");
+        return false;
+      }
     } catch (e) {
       // Handle errors
       print("Error sending password reset email: $e");
-      return false; // Failed to send the email
+      return false;
     }
   }
 

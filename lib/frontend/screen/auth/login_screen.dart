@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wastesortapp/frontend/screen/auth/opening_screen.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
+import 'package:wastesortapp/frontend/screen/auth/reset_password_sheet.dart';
+import 'package:wastesortapp/frontend/screen/auth/verify_code_sheet.dart';
 import 'package:wastesortapp/frontend/service/auth_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/frontend/widget/my_button.dart';
@@ -23,40 +25,27 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController emailResetController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   bool _isLoading = false;
-  bool _isShowSheet = true;
+  bool _isShowSheet = false;
+  int _currentSheetState = 0;
 
   Future<void> signIn(BuildContext context) async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    if (email.isEmpty) {
-      _showErrorDialog(context, "Please enter your email address!");
-      return;
-    }
-
-    if (!_isValidEmail(email)) {
-      _showErrorDialog(context, "The email address is invalid format!");
-      return;
-    }
-
-    if (password.isEmpty) {
-      _showErrorDialog(context, "Please enter your password!");
-      return;
-    }
-
     setState(() => _isLoading = true);
 
-    final result = await _authService.signIn(email: email, password: password);
+    final bool isSuccess = await _authService.signIn(
+      context: context,
+      email: email,
+      password: password,
+    );
 
     setState(() => _isLoading = false);
 
-    if (result != null) {
-      _showErrorDialog(context, result);
-    } else {
+    if (isSuccess) {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         _navigateToMainScreen(context, user.uid);
@@ -102,37 +91,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> resetPassword(BuildContext context) async {
-    setState(() => _isLoading = true);
-
-    try {
-      final email = emailResetController.text.trim();
-      print("Email: $email");
-
-      if (email.isEmpty) {
-        throw "Please enter your email address.";
-      }
-
-      if (!_isValidEmail(email)) {
-        throw "The email is in invalid format!";
-      }
-
-      final success = await _authService.sendPasswordResetEmail(email);
-
-      setState(() => _isLoading = false);
-
-      if (success) {
-        _showSuccessDialog(context, "Please check your email!");
-      } else {
-        throw "Failed to send password reset email!";
-      }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showErrorDialog(context, e.toString());
-    }
-  }
-
-
   bool _isValidEmail(String email) {
     return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
   }
@@ -172,33 +130,53 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void handleForgotPassword(String email) {
-    if (email.isEmpty) {
-      _showErrorDialog(context, "Please enter your email.");
-      return;
-    }
+  void _toggleSheet(BuildContext context, int state) {
+    if (_isShowSheet) return;
 
-    resetPassword(context);
-  }
-
-  void _toggleSheet(BuildContext context) {
     setState(() {
-      _isShowSheet = false;
+      _isShowSheet = true;
+      _currentSheetState = state;
     });
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ForgotPasswordSheet(
-        onResetPassword: handleForgotPassword,
-        emailController: emailResetController,
-      ),
+      builder: (context) {
+        return _buildSheet(state);
+      },
     ).whenComplete(() {
-      setState(() {
-        _isShowSheet = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isShowSheet = false;
+        });
+      }
     });
+  }
+
+  Widget _buildSheet(int state) {
+    switch (state) {
+      case 0:
+        return ForgotPasswordSheet(onNext: () {
+          Navigator.pop(context);
+          Future.delayed(Duration(milliseconds: 200), () {
+            _toggleSheet(context, 1);
+          });
+        });
+      case 1:
+        return VerifyCodeSheet(onNext: () {
+          Navigator.pop(context);
+          Future.delayed(Duration(milliseconds: 200), () {
+            _toggleSheet(context, 2);
+          });
+        });
+      case 2:
+        return ResetPasswordSheet(onNext: () {
+          Navigator.pop(context);
+        });
+      default:
+        return SizedBox.shrink();
+    }
   }
 
   @override
@@ -218,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: AppColors.secondary,
                     borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
                   ),
-                  child: _isShowSheet ?
+                  child: !_isShowSheet ?
                     Center(
                       child: Image.asset(
                         "lib/assets/images/trash.png", width: 370,
@@ -279,7 +257,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     alignment: Alignment.centerRight,
                     child: GestureDetector(
                       onTap: () {
-                        _toggleSheet(context);
+                        _toggleSheet(context, 0);
                       },
                       child: Text(
                         "Forgot your password?",

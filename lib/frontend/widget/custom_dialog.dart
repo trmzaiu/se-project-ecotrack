@@ -26,8 +26,8 @@ class CustomDialog extends StatelessWidget {
 
     return AlertDialog(
       backgroundColor: AppColors.background,
-      contentPadding: EdgeInsets.fromLTRB(30, 50, 30, 0),
-      content: Container(
+      contentPadding: EdgeInsets.fromLTRB(25, 50, 25, 0),
+      content: SizedBox(
         height: phoneHeight/2.5 - 40,
         width: phoneWidth - 60,
         child: Column(
