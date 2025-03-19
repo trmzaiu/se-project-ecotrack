@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wastesortapp/frontend/utils/phone_size.dart';
 
 import '../../../ScanAI/processImage.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
+import '../../widget/scan_animation.dart';
 import '../evidence/upload_evidence_screen.dart';
 
 class ScanScreen extends StatefulWidget {
@@ -23,15 +25,22 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
   bool _isScanning = false;
   String? _scanResult;
   bool _scanCompleted = false;
+  Future<File>? _imageFuture;
+  late double imageTop;
+  late double imageHeight;
 
   @override
   void initState() {
     super.initState();
-
     controller = AnimationController(
       vsync: this,
       duration: Duration(seconds: 1),
     );
+
+    _imageFuture = _loadImage().then((file) {
+      _getImageSize(file);
+      return file;
+    });
   }
 
   @override
@@ -60,27 +69,60 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
     controller.stop();
   }
 
+  Future<File> _loadImage() async {
+    return File(widget.imagePath);
+  }
+
+  Future<void> _getImageSize(File imageFile) async {
+    final Completer<Size> completer = Completer();
+    final Image image = Image.file(imageFile);
+
+    image.image.resolve(ImageConfiguration()).addListener(
+      ImageStreamListener((ImageInfo info, bool _) {
+        final double screenHeight = MediaQuery.of(context).size.height;
+        final double imageHeight = info.image.height.toDouble();
+        final double imageTop = (screenHeight - imageHeight) / 2;
+
+        setState(() {
+          this.imageHeight = imageHeight;
+          this.imageTop = imageTop;
+        });
+
+        completer.complete(Size(info.image.width.toDouble(), imageHeight));
+      }),
+    );
+
+    await completer.future;
+  }
+
+
   @override
   Widget build(BuildContext context) {
+    double statusHeight = getStatusHeight(context);
+    double phoneWidth = getPhoneWidth(context);
+    double phoneHeight = getPhoneHeight(context);
+
     return Scaffold(
-      backgroundColor: Colors.black12,
+      backgroundColor: Colors.black,
       body: Stack(
         children: [
-          Center(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return Image.file(
-                  File(widget.imagePath),
-                  // width: constraints.maxWidth,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
+          FutureBuilder<File>(
+            future: _imageFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator(color: AppColors.primary),);
+              } else if (snapshot.hasError) {
+                return Center(child: Text("Error loading image"));
+              } else {
+                return Align(
+                  alignment: Alignment.center,
+                  child: Image.file(snapshot.data!),
                 );
-              },
-            ),
+              }
+            }
           ),
 
-          if (_isScanning)
+          if (_isScanning) ...[
             Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -88,8 +130,8 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                   Text(
                     "Scanning...",
                     style: GoogleFonts.urbanist(
-                      fontSize: 24,
-                      fontWeight: AppFontWeight.semiBold,
+                      fontSize: 18,
+                      fontWeight: AppFontWeight.regular,
                       color: AppColors.surface,
                       shadows: [
                         Shadow(
@@ -106,10 +148,10 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: LinearProgressIndicator(
-                        minHeight: 10,
+                        minHeight: 8,
                         backgroundColor: Color(0xFFDEF3E7),
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                        color: AppColors.primary,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.board2),
+                        color: AppColors.board2,
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -117,6 +159,8 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                 ],
               ),
             ),
+            ScanAnimation(),
+          ],
 
           if (_scanCompleted && _scanResult != null)
             Align(
@@ -126,7 +170,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                   Container(
                     width: 280,
                     height: 82,
-                    margin: EdgeInsets.only(bottom: 160),
+                    margin: EdgeInsets.only(bottom: 102),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
@@ -168,7 +212,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                               style: GoogleFonts.urbanist(
                                 fontSize: 12,
                                 fontWeight: AppFontWeight.regular,
-                                color: Color(0xFFC2C2C2),
+                                color: AppColors.tertiary,
                                 letterSpacing: 1,
                               ),
                             ),
@@ -178,7 +222,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                               style: GoogleFonts.urbanist(
                                 fontSize: 18,
                                 fontWeight: AppFontWeight.medium,
-                                color: Color(0xFF494949),
+                                color: AppColors.secondary,
                                 letterSpacing: 2,
                               ),
                             ),
@@ -193,7 +237,12 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                     top: 19,
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UploadScreen(imagePath: widget.imagePath),
+                          ),
+                        );
                       },
                       child: Container(
                         width: 45,
@@ -204,7 +253,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                         ),
                         child: Center(
                           child: SvgPicture.asset(
-                            'lib/assets/icons/ic_backward.svg',
+                            'lib/assets/icons/ic_arrow_right.svg',
                             height: 24,
                           ),
                         ),
@@ -216,83 +265,96 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
             ),
 
           if (!_isScanning && !_scanCompleted)
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Spacer(),
-                Align(
-                  alignment: Alignment.center,
-                  child: GestureDetector(
-                    onTap: _isScanning ? null : _scanImage,
-                    child: Container(
-                      width: 356,
-                      padding: EdgeInsets.symmetric(vertical: 15),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: Text(
-                          "Scan",
-                          style: GoogleFonts.urbanist(
-                            fontSize: 24,
-                            fontWeight: AppFontWeight.semiBold,
-                            color: AppColors.surface,
+            Padding(
+              padding: EdgeInsets.only(bottom: (phoneHeight - (phoneWidth*(16/9)) - (statusHeight + 2.5) - 80)),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: GestureDetector(
+                      onTap: _isScanning ? null : _scanImage,
+                      child: Container(
+                        width: phoneWidth - 60,
+                        padding: EdgeInsets.symmetric(vertical: 15),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.95),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Scan",
+                            style: GoogleFonts.urbanist(
+                              fontSize: 24,
+                              fontWeight: AppFontWeight.semiBold,
+                              color: AppColors.surface,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(height: 15),
-                Align(
-                  alignment: Alignment.center,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => UploadScreen(imagePath: widget.imagePath),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      "Upload Evidence",
-                      style: GoogleFonts.urbanist(
-                        fontSize: 20,
-                        fontWeight: AppFontWeight.semiBold,
-                        color: AppColors.surface,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(0, 2),
-                            blurRadius: 4,
-                            color: Color(0xFF333333).withOpacity(0.3),
+                  SizedBox(height: 20),
+                  Align(
+                    alignment: Alignment.center,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UploadScreen(imagePath: widget.imagePath),
                           ),
-                        ],
+                        );
+                      },
+                      child: Text(
+                        "Upload Evidence",
+                        style: GoogleFonts.urbanist(
+                          fontSize: 20,
+                          fontWeight: AppFontWeight.semiBold,
+                          color: AppColors.surface,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(0, 0),
+                              blurRadius: 30,
+                              color: Colors.white.withOpacity(0.3),
+                            ),
+                            Shadow(
+                              offset: Offset(0, 2),
+                              blurRadius: 8,
+                              color: Colors.black.withOpacity(0.1),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(height: 60),
-              ],
+                ],
+              ),
             ),
 
           if (!_isScanning)
             Positioned(
-              top: 40,
-              right: 20,
+              top: statusHeight + 20,
+              right: 15,
               child: GestureDetector(
                 onTap: () {
-                  _scanCompleted ? Navigator.popUntil(context, (route) => route.isFirst) : Navigator.pop(context);
+                  Navigator.pop(context);
                 },
                 child: Container(
-                  height: 30,
+                  height: 35,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0xFF494848).withOpacity(0.5),
+                    // shape: BoxShape.circle,
+                    // color: Color(0x80494848),
+                    boxShadow: [BoxShadow(
+                      color: Color(0x80494848),
+                      offset: Offset(0,0),
+                      blurRadius: 35,
+                      spreadRadius: 1
+                    )]
                   ),
                   child: SvgPicture.asset(
                     'lib/assets/icons/ic_close.svg',
+                    width: 40,
                     height: 40,
                   ),
                 ),

@@ -14,12 +14,36 @@ class ApiService {
       if (response.statusCode == 200) {
         var responseData = await response.stream.bytesToString();
         var jsonResponse = json.decode(responseData);
-        return jsonResponse["prediction"];
+        String predicted = jsonResponse["prediction"];
+        
+        Map<String, String> categoryMap = {
+          "Plastic": "Recyclable", "Paper": "Recyclable", "Glass": "Recyclable",
+          "Metal": "Recyclable", "Cardboard": "Recyclable", "Cans": "Recyclable",
+          "Vehicle": "Recyclable", "Air Condition": "Recyclable",
+          "Furnitures": "Recyclable", "Faucet": "General",
+
+          "Electronic": "Hazardous", "Medical": "Hazardous", "Chemical": "Hazardous",
+          "Toxic": "Hazardous", "LED": "Hazardous", "Batteries": "Hazardous",
+          "Computer Mouse": "Hazardous", "Gamepad": "Hazardous",
+
+          "Used Tissue": "General", "Packaging": "General","Clothes": "General",
+          "Wrapper": "General", "Polystyrene": "General",
+          "Fabric": "General", "Ceramic": "General",
+          "Toothbrush": "General", "Sponges": "General",
+          "Rubber": "General", "Crocs": "General",
+          "Bag": "General", "Curtain": "General",
+
+          "Organic": "Organic", "Man": "Organic", "Woman": "Organic",
+          "Person": "Organic", "Animal": "Organic", "Fruit": "Organic",
+          "Flower": "Organic", "Cake": "Organic",
+        };
+        // Get category, default to "Unknown" if not found
+        return categoryMap[predicted];
       } else {
-        return "Error: ${response.statusCode}";
+        return "Error";
       }
     } catch (e) {
-      return "Error: $e";
+      return "Error";
     }
   }
 }

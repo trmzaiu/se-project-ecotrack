@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import 'frontend/screen/camera/camera_screen.dart';
-import 'frontend/screen/evidence/evidence_screen.dart';
 import 'frontend/screen/guide/guide_screen.dart';
 import 'frontend/screen/home/home_screen.dart';
 import 'frontend/screen/splash_screen.dart';
 import 'frontend/screen/tree/virtual_tree_screen.dart';
-import 'frontend/screen/auth/opening_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:wastesortapp/database/firebase_options.dart';
 import 'package:wastesortapp/frontend/screen/user/profile_screen.dart';
@@ -19,8 +16,8 @@ void main() async{
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     systemNavigationBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.dark,
-    systemNavigationBarIconBrightness: Brightness.dark,
+    statusBarIconBrightness: Brightness.light,
+    systemNavigationBarIconBrightness: Brightness.light,
   ));
 
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +41,10 @@ class MyApp extends StatelessWidget {
           tertiary: AppColors.tertiary,
           surface: AppColors.surface,
           scrim: AppColors.accent
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
         ),
       ),
       home: SplashScreen(),

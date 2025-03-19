@@ -10,21 +10,37 @@ import '../../../theme/fonts.dart';
 import '../../widget/bar_title.dart';
 
 class EvidenceDetailScreen extends StatefulWidget {
+  final String category;
+  final String status;
+  final int point;
+  final String date;
+  final String? description;
+  final List<String> imagePaths;
+
+  EvidenceDetailScreen({
+    required this.category,
+    required this.status,
+    required this.point,
+    required this.date,
+    required this.description,
+    required this.imagePaths,
+  });
+
   @override
   _EvidenceScreenState createState() => _EvidenceScreenState();
 }
 
 class _EvidenceScreenState extends State<EvidenceDetailScreen> {
   final PageController _pageController = PageController();
-
-  final List<String> imagePaths = [
-    'lib/assets/images/caution.png',
-    'lib/assets/images/img.png',
-    'lib/assets/images/img.png',
-    'lib/assets/images/img.png',
-  ];
-
   int _currentIndex = 0;
+
+  // final List<String> imagePaths = [
+  //   'lib/assets/images/caution.png',
+  //   'lib/assets/images/img.png',
+  //   'lib/assets/images/img.png',
+  //   'lib/assets/images/img.png',
+  // ];
+
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +76,7 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                           height: phoneWidth - 60,
                           child: PageView.builder(
                             controller: _pageController,
-                            itemCount: imagePaths.length,
+                            itemCount: widget.imagePaths.length,
                             onPageChanged: (index) {
                               setState(() {
                                 _currentIndex = index;
@@ -69,8 +85,8 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                             itemBuilder: (context, index) {
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(20),
-                                child: Image.asset(
-                                  imagePaths[index],
+                                child: Image.network(
+                                  widget.imagePaths[index],
                                   width: phoneWidth - 60,
                                   height: phoneWidth - 60,
                                   fit: BoxFit.cover,
@@ -96,7 +112,7 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                               child: AnimatedSwitcher(
                                 duration: Duration(milliseconds: 200),
                                 child: Text(
-                                  '${_currentIndex + 1}/${imagePaths.length}',
+                                  '${_currentIndex + 1}/${widget.imagePaths.length}',
                                   key: ValueKey(_currentIndex),
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.urbanist(
@@ -139,7 +155,7 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
 
                         Positioned(
                           right: 10,
-                          child: _currentIndex < imagePaths.length - 1
+                          child: _currentIndex < widget.imagePaths.length - 1
                               ? GestureDetector(
                             onTap: () {
                               _pageController.nextPage(
@@ -172,7 +188,7 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                   SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(imagePaths.length, (index) {
+                    children: List.generate(widget.imagePaths.length, (index) {
                       return AnimatedContainer(
                         duration: Duration(milliseconds: 300),
                         margin: EdgeInsets.symmetric(horizontal: 3),
@@ -191,8 +207,8 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _infoColumn('Category', 'Recyclable', (phoneWidth - 60) / 2),
-                          _infoColumn('Status', 'Approved', (phoneWidth - 60) / 2)
+                          _infoColumn('Category', widget.category, (phoneWidth - 60) / 2),
+                          _infoColumn('Status', widget.status, (phoneWidth - 60) / 2)
                         ],
                       )
                   ),
@@ -202,15 +218,20 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _infoColumn('Points Earned', '15 pts', (phoneWidth - 60) / 2),
-                          _infoColumn('Date', '28 Feb, 2025', (phoneWidth - 60) / 2)
+                          _infoColumn('Points Earned', '${widget.point} pts', (phoneWidth - 60) / 2),
+                          _infoColumn('Date', widget.date, (phoneWidth - 60) / 2)
                         ],
                       )
                   ),
                   SizedBox(height: 20),
                   SizedBox(
                     width: phoneWidth - 60,
-                    child: _infoColumn('Description', 'The description goes here', (phoneWidth - 60)),
+                    child:  _infoColumn(
+                        'Description',
+                        (widget.description != null && widget.description!.isNotEmpty)
+                            ? widget.description!
+                            : 'No description available',
+                        (phoneWidth - 60)),
                   )
                 ],
               ),
