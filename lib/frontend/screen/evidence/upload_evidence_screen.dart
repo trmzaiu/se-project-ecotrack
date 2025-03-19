@@ -369,6 +369,7 @@ class _UploadScreenState extends State<UploadScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: TextField(
+                            controller: descriptionController,
                             maxLines: 3,
                             style: GoogleFonts.urbanist(
                               color: AppColors.tertiary,

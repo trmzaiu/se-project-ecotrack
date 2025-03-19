@@ -11,13 +11,16 @@ import '../screen/evidence/evidence_screen.dart';
 
 class EvidenceService{
   final BuildContext context;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   EvidenceService(this.context);
 
   Future<void> submitData({
-     List<File>? selectedImages,
-     String? selectedCategory,
-     TextEditingController? descriptionController,
+   List<File>? selectedImages,
+   String? selectedCategory,
+   TextEditingController? descriptionController,
+   int totalPoint = 5,
+
   }) async {
     if (selectedImages!.isEmpty) {
       showSnackbar("No image selected.");
@@ -42,6 +45,12 @@ class EvidenceService{
       if (uploadedImageUrls.isEmpty) {
         showSnackbar("Image upload failed.");
         return;
+      } else if(uploadedImageUrls.length > 2){
+        totalPoint += 5;
+      }
+
+      if(descriptionController != null && descriptionController.text.trim().isNotEmpty){
+        totalPoint += 5;
       }
 
       String evidenceId = FirebaseFirestore.instance
@@ -57,6 +66,7 @@ class EvidenceService{
         description: descriptionController?.text.trim(),
         date: DateTime.now(),
         status: "Pending",
+        point: totalPoint,
       );
 
       await FirebaseFirestore.instance
@@ -94,5 +104,14 @@ class EvidenceService{
         duration: Duration(seconds: 2),
       ),
     );
+  }
+
+  Stream<List<Evidence>> fetchEvidences() {
+    return FirebaseFirestore.instance
+        .collection('evidences')
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+        snapshot.docs.map((doc) => Evidence.fromFirestore(doc)).toList());
   }
 }

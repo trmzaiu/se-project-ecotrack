@@ -40,10 +40,10 @@ class ApiService {
         // Get category, default to "Unknown" if not found
         return categoryMap[predicted];
       } else {
-        return "Error: ${response.statusCode}";
+        return "Error";
       }
     } catch (e) {
-      return "Error: $e";
+      return "Error";
     }
   }
 }
