@@ -49,9 +49,9 @@ class AuthenticationService {
     required String password,
   }) async {
     try {
-      // Check email and password are not empty
+      // Check if email and password are not empty
       if (email.isEmpty || password.isEmpty) {
-        _showErrorDialog(context, "Email and password cannot be empty");
+        _showErrorDialog(context, "Email and password cannot be empty.");
         return false;
       }
 
@@ -67,9 +67,11 @@ class AuthenticationService {
     } on FirebaseAuthException catch (e) {
       // Handle Firebase exceptions
       if (e.code == 'wrong-password') {
-        _showErrorDialog(context, "Incorrect password. Please try again");
+        _showErrorDialog(context, "Incorrect password. Please try again.");
+      } else if (e.code == 'user-not-found') {
+        _showErrorDialog(context, "No account found with this email.");
       } else {
-        _showErrorDialog(context, _handleFirebaseAuthException(e));
+        _showErrorDialog(context, e.message ?? "An unknown error occurred.");
       }
       return false;
     } catch (e) {
@@ -78,6 +80,7 @@ class AuthenticationService {
       return false;
     }
   }
+
 
 
   Future<String?> signUp({required String email, required String password}) async {
