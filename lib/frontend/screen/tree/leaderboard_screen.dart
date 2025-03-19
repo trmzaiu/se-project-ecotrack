@@ -20,24 +20,12 @@ class LeaderboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        title: Text(
-          'LeaderBoard',
-          style: GoogleFonts.urbanist(
-            color: AppColors.secondary,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        centerTitle: true,
-      ),
       body: Column(
         children: [
-          const SizedBox(height: 20),
+          _buildHeader(),
+          const SizedBox(height: 32),
           _buildTopThree(),
-          const SizedBox(height: 10),
+          const SizedBox(height: 34),
           Expanded(
             child: ListView.builder(
               itemCount: users.length - 3,
@@ -52,79 +40,54 @@ class LeaderboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTopThree() {
+  Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end, // Align 1st place higher
-        children: [
-          // 2nd Place (Left, Lower)
-          Column(
-            children: [
-              const SizedBox(height: 30), // Push down
-              _buildTopUser(users[1], Colors.grey.shade300, 50), // Smaller avatar
-            ],
+      padding: const EdgeInsets.only(top: 73),
+      child: Align(
+        alignment: Alignment.center,
+        child: Text(
+          'LeaderBoard',
+          style: GoogleFonts.urbanist(
+            color: AppColors.secondary,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
-
-          // 1st Place (Center, Higher)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20), // Add spacing
-            child: Column(
-              children: [
-                _buildTopUser(users[0], Colors.amber, 65), // Larger avatar
-              ],
-            ),
-          ),
-
-          // 3rd Place (Right, Lower)
-          Column(
-            children: [
-              const SizedBox(height: 40), // Push down more than 2nd place
-              _buildTopUser(users[2], Colors.brown.shade300, 50), // Smaller avatar
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
 
-
-  Widget _buildTopUser(Map<String, dynamic> user, Color color, double avatarSize) {
+  Widget _buildTopThree() {
     return Column(
       children: [
-        CircleAvatar(
-          backgroundImage: AssetImage(user['image']),
-          radius: avatarSize, // Adjust avatar size dynamically
-        ),
-        const SizedBox(height: 5),
-        Container(
-          padding: const EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-          child: Text(
-            user['rank'].toString(),
-            style: GoogleFonts.urbanist(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ),
-        Text(
-          user['name'],
-          style: GoogleFonts.urbanist(fontSize: 14),
-        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              user['score'].toString(),
-              style: GoogleFonts.urbanist(fontSize: 14, fontWeight: FontWeight.bold),
+            Expanded(
+              child: Column(
+                children: [
+                  const SizedBox(height: 39),
+                  _buildTopUser(users[1], AppColors.background, 74),
+                ],
+              ),
             ),
-            const SizedBox(width: 5),
-            Image.asset(
-              'lib/assets/images/tree.png',
-              width: 7.08,
-              height: 15,
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                children: [
+                  const SizedBox(height: 0),
+                  _buildTopUser(users[0], AppColors.background, 84),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                children: [
+                  const SizedBox(height: 39),
+                  _buildTopUser(users[2], AppColors.background, 74),
+                ],
+              ),
             ),
           ],
         ),
@@ -132,23 +95,103 @@ class LeaderboardScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildTopUser(Map<String, dynamic> user, Color color, double avatarSize) {
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            CircleAvatar(
+              backgroundImage: AssetImage(user['image']),
+              radius: avatarSize / 2,
+            ),
+            Positioned(
+              bottom: -14,
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: ShapeDecoration(
+                  color: AppColors.background,
+                  shape: const OvalBorder(
+                    side: BorderSide(width: 1, color: AppColors.background),
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  user['rank'].toString(),
+                  style: GoogleFonts.urbanist(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.secondary,
+                    shadows: [
+                      Shadow(
+                        offset: const Offset(0, 0),
+                        blurRadius: 13,
+                        color: const Color(0xFF000000).withOpacity(0.25),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Text(
+          user['name'],
+          style: GoogleFonts.urbanist(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: AppColors.secondary,
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              user['score'].toString(),
+              style: GoogleFonts.urbanist(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: AppColors.secondary,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Image.asset(
+              'lib/assets/images/tree.png',
+              width: 12,
+              height: 18,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 
   Widget _buildUserTile(Map<String, dynamic> user) {
+    bool isHighlighted = user['rank'] == 7;
+
     return Container(
+      width: 376,
+      height: 55,
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: user['rank'] == 7 ? AppColors.secondary : AppColors.surface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade300),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: ShapeDecoration(
+        color: isHighlighted ? AppColors.secondary : const Color(0x4CF7EEE7),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
       child: Row(
         children: [
           Text(
             user['rank'].toString(),
             style: GoogleFonts.urbanist(
-                fontSize: 16,
-                fontWeight: FontWeight.bold),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: isHighlighted ? AppColors.surface : AppColors.primary,
+            ),
           ),
           const SizedBox(width: 10),
           CircleAvatar(
@@ -160,17 +203,21 @@ class LeaderboardScreen extends StatelessWidget {
             child: Text(
               user['name'],
               style: GoogleFonts.urbanist(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold),
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isHighlighted ? AppColors.surface : AppColors.primary,
+              ),
             ),
           ),
           Row(
             children: [
               Text(
                 user['score'].toString(),
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
+                style: GoogleFonts.urbanist(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isHighlighted ? AppColors.surface : AppColors.primary,
+                ),
               ),
               const SizedBox(width: 5),
               Image.asset(

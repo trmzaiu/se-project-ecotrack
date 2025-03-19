@@ -7,10 +7,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_windows
   firebase_auth
   firebase_core
-<<<<<<< Updated upstream
   flutter_secure_storage_windows
-=======
->>>>>>> Stashed changes
   permission_handler_windows
 )
 

@@ -7,6 +7,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
+import 'leaderboard_screen.dart';
+
 
 class VirtualTreeScreen extends StatefulWidget {
   final String userId; // Thêm userId vào widget
@@ -208,12 +210,12 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
           // SizedBox(width: 20),
           GestureDetector(
             onTap: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => LeaderboardScreen(),
-              //   ),
-              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LeaderboardScreen(),
+                ),
+              );
             },
             child: SvgPicture.asset(
               'lib/assets/icons/ic_leaderboard.svg',
