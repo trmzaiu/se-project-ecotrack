@@ -1,15 +1,15 @@
 import 'dart:async';
-
-import 'package:flutter/material.dart';
 import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:wastesortapp/frontend/service/tree_service.dart';
-import 'package:wastesortapp/frontend/utils/route_transition.dart';
-import 'package:wastesortapp/theme/colors.dart';
 
+import '../../../theme/colors.dart';
+import '../../service/tree_service.dart';
+import '../../utils/route_transition.dart';
 import 'leaderboard_screen.dart';
-
 
 class VirtualTreeScreen extends StatefulWidget {
   final String userId; // Thêm userId vào widget

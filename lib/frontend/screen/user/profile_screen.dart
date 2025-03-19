@@ -2,574 +2,365 @@ import 'dart:ui';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 import 'package:wastesortapp/frontend/screen/user/edit_profile.dart';
 import 'package:wastesortapp/frontend/screen/user/notification_screen.dart';
+import 'package:wastesortapp/frontend/utils/phone_size.dart';
+import 'package:wastesortapp/frontend/widget/bar_title.dart';
 import 'package:wastesortapp/theme/colors.dart';
+import 'package:wastesortapp/theme/fonts.dart';
 //import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 
 import '../../service/auth_service.dart';
-
+import '../evidence/evidence_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   final String userId;
 
-  const ProfileScreen({Key? key, required this.userId}) : super(key: key);
+  ProfileScreen({Key? key, required this.userId}) : super(key: key);
+
+  final Map<String, dynamic> user = {
+    'photoUrl': 'lib/assets/images/user_image.png',
+    'name': 'Gwen Stacy',
+    'email': 'gwenstacy@example.com',
+    'water': '56',
+    'tree': '4',
+    'evidence': '14'
+  };
+
+  final List<Map<String, dynamic>> evidence = [
+    {'time': '20'},
+    {'time': '40'},
+    {'time': '50'},
+    {'time': '60'},
+  ];
 
   Future<void> _signOut(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
+    await AuthenticationService(FirebaseAuth.instance).signOut();
+
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => NotificationScreen()),
+      MaterialPageRoute(builder: (context) => LoginScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    double phoneWidth = getPhoneWidth(context);
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          'Profile',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: AppColors.secondary,
-            fontSize: 18,
-            fontFamily: 'Urbanist',
-            fontWeight: FontWeight.w600,
-            height: 1.50,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          BarTitle(title: "Profile", textColor: AppColors.secondary),
+
+          SizedBox(height: 25),
+
+          Container(
+            width: 125,
+            height: 125,
+            decoration: ShapeDecoration(
+              color: Color(0xE0E0E0FF),
+              image: DecorationImage(
+                image: AssetImage(user['photoUrl']),
+                fit: BoxFit.cover,
+              ),
+              shape: OvalBorder(
+                side: BorderSide(
+                  width: 5,
+                  color: AppColors.tertiary.withOpacity(0.5),
+                )
+              )
+            ),
           ),
-        ),
-        backgroundColor: AppColors.background,
-        centerTitle: true,
-        elevation: 0,
+
+          SizedBox(height: 5),
+
+          Text(
+            user['name'],
+            style: GoogleFonts.urbanist(
+              color: AppColors.secondary,
+              fontSize: 24,
+              fontWeight: AppFontWeight.bold,
+            ),
+          ),
+
+          Text(
+            user['email'],
+            style: GoogleFonts.urbanist(
+              color: AppColors.tertiary,
+              fontSize: 16,
+              fontWeight: AppFontWeight.regular,
+            ),
+          ),
+
+          SizedBox(height: 30),
+
+          GestureDetector(
+            onTap: () {
+              Navigator.push(context,
+                MaterialPageRoute(builder: (context) => EditProfile()),
+              );
+            },
+            child: Container(
+              width: 135,
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: ShapeDecoration(
+                color: AppColors.primary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'Edit Profile',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.urbanist(
+                      color: AppColors.surface,
+                      fontSize: 14,
+                      fontWeight: AppFontWeight.semiBold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          SizedBox(height: 20),
+
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  SizedBox(height: 10),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Statistics',
+                        textAlign: TextAlign.left,
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
+                          fontSize: 20,
+                          fontWeight: AppFontWeight.semiBold,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 10),
+
+                  Align(
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _statistic('Drops', user['water']),
+                        _statistic('Trees', user['tree']),
+                        _statistic('Evidences', user['evidence']),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: 25),
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'History',
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.secondary,
+                              fontSize: 20,
+                              fontWeight: AppFontWeight.semiBold,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => EvidenceScreen()),
+                              );
+                            },
+                            child: Text(
+                              'See more',
+                              style: GoogleFonts.urbanist(
+                                color: AppColors.tertiary,
+                                fontSize: 13,
+                                fontWeight: AppFontWeight.regular,
+                              ),
+                            ),
+                          )
+                        ]
+                    ),
+                  ),
+
+                  SizedBox(height: 10),
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _history('lib/assets/images/recycle.png', 'Recyclable \nWaste', evidence[0]['time']),
+                        _history('lib/assets/images/organic.png', 'Organic \nWaste', evidence[1]['time'])
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: phoneWidth - 155*2 - 60),
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _history('lib/assets/images/hazard.png', 'Hazardous \nWaste', evidence[2]['time']),
+                        _history('lib/assets/images/general.png', 'General \nWaste', evidence[3]['time'])
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: 30),
+
+                  GestureDetector(
+                    onTap: () => _signOut(context),
+                    child: Container(
+                      width: phoneWidth - 60,
+                      padding: EdgeInsets.symmetric(vertical: 15),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Log out',
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.surface,
+                          fontSize: 16,
+                          fontWeight: AppFontWeight.bold,
+                        ),
+                      )
+                    ),
+                  ),
+
+                  SizedBox(height: 35),
+                ],
+              ),
+            )
+          )
+        ],
+      )
+    );
+  }
+
+  Widget _statistic(String title, String number) {
+    return SizedBox(
+      width: 90,
+      child: Column(
+        children: [
+          Text(
+            number,
+            style: GoogleFonts.urbanist(
+              color: AppColors.secondary,
+              fontSize: 20,
+              fontWeight: AppFontWeight.semiBold,
+            ),
+          ),
+          Text(
+            title,
+            style: GoogleFonts.urbanist(
+              color: AppColors.tertiary,
+              fontSize: 16,
+              fontWeight: AppFontWeight.regular,
+            ),
+          ),
+        ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+    );
+  }
+
+  Widget _history(String image, String title, String time) {
+    return Container(
+      width: 155,
+      height: 155,
+      padding: EdgeInsets.all(15),
+      decoration: ShapeDecoration(
+        color: Color(0xFFEBDCD6),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(17),
+        ),
+        shadows: [
+          BoxShadow(
+            color: Color(0x3F000000),
+            blurRadius: 2,
+            offset: Offset(1, 2),
+            spreadRadius: 0,
+          )
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
             children: [
-              // Profile Picture
               Container(
-                width: 126,
-                height: 125,
-                decoration: ShapeDecoration(
-                  color: Colors.grey[300],
-                  image: DecorationImage(
-                    image: AssetImage("lib/assets/images/user_placeholder.png"),
+                height: 35,
+                width: 35,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.asset(
+                    image,
                     fit: BoxFit.cover,
                   ),
-                  shape: OvalBorder(
-                    side: BorderSide(
-                      width: 5,
-                      color: AppColors.tertiary,
-                    )
-                  )
                 ),
               ),
-              SizedBox(height: 16),
 
-              // User ID
+              SizedBox(width: 10),
+
               Text(
-                'Gwen Stacy',
-                style: TextStyle(
-                  color: const Color(0xFF7C3F3E),
-                  fontSize: 24,
-                  fontFamily: 'Urbanist',
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(height: 8),
-
-              // Email (Example)
-              Text(
-                '@GwenStacy31',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: const Color(0xFF7C3F3E),
-                  fontSize: 16,
-                  fontFamily: 'Urbanist',
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              SizedBox(height: 24),
-
-              // Edit Profile
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => EditProfile()),
-                  );
-                  // Handle edit profile logic
-                },
-                child: Container(
-                  width: 135,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF2C6E49),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Edit Profile',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: const Color(0xFFFFFCFB),
-                          fontSize: 13,
-                          fontFamily: 'Nunito',
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 25),
-
-              SizedBox(
-                width: 328,
-                height: 39,
-                child: Text(
-                  'Statistics',
-                  style: TextStyle(
-                    color: const Color(0xFF7C3F3E),
-                    fontSize: 22,
-                    fontFamily: 'Urbanist',
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-
-              Align(
-                alignment: Alignment.center, // Change this to adjust alignment (e.g., .centerLeft, .topCenter)
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Adjusts spacing between the columns
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          '56',
-                          style: TextStyle(
-                            color: Color(0xFF7C3F3E),
-                            fontSize: 20,
-                            fontFamily: 'Urbanist',
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          'Drops',
-                          style: TextStyle(
-                            color: Color(0xFF7C3F3E),
-                            fontSize: 16,
-                            fontFamily: 'Urbanist',
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          '4',
-                          style: TextStyle(
-                            color: Color(0xFF7C3F3E),
-                            fontSize: 20,
-                            fontFamily: 'Urbanist',
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          'Trees',
-                          style: TextStyle(
-                            color: Color(0xFF7C3F3E),
-                            fontSize: 16,
-                            fontFamily: 'Urbanist',
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          '14',
-                          style: TextStyle(
-                            color: Color(0xFF7C3F3E),
-                            fontSize: 20,
-                            fontFamily: 'Urbanist',
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          'Evidences',
-                          style: TextStyle(
-                            color: Color(0xFF7C3F3E),
-                            fontSize: 16,
-                            fontFamily: 'Urbanist',
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-
-              SizedBox(
-                width: 328,
-                height: 39,
-                child: Text(
-                  'History',
-                  style: TextStyle(
-                    color: const Color(0xFF7C3F3E),
-                    fontSize: 22,
-                    fontFamily: 'Urbanist',
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              SizedBox(height: 20,),
-
-              //haza
-              Align(
-                alignment: Alignment.topRight,
-                child: Container(
-                  width: 155,
-                  height: 155,
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Color(0x197C3F3E),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Image.asset(
-                            'lib/assets/images/hazard.png',
-                            width: 35,
-                            height: 35,
-                          ),
-                          SizedBox(height: 8),
-
-                          SizedBox(
-                            width: 94.31,
-                            height: 36.25,
-                            child: Text(
-                              'Hazardous \nWaste',
-                              style: TextStyle(
-                                color:const Color(0xFF7C3F3E),
-                                fontSize: 15,
-                                fontFamily: 'Urbanist',
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.28,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        width: 40,
-                        height: 62.21,
-                        child: Text(
-                          '22',
-                          style: TextStyle(
-                            color: Color(0xFF7C3F3E),
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      // Subtitle
-                      Text(
-                        'Times',
-                        style: TextStyle(
-                          color: Color(0xFF7C3F3E),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              //Organic
-              Align(
-                alignment: Alignment.bottomLeft,
-               child: Container(
-                width: 155,
-                height: 155,
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Color(0x197C3F3E),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Image.asset(
-                          'lib/assets/images/organic.png',
-                          width: 35,
-                          height: 35,
-                        ),
-                        SizedBox(height: 8),
-
-                        SizedBox(
-                          width: 94.31,
-                          height: 36.25,
-                          child: Text(
-                            'Organic \nWaste',
-                            style: TextStyle(
-                              color:const Color(0xFF7C3F3E),
-                              fontSize: 15,
-                              fontFamily: 'Urbanist',
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.28,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-
-
-                    SizedBox(
-                      width: 40,
-                      height: 62.21,
-                    child: Text(
-                      '22',
-                      style: TextStyle(
-                        color: Color(0xFF7C3F3E),
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    ),
-
-
-                    // Subtitle
-                    Text(
-                      'Times',
-                      style: TextStyle(
-                        color: Color(0xFF7C3F3E),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              ),
-
-              //general
-              Align(
-                alignment: Alignment.topLeft,
-                child: Container(
-                  width: 155,
-                  height: 155,
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Color(0x197C3F3E),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Image.asset(
-                            'lib/assets/images/general.png',
-                            width: 35,
-                            height: 35,
-                          ),
-                          SizedBox(height: 8),
-
-                          SizedBox(
-                            width: 94.31,
-                            height: 36.25,
-                            child: Text(
-                              'General \nWaste',
-                              style: TextStyle(
-                                color:const Color(0xFF7C3F3E),
-                                fontSize: 15,
-                                fontFamily: 'Urbanist',
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.28,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-
-
-
-                      SizedBox(
-                        width: 40,
-                        height: 62.21,
-                        child: Text(
-                          '22',
-                          style: TextStyle(
-                            color: Color(0xFF7C3F3E),
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-
-
-                      // Subtitle
-                      Text(
-                        'Times',
-                        style: TextStyle(
-                          color: Color(0xFF7C3F3E),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              //recycle
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Container(
-                  width: 155,
-                  height: 155,
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Color(0x197C3F3E),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Image.asset(
-                            'lib/assets/images/recycle.png',
-                            width: 35,
-                            height: 35,
-                          ),
-                          SizedBox(height: 8),
-
-                          SizedBox(
-                            width: 94.31,
-                            height: 36.25,
-                            child: Text(
-                              'Recycle \nWaste',
-                              style: TextStyle(
-                                color:const Color(0xFF7C3F3E),
-                                fontSize: 15,
-                                fontFamily: 'Urbanist',
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.28,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        width: 40,
-                        height: 62.21,
-                        child: Text(
-                          '22',
-                          style: TextStyle(
-                            color: Color(0xFF7C3F3E),
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      // Subtitle
-                      Text(
-                        'Times',
-                        style: TextStyle(
-                          color: Color(0xFF7C3F3E),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-
-
-
-
-
-
-              // Sign Out Button
-              GestureDetector(
-                onTap: () => _signOut(context),
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: 14),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'Sign Out',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                title,
+                style: GoogleFonts.urbanist(
+                    color: AppColors.secondary,
+                    fontSize: 15,
+                    fontWeight: AppFontWeight.regular,
+                    letterSpacing: 1,
+                    height: 1.2
                 ),
               ),
             ],
           ),
-        ),
+
+          SizedBox(height: 5),
+
+          Text(
+            time,
+            style: GoogleFonts.urbanist(
+              color: AppColors.secondary,
+              fontSize: 50,
+              fontWeight: AppFontWeight.medium,
+            ),
+          ),
+
+          Text(
+            'Times',
+            style: GoogleFonts.urbanist(
+              color: AppColors.tertiary,
+              fontSize: 13,
+              fontWeight: AppFontWeight.regular,
+            ),
+          ),
+        ],
       ),
     );
   }
