@@ -47,7 +47,6 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
       vsync: this,
       duration: ANIMATION_DURATION,
     );
-
     _loadTreeData();
   }
 
@@ -84,7 +83,6 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
     if (state < reductions.length) {
       totalDrops += (currentProgress * reductions[state]).round();
     }
-
     return 100 - totalDrops;
   }
 
@@ -130,33 +128,39 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
         }
       });
       return;
-    } else if (_drops == 0) {
-      waterTree();
-      grownTrees++;
     } else {
       int totalNeededDrops = _state[_levelOfTree][1];
       int currentNeededDrops = (totalNeededDrops * (1.0 - _progress)).round();
 
-      if (_drops < currentNeededDrops) {
+      if (_drops <= currentNeededDrops) {
         double newProgress = _progress + (_drops / totalNeededDrops);
-        leftDrops = getLeftDrops(_levelOfTree, _progress);
+        if (newProgress == 1){
+          newProgress = 0;
+          _levelOfTree++;
+          if (_levelOfTree >= _state.length) {
+            _levelOfTree = 0;
+            grownTrees++;
+          }
+          _treeService.updateLevelOfTree(widget.userId, _levelOfTree);
+        }
         _progress = newProgress;
         animateProgress(newProgress, () {});
         _drops = 0;
         _treeService.updateProgress(widget.userId, newProgress);
         _treeService.updateWater(widget.userId, 0);
+        leftDrops = getLeftDrops(_levelOfTree, _progress);
         waterTree();
-      } else if (_drops >= currentNeededDrops) {
+      } else if (_drops > currentNeededDrops) {
         _drops -= currentNeededDrops;
+        _treeService.updateWater(widget.userId, _drops);
         if (_progress <= 1.0) {
           animateProgress(1.0, () async {
             setState(() {
               _progress = 0;
               print("Before: value = $_levelOfTree");
-              _levelOfTree += 1;
-              _treeService.updateProgress(widget.userId, 0);
+              _levelOfTree ++;
+              _treeService.updateProgress(widget.userId, _progress);
               _treeService.updateLevelOfTree(widget.userId, _levelOfTree);
-
             });
 
             print("After: value = $_levelOfTree");

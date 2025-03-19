@@ -55,11 +55,11 @@ class AuthenticationService {
       }
 
       // Check exist email
-      List<String> signInMethods = await _firebaseAuth.fetchSignInMethodsForEmail(email);
-      if (signInMethods.isEmpty) {
-        _showErrorDialog(context, "No account found with this email.");
-        return false;
-      }
+      // List<String> signInMethods = await _firebaseAuth.fetchSignInMethodsForEmail(email);
+      // if (signInMethods.isEmpty) {
+      //   _showErrorDialog(context, "No account found with this email.");
+      //   return false;
+      // }
 
       await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
       return true;
