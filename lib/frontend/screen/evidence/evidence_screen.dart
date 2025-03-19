@@ -119,6 +119,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
                   Expanded(
                     child: TabBarView(
                       controller: _tabController,
+                      physics: NeverScrollableScrollPhysics(),
                       children: [
                         _buildTabContent("All"),
                         _buildTabContent("Accepted"),
@@ -159,13 +160,28 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
         if (snapshot.hasError) {
           return Center(child: Text("Error fetching evidences"));
         }
+
+        if (!snapshot.hasData || snapshot.data == null) {
+          return Center(
+            child: Text(
+              "Fail to load evidences",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.urbanist(
+                color: Color(0xFF7C3F3E),
+                fontSize: 16,
+                fontWeight: AppFontWeight.medium,
+              ),
+            ),
+          );
+        }
+
         List<Evidence> evidenceList = snapshot.data!;
 
         List<Evidence> filteredList = category == "All"
             ? evidenceList
             : evidenceList.where((item) => item.status == category).toList();
 
-        if (!snapshot.hasData || filteredList.isEmpty) {
+        if (filteredList.isEmpty) {
           return Center(
             child: Text(
               (category == "All")
@@ -180,7 +196,6 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
             ),
           );
         }
-
         return ListView.builder(
           padding: EdgeInsets.all(30),
           itemCount: filteredList.length,
