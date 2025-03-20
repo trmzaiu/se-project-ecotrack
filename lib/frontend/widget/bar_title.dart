@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/screen/user/notification_screen.dart';
+import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
+import 'notification_bell.dart';
 
 class BarTitle extends StatelessWidget {
   final String title;
@@ -31,15 +33,14 @@ class BarTitle extends StatelessWidget {
           if (showBackButton)
             Positioned(
               left: 20,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: SvgPicture.asset(
+              top: -12.5,
+              child: IconButton(
+                onPressed: () { Navigator.pop(context); },
+                icon: SvgPicture.asset(
                   'lib/assets/icons/ic_back.svg',
                   height: 20,
                   colorFilter: ColorFilter.mode(buttonColor, BlendMode.srcIn),
-                ),
+                )
               ),
             ),
 
@@ -59,34 +60,8 @@ class BarTitle extends StatelessWidget {
           if (showNotification)
             Positioned(
               right: 20,
-              top: -10,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => NotificationScreen()),
-                  );
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0x33333333),
-                        offset: Offset(0, 0),
-                        blurRadius: 4,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: SvgPicture.asset('lib/assets/icons/ic_notification.svg'),
-                  ),
-                ),
-              ),
+              top: -15,
+              child: NotificationBell()
             )
         ],
       ),

@@ -4,13 +4,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
-import 'package:wastesortapp/frontend/screen/user/edit_profile.dart';
-import 'package:wastesortapp/frontend/screen/user/notification_screen.dart';
+import 'package:wastesortapp/frontend/screen/user/setting_screen.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
+import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import 'package:wastesortapp/frontend/widget/bar_title.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
-//import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 
 import '../../service/auth_service.dart';
 import '../evidence/evidence_screen.dart';
@@ -54,7 +53,7 @@ class ProfileScreen extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          BarTitle(title: "Profile", textColor: AppColors.secondary),
+          BarTitle(title: "Profile", textColor: AppColors.secondary, showNotification: true,),
 
           SizedBox(height: 25),
 
@@ -70,7 +69,7 @@ class ProfileScreen extends StatelessWidget {
               shape: OvalBorder(
                 side: BorderSide(
                   width: 5,
-                  color: AppColors.tertiary.withOpacity(0.5),
+                  color: AppColors.tertiary.withOpacity(0.8),
                 )
               )
             ),
@@ -100,8 +99,10 @@ class ProfileScreen extends StatelessWidget {
 
           GestureDetector(
             onTap: () {
-              Navigator.push(context,
-                MaterialPageRoute(builder: (context) => EditProfile()),
+              Navigator.of(context).push(
+                moveLeftRoute(
+                  SettingScreen(),
+                ),
               );
             },
             child: Container(
@@ -185,9 +186,10 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           GestureDetector(
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => EvidenceScreen()),
+                              Navigator.of(context).push(
+                                moveLeftRoute(
+                                  EvidenceScreen(),
+                                ),
                               );
                             },
                             child: Text(
@@ -294,13 +296,13 @@ class ProfileScreen extends StatelessWidget {
       height: 155,
       padding: EdgeInsets.all(15),
       decoration: ShapeDecoration(
-        color: Color(0xFFEBDCD6),
+        color: Color(0x80EBDCD6),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(17),
         ),
         shadows: [
           BoxShadow(
-            color: Color(0x3F000000),
+            color: AppColors.tertiary.withOpacity(0.1),
             blurRadius: 2,
             offset: Offset(1, 2),
             spreadRadius: 0,

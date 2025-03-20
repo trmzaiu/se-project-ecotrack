@@ -128,7 +128,9 @@ class _UploadScreenState extends State<UploadScreen> {
         child: Column(
           children: [
             BarTitle(title: 'Upload Evidence', showBackButton: true),
+
             SizedBox(height: 30),
+
             Expanded(
               child: Container(
                 width: double.infinity,

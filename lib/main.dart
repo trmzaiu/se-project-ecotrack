@@ -78,17 +78,14 @@ class _MainScreenState extends State<MainScreen> {
   void _onItemTapped(int index) {
     if (index == _currentIndex) return;
 
-    _pageController.animateToPage(
+    _pageController.jumpToPage(
       index,
-      duration: Duration(milliseconds: 150),
-      curve: Curves.easeOutQuad,
     );
 
     setState(() {
       _currentIndex = index;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {

@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: Align(
                             alignment: Alignment.bottomRight,
-                            child: Image.asset("lib/assets/images/sethomemade.png", height: phoneWidth - 40 - 210),
+                            child: Image.asset("lib/assets/images/sethomemade.png", height: phoneWidth - 40 - 180),
                           )
                         ),
                         Positioned(

@@ -40,6 +40,7 @@ dependencies:
   dotted_border: ^2.0.0
   dropdown_button2: ^2.3.9
   intl: ^0.20.2
+  country_picker: ^2.0.27
 
 dev_dependencies:
   flutter_test:
