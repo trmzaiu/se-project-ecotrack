@@ -30,6 +30,7 @@ dependencies:
   google_sign_in: ^6.3.0
   flutter_facebook_auth: ^7.1.1
 
+  cached_network_image: ^3.3.0
   image_picker: ^1.1.2
   permission_handler: ^11.0.1
   camerawesome: ^2.0.0

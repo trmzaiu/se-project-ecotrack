@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,6 +23,8 @@ class EvidenceScreen extends StatefulWidget {
 
 class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  Map<String, Size> imageSizes = {};
+  final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
 
   @override
   void initState() {
@@ -30,6 +36,30 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  void preloadImages(List<Evidence> evidences, BuildContext context) {
+    for (var item in evidences) {
+      if (item.imagesUrl.isNotEmpty) {
+        precacheImage(CachedNetworkImageProvider(item.imagesUrl.first), context);
+      }
+    }
+  }
+
+  void getCachedImageSize(String imageUrl) {
+    if (imageUrl.isEmpty || imageSizes.containsKey(imageUrl)) return;
+
+    final ImageProvider imageProvider = CachedNetworkImageProvider(imageUrl);
+    final ImageStream stream = imageProvider.resolve(ImageConfiguration());
+
+    stream.addListener(ImageStreamListener((ImageInfo info, bool _) {
+      setState(() {
+        imageSizes[imageUrl] = Size(
+          info.image.width.toDouble(),
+          info.image.height.toDouble(),
+        );
+      });
+    }));
   }
 
   @override
@@ -121,9 +151,9 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
                       controller: _tabController,
                       physics: NeverScrollableScrollPhysics(),
                       children: [
-                        _buildTabContent("All"),
-                        _buildTabContent("Accepted"),
-                        _buildTabContent("Rejected"),
+                        _buildTabContent("All", userId),
+                        _buildTabContent("Accepted", userId),
+                        _buildTabContent("Rejected", userId),
                       ],
                     ),
                   ),
@@ -150,9 +180,9 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildTabContent(String category) {
+  Widget _buildTabContent(String category, String userId) {
     return StreamBuilder<List<Evidence>>(
-      stream: EvidenceService(context).fetchEvidences(),
+      stream: EvidenceService(context).fetchEvidences(userId),
       builder: (context, snapshot) {
         // if (snapshot.connectionState == ConnectionState.waiting) {
         //   return Center(child: CircularProgressIndicator());
@@ -196,11 +226,21 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
             ),
           );
         }
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          preloadImages(filteredList, context);
+        });
+
         return ListView.builder(
           padding: EdgeInsets.all(30),
           itemCount: filteredList.length,
           itemBuilder: (context, index) {
             var item = filteredList[index];
+            String imageUrl = item.imagesUrl.isNotEmpty ? item.imagesUrl.first : "";
+            if (imageUrl.isNotEmpty) {
+              getCachedImageSize(imageUrl);
+            }
+            Size? imageSize = imageSizes[imageUrl];
             Color statusColor = item.status == "Pending"
                 ? Colors.grey
                 : item.status == "Accepted"
@@ -208,6 +248,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
                 : Colors.red;
             return GestureDetector(
                 onTap: () {
+                  preloadImages(filteredList, context);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -222,6 +263,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
                   );
                 },
               child:  Container(
+                key: PageStorageKey(item.evidenceId),
                 margin: EdgeInsets.only(bottom: 12),
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -240,13 +282,15 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        item.imagesUrl.isNotEmpty
-                            ? item.imagesUrl.first
-                            : "",
+                      child: CachedNetworkImage(
+                        imageUrl: item.imagesUrl.isNotEmpty ? item.imagesUrl.first : "",
+                        errorWidget: (context, url, error) => Icon(Icons.error),
                         width: 55,
                         height: 55,
                         fit: BoxFit.cover,
+                        memCacheWidth: imageSize != null ? (imageSize.width / 3).toInt() : null,
+                        memCacheHeight: imageSize != null ? (imageSize.height / 3).toInt() : null,
+                        // useOldImageOnUrlChange: true,
                       ),
                     ),
                     SizedBox(width: 15),

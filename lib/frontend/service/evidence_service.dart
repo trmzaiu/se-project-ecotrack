@@ -106,12 +106,14 @@ class EvidenceService{
     );
   }
 
-  Stream<List<Evidence>> fetchEvidences() {
+  Stream<List<Evidence>> fetchEvidences(String userId) {
     return FirebaseFirestore.instance
         .collection('evidences')
-        .orderBy('date', descending: true)
+        .where('userId', isEqualTo: userId)
         .snapshots()
-        .map((snapshot) =>
-        snapshot.docs.map((doc) => Evidence.fromFirestore(doc)).toList());
+        .map((snapshot) => snapshot.docs
+        .map((doc) => Evidence.fromFirestore(doc))
+          .toList()
+          ..sort((a, b) => b.date.compareTo(a.date)));
   }
 }
