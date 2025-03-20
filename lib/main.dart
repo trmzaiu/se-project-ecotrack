@@ -12,7 +12,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:wastesortapp/database/firebase_options.dart';
 import 'package:wastesortapp/frontend/screen/user/profile_screen.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -54,11 +53,11 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _pages = [
-      HomeScreen(userId: widget.userId),
+      HomeScreen(),
       GuideScreen(),
       CameraScreen(),
       VirtualTreeScreen(userId: widget.userId),
-      ProfileScreen(userId: widget.userId),
+      ProfileScreen(),
     ];
   }
 
