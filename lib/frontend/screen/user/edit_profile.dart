@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
 import 'package:wastesortapp/frontend/screen/user/profile_screen.dart';
+import 'package:wastesortapp/theme/colors.dart';
+import 'package:wastesortapp/theme/fonts.dart';
 
 class EditProfile extends StatelessWidget {
   @override
@@ -19,11 +22,10 @@ class EditProfile extends StatelessWidget {
                   child: Text(
                     'Edit Profile',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: const Color(0xFFF7EEE7),
+                    style: GoogleFonts.urbanist(
+                      color: AppColors.background,
                       fontSize: 18,
-                      fontFamily: 'Urbanist',
-                      fontWeight: FontWeight.w800,
+                      fontWeight: AppFontWeight.bold,
                       letterSpacing: 0.90,
                     ),
                   ),
@@ -73,11 +75,10 @@ class EditProfile extends StatelessWidget {
                       SizedBox(height: 24),
                       Text(
                         'Name',
-                        style: TextStyle(
-                          color: const Color(0xFF7C3F3E),
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
                           fontSize: 16,
-                          fontFamily: 'Urbanist',
-                          fontWeight: FontWeight.w700,
+                          fontWeight: AppFontWeight.semiBold,
                         ),
                       ),
                       SizedBox(height: 8),
@@ -87,18 +88,17 @@ class EditProfile extends StatelessWidget {
                           contentPadding: EdgeInsets.symmetric(horizontal: 12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: BorderSide(color: const Color(0xFF9C9385)),
+                            borderSide: BorderSide(color: AppColors.tertiary),
                           ),
                         ),
                       ),
                       SizedBox(height: 16),
                       Text(
                         'Email',
-                        style: TextStyle(
-                          color: const Color(0xFF7C3F3E),
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
                           fontSize: 16,
-                          fontFamily: 'Urbanist',
-                          fontWeight: FontWeight.w700,
+                          fontWeight: AppFontWeight.semiBold,
                         ),
                       ),
                       SizedBox(height: 8),
@@ -108,18 +108,17 @@ class EditProfile extends StatelessWidget {
                           contentPadding: EdgeInsets.symmetric(horizontal: 12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: BorderSide(color: const Color(0xFF9C9385)),
+                            borderSide: BorderSide(color: AppColors.tertiary),
                           ),
                         ),
                       ),
                       SizedBox(height: 16),
                       Text(
                         'Password',
-                        style: TextStyle(
-                          color: const Color(0xFF7C3F3E),
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
                           fontSize: 16,
-                          fontFamily: 'Urbanist',
-                          fontWeight: FontWeight.w700,
+                          fontWeight: AppFontWeight.semiBold,
                         ),
                       ),
                       SizedBox(height: 8),
@@ -130,40 +129,38 @@ class EditProfile extends StatelessWidget {
                           contentPadding: EdgeInsets.symmetric(horizontal: 12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: BorderSide(color: const Color(0xFF9C9385)),
+                            borderSide: BorderSide(color: AppColors.tertiary),
                           ),
                         ),
                       ),
                       SizedBox(height: 16),
                       Text(
                         'Date of Birth',
-                        style: TextStyle(
-                          color: const Color(0xFF7C3F3E),
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
                           fontSize: 16,
-                          fontFamily: 'Urbanist',
-                          fontWeight: FontWeight.w700,
+                          fontWeight: AppFontWeight.semiBold,
                         ),
                       ),
                       SizedBox(height: 8),
                       TextFormField(
                         initialValue: '23/05/1995',
                         decoration: InputDecoration(
-                          suffixIcon: Icon(Icons.calendar_today, color: const Color(0xFF9C9385)),
+                          suffixIcon: Icon(Icons.calendar_today, color: AppColors.tertiary),
                           contentPadding: EdgeInsets.symmetric(horizontal: 12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: BorderSide(color: const Color(0xFF9C9385)),
+                            borderSide: BorderSide(color: AppColors.tertiary),
                           ),
                         ),
                       ),
                       SizedBox(height: 16),
                       Text(
                         'Country/Region',
-                        style: TextStyle(
-                          color: const Color(0xFF7C3F3E),
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
                           fontSize: 16,
-                          fontFamily: 'Urbanist',
-                          fontWeight: FontWeight.w700,
+                          fontWeight: AppFontWeight.semiBold,
                         ),
                       ),
                       SizedBox(height: 8),
@@ -173,10 +170,10 @@ class EditProfile extends StatelessWidget {
                           contentPadding: EdgeInsets.symmetric(horizontal: 12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: BorderSide(color: const Color(0xFF9C9385)),
+                            borderSide: BorderSide(color:AppColors.tertiary),
                           ),
                         ),
-                        icon: Icon(Icons.arrow_drop_down, color: const Color(0xFF9C9385)),
+                        icon: Icon(Icons.arrow_drop_down, color: AppColors.tertiary),
                         items: [
                           'Nigeria',
                           'United States',
@@ -190,11 +187,10 @@ class EditProfile extends StatelessWidget {
                             value: value,
                             child: Text(
                               value,
-                              style: TextStyle(
-                                color: const Color(0xFF9C9385),
+                              style: GoogleFonts.urbanist(
+                                color: AppColors.secondary,
                                 fontSize: 14,
-                                fontFamily: 'Urbanist',
-                                fontWeight: FontWeight.w500,
+                                fontWeight: AppFontWeight.regular,
                               ),
                             ),
                           );
@@ -221,11 +217,10 @@ class EditProfile extends StatelessWidget {
                 },
                 child: Text(
                   'Save',
-                  style: TextStyle(
-                    color: Colors.white,
+                  style: GoogleFonts.urbanist(
+                    color: AppColors.background,
                     fontSize: 16,
-                    fontFamily: 'Urbanist',
-                    fontWeight: FontWeight.w700,
+                    fontWeight: AppFontWeight.bold,
                   ),
                 ),
               ),
