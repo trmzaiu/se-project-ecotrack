@@ -395,18 +395,18 @@ class _UploadScreenState extends State<UploadScreen> {
                             width: phoneWidth - 112,
                             height: 50,
                             decoration: ShapeDecoration(
-                              color: isUploading ? Colors.grey : Color(0xFF2C6E49),
+                              color: isUploading ? AppColors.tertiary : AppColors.primary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
                             ),
                             child: Center(
-                              child: isUploading ? CircularProgressIndicator(color: Colors.white) : Text(
-                                "Submit",
+                              child: Text(
+                                isUploading ? "Loading..." : "Submit",
                                 style: GoogleFonts.urbanist(
-                                    color: AppColors.surface,
-                                    fontSize: 18,
-                                    fontWeight: AppFontWeight.bold,
+                                  color: AppColors.surface,
+                                  fontSize: 18,
+                                  fontWeight: AppFontWeight.bold,
                                 ),
                               ),
                             ),
