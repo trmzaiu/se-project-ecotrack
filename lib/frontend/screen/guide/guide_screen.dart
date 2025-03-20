@@ -89,13 +89,12 @@ class _GuideScreenState extends State<GuideScreen> {
               ),
             ),
           ),
-
           SizedBox(
             width: phoneWidth,
             height: phoneHeight,
             child: Column(
               children: [
-                BarTitle(title: 'Guide', showNotification: true),
+                BarTitle(title: 'Guide', showNotification: true),  // Bạn vẫn giữ nguyên BarTitle
                 SizedBox(
                   height: 540,
                   child: PageView.builder(
@@ -130,9 +129,7 @@ class _GuideScreenState extends State<GuideScreen> {
                     ),
                   ),
                 ),
-
                 SizedBox(height: 50),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(4, (index) {
@@ -149,12 +146,13 @@ class _GuideScreenState extends State<GuideScreen> {
                   }),
                 ),
               ],
-            )
+            ),
           ),
         ],
       ),
     );
   }
+
 
   Widget _buildWasteSlide(int index) {
 
