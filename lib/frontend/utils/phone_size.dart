@@ -7,4 +7,3 @@ double getPhoneWidth(BuildContext context) {
 double getPhoneHeight(BuildContext context) {
   return MediaQuery.of(context).size.height;
 }
-
