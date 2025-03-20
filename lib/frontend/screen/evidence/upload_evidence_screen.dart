@@ -1,23 +1,17 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:wastesortapp/frontend/screen/evidence/evidence_screen.dart';
 import 'package:wastesortapp/frontend/widget/bar_title.dart';
 
-import '../../../database/CloudinaryConfig.dart';
-import '../../../database/model/evidence.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
 import '../../service/evidence_service.dart';
 import '../../utils/phone_size.dart';
-import '../camera/camera_screen.dart';
 
 class UploadScreen extends StatefulWidget {
   final String imagePath;
@@ -29,14 +23,15 @@ class UploadScreen extends StatefulWidget {
 }
 
 class _UploadScreenState extends State<UploadScreen> {
-  String? selectedCategory;
   bool isDropdownOpened = false;
+  bool isUploading = false;
+  String? selectedCategory;
   List<File> selectedImages = [];
   List<String> categories = ["Recyclable", "Organic", "Hazardous", "General"];
+  TextEditingController descriptionController = TextEditingController();
+
   final ScrollController _scrollVerticalController = ScrollController();
   final ScrollController _scrollHorizontalController = ScrollController();
-  TextEditingController descriptionController = TextEditingController();
-  bool isUploading = false;
 
   @override
   void initState() {
@@ -73,6 +68,7 @@ class _UploadScreenState extends State<UploadScreen> {
       _scrollToEnd();
     }
   }
+
   void _submit() {
     setState(() => isUploading = true);
 
@@ -84,6 +80,7 @@ class _UploadScreenState extends State<UploadScreen> {
       setState(() => isUploading = false);
     });
   }
+
   void _showImageSelection() {
     showModalBottomSheet(
       backgroundColor: AppColors.background,
@@ -283,7 +280,6 @@ class _UploadScreenState extends State<UploadScreen> {
                                 child: DropdownButton2<String>(
                                   value: selectedCategory,
                                   isExpanded: true,
-
                                   buttonStyleData: ButtonStyleData(
                                     decoration: BoxDecoration(
                                       color: AppColors.accent,
