@@ -6,7 +6,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wastesortapp/database/model/user.dart';
 import 'package:email_otp/email_otp.dart';
-
+import 'package:wastesortapp/database/model/tree.dart';
+import 'package:wastesortapp/frontend/service/tree_service.dart';
 import '../widget/custom_dialog.dart';
 
 class AuthenticationService {
@@ -14,8 +15,9 @@ class AuthenticationService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FacebookAuth _facebookAuth = FacebookAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+  final TreeService _treeService = TreeService();
   AuthenticationService(this._firebaseAuth);
+
 
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
@@ -96,8 +98,10 @@ class AuthenticationService {
       UserCredential userCredential = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
       print("User registered with UID: \${userCredential.user!.uid}"); // Debugging
 
-      await saveUserToFirestore(uid: userCredential.user!.uid, name: userCredential.user!.uid, email: email);
+      await saveUserToFirestore(userId: userCredential.user!.uid, name: userCredential.user!.uid, email: email);
       print("User saved to Firestore"); // Debugging
+
+      await _treeService.createTree(userCredential.user!.uid);
 
       return null;
     } on FirebaseAuthException catch (e) {
@@ -126,7 +130,7 @@ class AuthenticationService {
 
       if (user != null) {
         await saveUserToFirestore(
-          uid: user.uid,
+          userId: user.uid,
           name: user.displayName ?? "Unknown",
           email: user.email ?? "",
         );
@@ -152,7 +156,7 @@ class AuthenticationService {
       if (user != null) {
         final userData = await FacebookAuth.instance.getUserData();
         await saveUserToFirestore(
-          uid: user.uid,
+          userId: user.uid,
           name: userData['name'] ?? "Unknown",
           email: user.email ?? "",
         );
@@ -175,24 +179,22 @@ class AuthenticationService {
   }
 
   Future<void> saveUserToFirestore({
-    required String uid,
+    required String userId,
     required String name,
     required String email,
   }) async {
-    final userDocRef = _firestore.collection('users').doc(uid);
+    final userDocRef = _firestore.collection('users').doc(userId);
     final docSnapshot = await userDocRef.get();
 
     if (!docSnapshot.exists) {
       // If user does not exist, create a new record
       await userDocRef.set({
-        'uid': uid,
+        'userId': userId,
         'name': name,
         'email': email,
         'dob': DateTime.now().toIso8601String(),
-        'photoUrl': "https://res.cloudinary.com/dosqd0oni/image/upload/v1742131075/anonymous-user_n2vxh0.png",
-        'region': "Viet Nam",
-        'water': 0,
-        'tree': 0
+        'photoUrl': "",
+        'region': "",
       });
     }
   }

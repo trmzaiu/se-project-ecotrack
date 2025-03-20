@@ -185,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     double phoneHeight= getPhoneHeight(context);
-    Provider.of<InternetCheckerProvider>(context, listen: false).setContext(context);
+    // Provider.of<InternetCheckerProvider>(context, listen: false).setContext(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
