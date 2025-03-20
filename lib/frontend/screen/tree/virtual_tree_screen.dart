@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
+import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -70,8 +71,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
       }
     });
   }
-
-
+  
   int getLeftDrops(int state, double currentProgress) {
     int totalDrops = 0;
     List<int> reductions = [5, 15, 30, 50];
@@ -99,14 +99,16 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     animation.addListener(() {
-      setState(() {
-        _progress = animation.value;
-      });
+      if (_progress != animation.value) {
+        setState(() {
+          _progress = animation.value;
+        });
+      }
     });
 
     animation.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        Future.delayed(Duration(milliseconds: 0), () {
+        Future.delayed(Duration(milliseconds: 100), () {
           if (_progress >= 1.0) {
             onComplete();
           }
@@ -168,14 +170,14 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
             if (_levelOfTree >= _state.length) {
               _levelOfTree = 0;
               _treeService.updateLevelOfTree(widget.userId, 0);
-              grownTrees++; // Count trees grown in this session
+              grownTrees++;
             }
 
             setState(() {
               leftDrops = getLeftDrops(_levelOfTree, _progress);
             });
 
-            waterTree(); // Continue the process
+            waterTree();
           });
         }
       }
@@ -243,152 +245,196 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
   @override
   Widget build(BuildContext  context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        actions: [
-          // SizedBox(width: 20),
-          GestureDetector(
-            onTap: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => LeaderboardScreen(),
-              //   ),
-              // );
-            },
-            child: SvgPicture.asset(
-              'lib/assets/icons/ic_leaderboard.svg',
-              width: 30,
-              height: 30,
-            ),
-          ),
-          SizedBox(width: 20),
-        ],
-      ),
+      backgroundColor: AppColors.surface,
+      // appBar: AppBar(
+      //   backgroundColor: Colors.transparent,
+      //   elevation: 0,
+      //   scrolledUnderElevation: 0,
+      //   actions: [
+      //     // SizedBox(width: 20),
+      //     GestureDetector(
+      //       onTap: () {
+      //         // Navigator.push(
+      //         //   context,
+      //         //   MaterialPageRoute(
+      //         //     builder: (context) => LeaderboardScreen(),
+      //         //   ),
+      //         // );
+      //       },
+      //       child: SvgPicture.asset(
+      //         'lib/assets/icons/ic_leaderboard.svg',
+      //         width: 30,
+      //         height: 30,
+      //       ),
+      //     ),
+      //     const SizedBox(width: 20),
+      //   ],
+      // ),
       body: SingleChildScrollView(
           child:
-          Column(
-            spacing: 20,
+          Stack(
             children: [
-              SizedBox(height: 40),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 150,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Image.asset(
-                            'lib/assets/images/drop.png', width: 25),
-                        SizedBox(width: 5),
-                        Text('$_drops', style: GoogleFonts.urbanist(fontSize: 30,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.secondary)),
-                      ],
-                    ),
+              Positioned(
+                top: -65,
+                left: -80,
+                child: SizedBox(
+                  height: 400,
+                  width: 400,
+                  child: CustomPaint(
+                    painter: BlobPainter(),
                   ),
-                  SizedBox(width: 20),
-                  SizedBox(
-                    width: 150,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Image.asset(
-                            'lib/assets/images/tree.png', width: 25),
-                        SizedBox(width: 5),
-                        Text('$_trees', style: GoogleFonts.urbanist(fontSize: 30,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.secondary)),
-                      ],
-                    ),
-                  )
-                ],
+                ),
+
               ),
-              SizedBox(
-                height: 300,
-                width: 300,
-                child: CustomPaint(
-                  painter: GradientProgressPainter(progress: _progress),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
+              Column(
+                spacing: 25,
+                children: [
+                  const SizedBox(height: 120),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    // spacing: 10,
                     children: [
-                      Image.asset(_state[_levelOfTree][0], width: 200,
-                          height: 200),
-                      SizedBox(height: 20),
-                      Text(
-                        '${(_progress * _state[_levelOfTree][1]).round()}/${_state[_levelOfTree][1]}',
-                        style: GoogleFonts.urbanist(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w300,
-                          color: AppColors.surface,
+                      SizedBox(
+                        width: 150,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Image.asset(
+                                'lib/assets/images/drop.png', width: 25),
+                            const SizedBox(width: 5),
+                            TweenAnimationBuilder(
+                              tween: Tween<double>(begin: _drops.toDouble(), end: _drops.toDouble()),
+                              duration: Duration(milliseconds: 500),
+                              builder: (_, double value, __) {
+                                return Text('${value.round()}',
+                                    style: GoogleFonts.urbanist(fontSize: 30,
+                                        fontWeight: FontWeight.normal,
+                                        color: AppColors.secondary));
+                              },
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 15),
+                      const SizedBox(width: 20),
+                      SizedBox(
+                        width: 150,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Image.asset(
+                                'lib/assets/images/tree.png', width: 25),
+                            const SizedBox(width: 5),
+                            TweenAnimationBuilder(
+                              tween: Tween<double>(begin: _trees.toDouble(), end: _trees.toDouble()),
+                              duration: Duration(milliseconds: 500),
+                              builder: (_, double value, __) {
+                                return Text('${value.round()}',
+                                    style: GoogleFonts.urbanist(fontSize: 30,
+                                        fontWeight: FontWeight.normal,
+                                        color: AppColors.secondary));
+                              },
+                            ),
+                          ],
+                        ),
+                      )
                     ],
                   ),
-                ),
-              ),
-
-              SizedBox(
-                  width: 200,
-                  height: 80,
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                  SizedBox(
+                    height: 300,
+                    width: 300,
+                    child: CustomPaint(
+                      painter: GradientProgressPainter(progress: _progress),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text('$leftDrops', style: GoogleFonts.urbanist(
-                              fontSize: 30,
-                              fontWeight: FontWeight.normal,
-                              color: AppColors.secondary)),
-                          Image.asset(
-                              'lib/assets/images/drop.png', width: 25,
-                              height: 25),
+                          RepaintBoundary(
+                            child: Image.asset(_state[_levelOfTree][0], width: 200,
+                                height: 200),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            '${(_progress * _state[_levelOfTree][1]).round()}/${_state[_levelOfTree][1]}',
+                            style: GoogleFonts.urbanist(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w300,
+                              color: AppColors.surface,
+                            ),
+                          ),
+                          const SizedBox(height: 15),
                         ],
                       ),
-                      Text('drops of water left',
-                          style: GoogleFonts.urbanist(color: AppColors.secondary)),
-                    ],
-                  )
-              ),
-              ElevatedButton(
-                onPressed: _drops > 0
-                    ? () {
-                  waterTree();
-                } : null,
-
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                        (Set<WidgetState> states) {
-                      if (states.contains(WidgetState.disabled)) {
-                        return Colors.grey;
-                      }
-                      return AppColors.primary;
-                    },
+                    ),
                   ),
-                  foregroundColor: WidgetStateProperty.all(AppColors.surface),
-
-                  overlayColor: WidgetStateProperty.all(
-                      Color(0x4CE7E0DA)),
-                  shadowColor: WidgetStateProperty.all(
-                      Colors.transparent),
-                  shape: WidgetStateProperty.all(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25)),
+                  SizedBox(
+                      width: 200,
+                      height: 80,
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TweenAnimationBuilder(
+                                tween: Tween<double>(begin: leftDrops.toDouble(), end: leftDrops.toDouble()),
+                                duration: Duration(milliseconds: 500),
+                                builder: (_, double value, __) {
+                                  return Text('${value.round()}',
+                                      style: GoogleFonts.urbanist(
+                                          fontSize: 30,
+                                          fontWeight: FontWeight.normal,
+                                          color: AppColors.secondary));
+                                },
+                              ),
+                              // Text('$leftDrops', style: GoogleFonts.urbanist(
+                              //     fontSize: 30,
+                              //     fontWeight: FontWeight.normal,
+                              //     color: AppColors.secondary)),
+                              Image.asset(
+                                  'lib/assets/images/drop.png', width: 25,
+                                  height: 25),
+                            ],
+                          ),
+                          Text('drops of water left',
+                              style: GoogleFonts.urbanist(color: AppColors.secondary)),
+                        ],
+                      )
                   ),
-                  elevation: WidgetStateProperty.all(1),
-                  fixedSize: WidgetStateProperty.all(Size(200, 50)),
-                  textStyle: WidgetStateProperty.all(GoogleFonts.urbanist(
-                      fontSize: 20, fontWeight: FontWeight.normal)),
-                ),
-                child: Text('Watering'),
-              ),
+                  // SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: _drops > 0
+                        ? () {
+                      waterTree();
+                    } : null,
+
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                            (Set<WidgetState> states) {
+                          if (states.contains(WidgetState.disabled)) {
+                            return Colors.grey;
+                          }
+                          return AppColors.primary;
+                        },
+                      ),
+                      foregroundColor: WidgetStateProperty.all(AppColors.surface),
+
+                      overlayColor: WidgetStateProperty.all(
+                          Color(0x4CE7E0DA)),
+                      shadowColor: WidgetStateProperty.all(
+                          Colors.transparent),
+                      shape: WidgetStateProperty.all(
+                        RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25)),
+                      ),
+                      elevation: WidgetStateProperty.all(1),
+                      fixedSize: WidgetStateProperty.all(Size(200, 50)),
+                      textStyle: WidgetStateProperty.all(GoogleFonts.urbanist(
+                          fontSize: 20, fontWeight: FontWeight.normal)),
+                    ),
+                    child: Text('Watering'),
+                  ),
+                ],
+              )
             ],
-          )
+          ),
       )
     );
   }
@@ -443,4 +489,48 @@ class GradientProgressPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class BlobPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 1.0
+      ..color = Colors.black
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFFCFF7D3),
+          Color(0xFFD3F8D6),
+          Color(0xFFD6F9DA),
+          Color(0xFFDDFBE1),
+          Color(0xFFEBFFEE),
+        ],
+        stops: [0.0, 0.5, 0.75, 0.88, 1.0],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    Path path = Path();
+    path.cubicTo(size.width * 1.1, size.height * 0.05, size.width * 1.05, size.height * -0.2, size.width * 1.3, size.height * 0.3);
+    path.cubicTo(size.width * 1.15, size.height * 1.25, size.width * 1.12, size.height * 1, size.width * 1.5, size.height * 1);
+    path.cubicTo(size.width * 1.25, size.height * 1.85, size.width * 0.65, size.height * 1.75, size.width * 0.55, size.height * 1.65);
+    path.cubicTo(size.width * 0.25, size.height * 1.4, size.width * 0.25, size.height * 1.3, size.width * 0.18, size.height * 1.2);
+    path.cubicTo(size.width * 0.05, size.height * 0.15, size.width * -0.3, size.height * 0.1, size.width * 0.4, size.height * 0.1);
+    path.close();
+
+    canvas.drawPath(path, paint);
+
+    Paint outlinePaint = Paint()
+      ..color = AppColors.accent.withOpacity(0.5)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    canvas.drawPath(path, outlinePaint);
+
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
+  }
 }

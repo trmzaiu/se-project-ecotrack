@@ -19,10 +19,11 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => InternetCheckerProvider(),
-      child: MyApp(),
-    ),
+      MyApp()
+  //   ChangeNotifierProvider(
+  //     create: (context) => InternetCheckerProvider(),
+  //     child: MyApp(),
+  //   ),
   );
 }
 
@@ -96,7 +97,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<InternetCheckerProvider>(context, listen: false).setContext(context);
+    // Provider.of<InternetCheckerProvider>(context, listen: false).setContext(context);
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: Stack(
