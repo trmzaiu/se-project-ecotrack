@@ -201,8 +201,7 @@ class _SettingScreenState extends State<SettingScreen> {
                               elevation: 0,
                               maxHeight: 200,
                             ),
-                            items: List.generate(DateTime.now().year - 1900 + 1,
-                                    (index) => 1900 + index)
+                            items: List.generate(DateTime.now().year - 1900 + 1, (index) => DateTime.now().year - index)
                                 .map((year) => DropdownMenuItem(
                               value: year,
                               child: Text(
