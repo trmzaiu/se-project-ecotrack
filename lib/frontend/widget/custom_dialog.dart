@@ -12,12 +12,12 @@ class CustomDialog extends StatelessWidget {
   final VoidCallback? onPressed;
 
   const CustomDialog({
-    Key? key,
+    super.key,
     required this.message,
     required this.status,
     required this.buttonTitle,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +55,6 @@ class CustomDialog extends StatelessWidget {
                 color: AppColors.tertiary,
                 fontWeight: AppFontWeight.regular,
               ),
-
             ),
           ],
         ),

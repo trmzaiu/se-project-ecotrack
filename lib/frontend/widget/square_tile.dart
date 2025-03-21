@@ -4,8 +4,13 @@ import 'package:wastesortapp/theme/colors.dart';
 
 class SquareTile extends StatelessWidget {
   final String imagePath;
+  final bool isLoading;
 
-  const SquareTile({super.key, required this.imagePath});
+  const SquareTile({
+    super.key,
+    required this.imagePath,
+    this.isLoading = false
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +24,7 @@ class SquareTile extends StatelessWidget {
         color: AppColors.surface,
         boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 1)],
       ),
-      child: SvgPicture.asset(imagePath),
+      child: isLoading ? CircularProgressIndicator(padding: EdgeInsets.all(5),) : SvgPicture.asset(imagePath),
     );
   }
 }

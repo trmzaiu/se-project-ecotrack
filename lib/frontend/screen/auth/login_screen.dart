@@ -31,6 +31,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
+  bool _isFacebookLoading = false;
   bool _isShowSheet = false;
   int _currentSheetState = 0;
 
@@ -38,59 +40,67 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
+    if (email.isEmpty || password.isEmpty) {
+      _showErrorDialog(context, "Email or password is empty");
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      _showErrorDialog(context, "Invalid email format");
+      return;
+    }
+
     setState(() => _isLoading = true);
 
-    final bool isSuccess = await _authService.signIn(
-      context: context,
-      email: email,
-      password: password,
-    );
+    try {
+      await _authService.signIn(email: email, password: password);
 
-    setState(() => _isLoading = false);
-
-    if (isSuccess) {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         _navigateToMainScreen(context, user.uid);
       }
+    } on FirebaseAuthException catch (e) {
+      _showErrorDialog(context, "Incorrect email or password");
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
   Future<void> signInWithGoogle(BuildContext context) async {
-    setState(() => _isLoading = true);
+    setState(() => _isGoogleLoading = true);
 
     try {
-      final userCredential = await _authService.signInWithGoogle();
+      await _authService.signInWithGoogle();
 
-      setState(() => _isLoading = false);
-
-      if (userCredential?.user != null) {
-        _navigateToMainScreen(context, userCredential!.user!.uid);
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        _navigateToMainScreen(context, user.uid);
       } else {
-        _showErrorDialog(context, "Google Sign-In Failed");
+        _showErrorDialog(context, "Google Sign-In failed.");
       }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showErrorDialog(context, "Google Sign-In Error: $e");
+    } on FirebaseAuthException {
+      _showErrorDialog(context, "Google Sign-In error.");
+    } finally {
+      setState(() => _isGoogleLoading = false);
     }
   }
 
   Future<void> signInWithFacebook(BuildContext context) async {
-    setState(() => _isLoading = true);
+    setState(() => _isFacebookLoading = true);
 
     try {
-      final userCredential = await _authService.signInWithFacebook();
+      await _authService.signInWithFacebook();
 
-      setState(() => _isLoading = false);
-
-      if (userCredential.user != null) {
-        _navigateToMainScreen(context, userCredential.user!.uid);
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        _navigateToMainScreen(context, user.uid);
       } else {
-        _showErrorDialog(context, "Facebook Sign-In Failed");
+        _showErrorDialog(context, "Facebook Sign-In failed.");
       }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showErrorDialog(context, "Facebook Sign-In Error: $e");
+    } on FirebaseAuthException {
+      _showErrorDialog(context, "Facebook Sign-In error.");
+    } finally {
+      setState(() => _isFacebookLoading = false);
     }
   }
 
@@ -112,23 +122,6 @@ class _LoginScreenState extends State<LoginScreen> {
         message: message,
         status: false,
         buttonTitle: "Try Again",
-      ),
-    );
-  }
-
-  void _showSuccessDialog(BuildContext context, String message) {
-    showDialog(
-      context: context,
-      builder: (context) => CustomDialog(
-        message: message,
-        status: true,
-        buttonTitle: "Continue",
-        onPressed: () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => OpeningScreen()),
-          );
-        },
       ),
     );
   }
@@ -275,7 +268,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: 30),
 
-                  MyButton(text: 'Login', onTap: () => signIn(context)),
+                  MyButton(
+                    text: _isLoading ? 'Loading...' : 'Login',
+                    onTap: () => signIn(context),
+                    isDisabled: _isLoading ? true : false,
+                  ),
 
                   SizedBox(height: 30),
 
@@ -303,18 +300,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       GestureDetector(
                         onTap: () => signInWithGoogle(context),
-                        child: SquareTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
+                        child: SquareTile(imagePath: 'lib/assets/icons/icons8-google.svg', isLoading: _isGoogleLoading),
                       ),
                       SizedBox(width: 50),
                       GestureDetector(
                         onTap: () => signInWithFacebook(context),
-                        child: SquareTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
+                        child: SquareTile(imagePath: 'lib/assets/icons/icons8-facebook.svg', isLoading: _isFacebookLoading),
                       ),
                       SizedBox(width: 50),
                       SquareTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
                     ],
                   ),
-                  SizedBox(height: 13),
+                  SizedBox(height: 15),
                 ],
               ),
             ),

@@ -65,7 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (result != null) {
       _showErrorDialog(context, "Register Error: $result");
     } else {
-      _showSuccessDialog(context, "Resgister Success Full");
+      _showSuccessDialog(context, "Register Successfully");
     }
   }
 
@@ -99,13 +99,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         message: message,
         status: true,
         buttonTitle: "Continue",
-        onPressed: () {
-          Navigator.of(context).pop();
-          final user = FirebaseAuth.instance.currentUser;
-          if (user != null) {
-            _navigateToMainScreen(context, user.uid);
-          }
-        },
+        onPressed: () => _navigateToMainScreen,
       ),
     );
   }
