@@ -18,11 +18,11 @@ class LeaderboardScreen extends StatelessWidget {
     {'rank': 8, 'name': 'Ricardo Veum', 'score': 36, 'image': 'lib/assets/images/caution.png'},
     {'rank': 9, 'name': 'Gary Sanford', 'score': 36, 'image': 'lib/assets/images/caution.png'},
     {'rank': 10, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 10, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 10, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 10, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 10, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 10, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
+    {'rank': 11, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
+    {'rank': 12, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
+    {'rank': 13, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
+    {'rank': 14, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
+    {'rank': 15, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
     {'rank': 99, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
   ];
 
@@ -155,7 +155,7 @@ class LeaderboardScreen extends StatelessWidget {
   }
 
   Widget _buildUserTile(Map<String, dynamic> user) {
-    bool isHighlighted = user['rank'] == 7;
+    bool isHighlighted = user['rank'] == 12;
 
     return Container(
       height: 50,

@@ -110,10 +110,10 @@ class _SettingScreenState extends State<SettingScreen> {
               child: Column(
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(
-                        width: 200,
+                        width: 135,
                         height: 35,
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton2<int>(
@@ -137,8 +137,9 @@ class _SettingScreenState extends State<SettingScreen> {
                             ),
                             items: List.generate(12, (index) {
                               bool isDisabled = selectedYear == DateTime.now().year && (index + 1) > DateTime.now().month;
+                              int monthValue = index + 1;
                               return DropdownMenuItem(
-                                value: index + 1,
+                                value: monthValue,
                                 enabled: !isDisabled,
                                 child: Text(
                                   DateFormat.MMMM().format(DateTime(0, index + 1)),
@@ -152,7 +153,11 @@ class _SettingScreenState extends State<SettingScreen> {
                             }),
                             onChanged: (value) {
                               setState(() {
-                                selectedYear = value!;
+                                if (value != null) {
+                                  setState(() {
+                                    selectedMonth = value;
+                                  });
+                                }
 
                                 if (selectedYear == DateTime.now().year && selectedMonth > DateTime.now().month) {
                                   selectedMonth = DateTime.now().month;
@@ -170,6 +175,8 @@ class _SettingScreenState extends State<SettingScreen> {
                           ),
                         ),
                       ),
+
+                      SizedBox(width: 20),
 
                       SizedBox(
                         width: 100,
