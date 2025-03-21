@@ -1,32 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
-double getPhoneWidth(BuildContext context) {
-  return MediaQuery.of(context).size.width;
-}
-
-double getPhoneHeight(BuildContext context) {
-  return MediaQuery.of(context).size.height;
-}
+import '../../widget/bar_title.dart';
 
 class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = getPhoneWidth(context);
 
-    Widget buildNotificationCard(String title, String content, {bool withImage = true}) {
+    String formatDateTime(DateTime time) {
+      final int hour = time.hour;
+      final int minute = time.minute;
+      final String period = hour >= 12 ? 'PM' : 'AM';
+
+      final int formattedHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+
+      return '$formattedHour:${minute.toString().padLeft(2, '0')} $period';
+    }
+
+    String formatDate(DateTime time) {
+      return DateFormat("MMM dd, yyyy").format(time);
+    }
+
+    Widget buildNotificationItem(String type, DateTime time, int points, bool isRead) {
+      String waterTitle = 'Water Level Reached the Limit!';
+      String waterContent = 'Check now to prevent overflow or adjust as needed.';
+      String evidenceTitle = 'Your Evidence Was Approved!';
+      String evidenceContent = 'You earned ${points} points. Keep contributing for more rewards!';
+      String formattedTime = formatDateTime(time);
       return Padding(
         padding: const EdgeInsets.only(top: 10),
         child: Container(
-          width: screenWidth * 0.92,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           decoration: ShapeDecoration(
-            color: const Color(0xFFFFFCFB),
+            color: AppColors.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -34,10 +47,13 @@ class NotificationScreen extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 50,
+                height: 50,
                 decoration: ShapeDecoration(
-                  color: const Color(0xFFD9D9D9),
+                  image: DecorationImage(
+                    image: AssetImage("lib/assets/images/logo.png"),
+                    fit: BoxFit.fill,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -49,236 +65,175 @@ class NotificationScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      (type == 'water')? waterTitle : evidenceTitle,
                       style: GoogleFonts.urbanist(
-                        color: const Color(0xFF7C3F3E),
+                        color: AppColors.secondary,
                         fontSize: 14,
                         fontWeight: AppFontWeight.semiBold,
-                        height: 0.86,
-                        letterSpacing: 0.14,
                       ),
                     ),
-                    const SizedBox(height: 4),
                     Text(
-                      content,
+                      (type == 'water')? waterContent : evidenceContent,
                       style: GoogleFonts.urbanist(
-                        color: const Color(0xFF9C9385),
+                        color: AppColors.tertiary,
                         fontSize: 14,
-                        fontWeight: AppFontWeight.semiBold,
-                        height: 0.86,
-                        letterSpacing: 0.14,
+                        fontWeight: AppFontWeight.regular,
                       ),
                     ),
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Transform.translate(
-                    offset: const Offset(-6, -15),
-                    child: Text(
-                      '1:00 PM',
+              Container(
+                height: 50,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      formattedTime,
                       style: GoogleFonts.urbanist(
-                        color: const Color(0xFF9C9385),
+                        color: AppColors.tertiary,
                         fontSize: 12,
-                        fontWeight: AppFontWeight.semiBold,
-                        height: 1,
-                        letterSpacing: 0.12,
+                        fontWeight: AppFontWeight.regular,
                       ),
                     ),
-                  ),
-                  if (withImage)
-                    Container(
-                      margin: const EdgeInsets.only(top: 4),
-                      width: 32,
-                      height: 27,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/guide_buttonnoti.png"),
-                          fit: BoxFit.fill,
+                    if (isRead)
+                      Container(
+                        width: 25,
+                        height: 25,
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage("lib/assets/images/tree.png"),
+                            fit: BoxFit.fill,
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
+                  ],
+                ),
+              )
             ],
           ),
         ),
       );
     }
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF7C3F3E),
-      body: Column(
+    
+    Widget buildNotificationCard(DateTime date, List<Widget> children) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.only(top: 60, left: 16, right: 16, bottom: 12),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned(
-                  left: 0,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: SvgPicture.asset(
-                      'lib/assets/icons/ic_back.svg',
-                      height: 24,
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Text(
-                    'Notification',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.urbanist(
-                      color: AppColors.surface,
-                      fontSize: 18,
-                      fontWeight: AppFontWeight.semiBold,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 0,
-                  child: PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'delete') {
-                        print("Delete all selected");
-                      } else if (value == 'mark_read') {
-                        print("Mark all as read selected");
-                      }
-                    },
-                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                      PopupMenuItem<String>(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, color: Colors.red),
-                            const SizedBox(width: 8),
-                            Text('Delete all', style: GoogleFonts.urbanist()),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'mark_read',
-                        child: Row(
-                          children: [
-                            Image(
-                              image: AssetImage('lib/assets/images/guide_buttonnoti.png'),
-                              width: 20,
-                              height: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text('Mark all as read', style: GoogleFonts.urbanist()),
-                          ],
-                        ),
-                      ),
-                    ],
-                    icon: Align(
-                      alignment: Alignment.topRight,
-                      child: Transform.translate(
-                        offset: const Offset(-8, -9),
-                        child: SvgPicture.asset(
-                          'lib/assets/icons/dots-notification.svg',
-                          width: 24,
-                          height: 24,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+          Text(
+            (formatDate(DateTime.now())==formatDate(date))? 'Today' : formatDate(date),
+            style: GoogleFonts.urbanist(
+              color: AppColors.secondary,
+              fontSize: 20,
+              fontWeight: AppFontWeight.regular,
             ),
           ),
+          ...children,
+        ],
+      );
+    }
+
+    void _showMenu(BuildContext context) {
+      showModalBottomSheet(
+        backgroundColor: AppColors.background,
+        context: context,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (context) {
+          return Wrap(
+            children: [
+              ListTile(
+                leading: Icon(Icons.delete, color: AppColors.secondary),
+                title: Text('Delete all', style: GoogleFonts.urbanist(
+                  color: AppColors.secondary,
+                )),
+                onTap: () {
+                  //BE Link
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.done_all, color: AppColors.primary),
+                title: Text('Mark all as read', style: GoogleFonts.urbanist(
+                  color: AppColors.primary,
+                )),
+                onTap: () {
+                  //BE Link
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.secondary,
+      body: Column(
+        children: [
+          Stack(
+            children: [
+              Column(
+                children: [
+                  BarTitle(title: 'Notifications', showBackButton: true),
+                  SizedBox(height: 30),
+                ],
+              ),
+              Positioned(
+                right: 5,
+                top: 48,
+                child: Center(
+                  child: IconButton(
+                  icon: SvgPicture.asset(
+                    'lib/assets/icons/dots-notification.svg',
+                    width: 24,
+                    height: 24,
+                  ),
+                  onPressed: () => _showMenu(context),
+                ),
+              ),
+              ),
+            ],
+          ),
+
           Expanded(
             child: SingleChildScrollView(
               child: Container(
-                width: screenWidth,
-                decoration: const ShapeDecoration(
-                  color: Color(0xFFF7EEE7),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(40),
-                      topRight: Radius.circular(40),
-                    ),
-                  ),
+                decoration: const BoxDecoration(
+                  color: AppColors.background,
+                  // borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Today',
-                        style: GoogleFonts.urbanist(
-                          color: const Color(0xFF7C3F3E),
-                          fontSize: 20,
-                          fontWeight: AppFontWeight.regular,
-                          height: 0.60,
-                          letterSpacing: 0.20,
-                        ),
-                      ),
                       buildNotificationCard(
-                        'Water Level Reached the Limit!',
-                        'The water level has hit the threshold. Check now to prevent overflow or adjust as needed.',
-                      ),
-                      buildNotificationCard(
-                        'Congrats! Your Evidence Was Approved',
-                        'Your evidence submission is approved! You earned [X] points. Keep contributing for more rewards!',
+                        DateTime(2025, 3, 21, 13, 0),
+                        [
+                          buildNotificationItem("water", DateTime(2025, 3, 21, 13, 0), 100, true),
+                          buildNotificationItem("water", DateTime(2025, 3, 21, 13, 0), 100, false),
+                        ],
                       ),
                       const SizedBox(height: 20),
-                      Text(
-                        'Mar 11, 2015',
-                        style: GoogleFonts.urbanist(
-                          color: const Color(0xFF7C3F3E),
-                          fontSize: 20,
-                          fontWeight: AppFontWeight.regular,
-                          height: 0.60,
-                          letterSpacing: 0.20,
-                        ),
-                      ),
                       buildNotificationCard(
-                        'Water Level Reached the Limit!',
-                        'The water level has hit the threshold. Check now to prevent overflow or adjust as needed.',
-                        withImage: false,
-                      ),
-                      buildNotificationCard(
-                        'Congrats! Your Evidence Was Approved',
-                        'Your evidence submission is approved! You earned [X] points. Keep contributing for more rewards!',
-                      ),
-                      buildNotificationCard(
-                        'Congrats! Your Evidence Was Approved',
-                        'Your evidence submission is approved! You earned [X] points. Keep contributing for more rewards!',
-                        withImage: false,
+                        DateTime(2025, 3, 20, 13, 0),
+                        [
+                          buildNotificationItem("point", DateTime(2025, 3, 20, 13, 0), 100, true),
+                          buildNotificationItem("point", DateTime(2025, 3, 20, 13, 0), 100, true),
+                          buildNotificationItem("point", DateTime(2025, 3, 20, 13, 0), 100, true),
+                        ],
                       ),
                       const SizedBox(height: 20),
-                      Text(
-                        'Feb 11, 2015',
-                        style: GoogleFonts.urbanist(
-                          color: const Color(0xFF7C3F3E),
-                          fontSize: 20,
-                          fontWeight: AppFontWeight.regular,
-                          height: 0.60,
-                          letterSpacing: 0.20,
-                        ),
-                      ),
                       buildNotificationCard(
-                        'Water Level Reached the Limit!',
-                        'The water level has hit the threshold. Check now to prevent overflow or adjust as needed.',
-                        withImage: false,
-                      ),
-                      buildNotificationCard(
-                        'Congrats! Your Evidence Was Approved',
-                        'Your evidence submission is approved! You earned [X] points. Keep contributing for more rewards!',
-                        withImage: false,
-                      ),
-                      buildNotificationCard(
-                        'Congrats! Your Evidence Was Approved',
-                        'Your evidence submission is approved! You earned [X] points. Keep contributing for more rewards!',
-                        withImage: false,
+                        DateTime(2025, 3, 19, 13, 0),
+                        [
+                          buildNotificationItem("water", DateTime(2025, 3, 19, 13, 0), 100, true),
+                          buildNotificationItem("water", DateTime(2025, 3, 19, 13, 0), 100, true),
+                          buildNotificationItem("water", DateTime(2025, 3, 19, 13, 0), 100, true),
+                        ],
                       ),
                     ],
                   ),
