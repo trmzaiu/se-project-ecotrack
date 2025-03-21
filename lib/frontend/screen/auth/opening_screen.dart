@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 
 import '../../../theme/fonts.dart';
-import 'login_screen.dart';
 
 class OpeningScreen extends StatefulWidget {
   const OpeningScreen({Key? key}) : super(key: key);

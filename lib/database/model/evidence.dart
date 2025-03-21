@@ -1,20 +1,25 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Evidence {
   final String userId;
   final String evidenceId;
   final String category;
-  final List<String> url;
+  final List<String> imagesUrl;
   final String? description;
-  final DateTime? date;
+  final DateTime date;
+  final String status;
+  final int point;
 
   Evidence({
     required this.userId,
     required this.evidenceId,
     required this.category,
-    required this.url,
+    required this.imagesUrl,
     this.description,
-    this.date,
+    required this.date,
+    required this.status,
+    required this.point,
   });
 
   // Convert User object to a Map for Firestore
@@ -24,9 +29,26 @@ class Evidence {
       'userId': userId,
       'evidenceId': evidenceId,
       'category': category,
-      'url': url,
+      'imagesUrl': imagesUrl,
       'description': description,
-      'date': date != null ? Timestamp.fromDate(date!) : null,
+      'date':  Timestamp.fromDate(date),
+      'status': status,
+      'point': point,
     };
+  }
+
+  factory Evidence.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+    return Evidence(
+      userId: data['userId'],
+      evidenceId: doc.id,
+      category: data['category'],
+      imagesUrl: List<String>.from(data['imagesUrl']),
+      description: data['description'] ?? '',
+      date: (data['date'] as Timestamp).toDate(),
+      status: data['status'],
+      point: data['point'],
+    );
   }
 }

@@ -28,6 +28,7 @@ class MyTextField extends StatelessWidget {
         child: TextField(
           controller: controller,
           obscureText: obscureText,
+          cursorColor: AppColors.secondary,
           textAlignVertical: TextAlignVertical.center,
           style: GoogleFonts.urbanist(fontSize: 13, color: AppColors.tertiary),
           decoration: InputDecoration(

@@ -260,7 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         "Forgot your password?",
                         style: GoogleFonts.urbanist(
                             color: AppColors.secondary,
-                            fontSize: 12,
+                            fontSize: 13,
                             fontWeight: AppFontWeight.regular
                         ),
                       ),
@@ -285,7 +285,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           "or sign in with",
                           style: GoogleFonts.urbanist(
                               color: AppColors.secondary,
-                              fontSize: 13,
+                              fontSize: 14,
                               fontWeight: AppFontWeight.medium
                           ),
                         ),

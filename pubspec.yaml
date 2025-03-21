@@ -13,7 +13,6 @@ dependencies:
     sdk: flutter
   http: ^1.1.0
   cupertino_icons: ^1.0.8
-
   flutter_svg: ^2.0.17
 
   # Cloudinary
@@ -28,14 +27,22 @@ dependencies:
 
   google_fonts: ^6.2.1
 
+  google_sign_in: ^6.3.0
+  flutter_facebook_auth: ^7.1.1
+
+  cached_network_image: ^3.3.0
   image_picker: ^1.1.2
   permission_handler: ^11.0.1
   camerawesome: ^2.0.0
   open_filex: ^4.7.0
   path_provider: ^2.0.0
-  google_sign_in: ^6.3.0
   photo_manager: ^3.6.4
-  flutter_facebook_auth: ^7.1.1
+
+  dotted_border: ^2.0.0
+  dropdown_button2: ^2.3.9
+  intl: ^0.20.2
+  country_picker: ^2.0.27
+  table_calendar: ^3.2.0
   email_otp: ^3.0.2
   internet_connection_checker_plus: ^2.7.1
   provider: ^6.1.2
@@ -52,20 +59,3 @@ flutter:
     - lib/assets/images/
 
   uses-material-design: true
-
-  fonts:
-    - family: Nunito
-      fonts:
-        - asset: lib/assets/fonts/nunito.ttf
-    - family: Domine
-      fonts:
-        - asset: lib/assets/fonts/domine.ttf
-    - family: Madisonian
-      fonts:
-        - asset: lib/assets/fonts/abc.ttf
-    - family: Urbanist
-      fonts:
-        - asset: lib/assets/fonts/urbanist.ttf
-    - family: Rancher
-      fonts:
-        - asset: lib/assets/fonts/rancher.ttf
