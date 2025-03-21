@@ -10,6 +10,8 @@ import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'leaderboard_screen.dart';
+
 
 class VirtualTreeScreen extends StatefulWidget {
   final String userId;
@@ -246,30 +248,30 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
   Widget build(BuildContext  context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      // appBar: AppBar(
-      //   backgroundColor: Colors.transparent,
-      //   elevation: 0,
-      //   scrolledUnderElevation: 0,
-      //   actions: [
-      //     // SizedBox(width: 20),
-      //     GestureDetector(
-      //       onTap: () {
-      //         // Navigator.push(
-      //         //   context,
-      //         //   MaterialPageRoute(
-      //         //     builder: (context) => LeaderboardScreen(),
-      //         //   ),
-      //         // );
-      //       },
-      //       child: SvgPicture.asset(
-      //         'lib/assets/icons/ic_leaderboard.svg',
-      //         width: 30,
-      //         height: 30,
-      //       ),
-      //     ),
-      //     const SizedBox(width: 20),
-      //   ],
-      // ),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        actions: [
+          // SizedBox(width: 20),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LeaderboardScreen(),
+                ),
+              );
+            },
+            child: SvgPicture.asset(
+              'lib/assets/icons/ic_leaderboard.svg',
+              width: 30,
+              height: 30,
+            ),
+          ),
+          const SizedBox(width: 20),
+        ],
+      ),
       body: SingleChildScrollView(
           child:
           Stack(
