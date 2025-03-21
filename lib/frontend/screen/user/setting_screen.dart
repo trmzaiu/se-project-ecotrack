@@ -12,6 +12,7 @@ import 'package:wastesortapp/theme/colors.dart';
 import '../../../theme/fonts.dart';
 import '../../utils/phone_size.dart';
 import '../../widget/bar_title.dart';
+import '../../widget/input_dialog.dart';
 
 class SettingScreen extends StatefulWidget {
   @override
@@ -19,7 +20,12 @@ class SettingScreen extends StatefulWidget {
 }
 
 class _SettingScreenState extends State<SettingScreen> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController passwordConfirmController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
+
   Country? selectedCountry;
   List<File> selectedImages = [];
 
@@ -355,6 +361,37 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
+  void _showDialog(BuildContext context, String information, TextEditingController controller, String hintText) {
+    showDialog(
+      context: context,
+      builder: (context) => InputDialog(
+        information: information,
+        controller: controller,
+        hintText: hintText,
+        onPressed: () {
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
+  void _showDialogPassword(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => InputDialog(
+        information: 'password',
+        controller: passwordController,
+        hintText: 'Password',
+        isPass: true,
+        controllerPass: passwordConfirmController,
+        onPressed: () {
+          // Function to save information 
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -379,9 +416,9 @@ class _SettingScreenState extends State<SettingScreen> {
 
                       _avatarTile(),
 
-                      _informationTile('Name', user['name']),
-                      _informationTile('Email', user['email']),
-                      _informationTile('Password', '••••••••••••'),
+                      _informationTile('Name', user['name'], () => _showDialog(context, 'name', nameController, user['name'])),
+                      _informationTile('Email', user['email'], () => _showDialog(context, 'email', emailController, user['email'])),
+                      _informationTile('Password', '••••••••••••', () => _showDialogPassword(context)),
 
                       _dobTile(),
 
@@ -460,7 +497,7 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
-  Widget _informationTile(String title, String input) {
+  Widget _informationTile(String title, String input, VoidCallback onTap) {
     double phoneWidth = getPhoneWidth(context);
 
     return Column(
@@ -488,12 +525,10 @@ class _SettingScreenState extends State<SettingScreen> {
         Material(
           color: Colors.transparent,
           child: InkWell(
-            highlightColor: AppColors.secondary.withOpacity(0.3),
+            highlightColor: onTap != null ? AppColors.secondary.withOpacity(0.3) : Colors.transparent,
             splashColor: Colors.transparent,
             borderRadius: BorderRadius.circular(6),
-            onTap: () {
-
-            },
+            onTap: onTap,
             child: Container(
               width: phoneWidth - 60,
               height: 50,
