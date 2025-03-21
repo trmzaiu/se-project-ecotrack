@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -77,8 +78,9 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                             itemBuilder: (context, index) {
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(20),
-                                child: Image.network(
-                                  widget.imagePaths[index],
+                                child: CachedNetworkImage(
+                                  imageUrl: widget.imagePaths[index],
+                                  useOldImageOnUrlChange: true,
                                   width: phoneWidth - 60,
                                   height: phoneWidth - 60,
                                   fit: BoxFit.cover,
