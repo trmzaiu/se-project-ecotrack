@@ -1,35 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/theme/colors.dart';
-
 import '../../theme/fonts.dart';
 
-class MyButton extends StatelessWidget {
+class MyButton extends StatefulWidget {
   final String text;
   final VoidCallback onTap;
+  final bool isDisabled;
 
   const MyButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onTap,
-  }) : super(key: key);
+    this.isDisabled = false,
+  });
+
+  @override
+  _MyButtonState createState() => _MyButtonState();
+}
+
+class _MyButtonState extends State<MyButton> {
+  bool _isPressed = false;
+
+  void _handleTap() {
+    if (widget.isDisabled) return;
+    setState(() {
+      _isPressed = true;
+    });
+    widget.onTap();
+    Future.delayed(Duration(milliseconds: 200), () {
+      setState(() {
+        _isPressed = false;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+    return InkWell(
+      onTap: widget.isDisabled ? null : _handleTap,
+      borderRadius: BorderRadius.circular(10),
+      splashColor: widget.isDisabled ? Colors.transparent : AppColors.surface,
       child: Container(
         width: double.infinity,
         height: 50,
         decoration: BoxDecoration(
-          color: AppColors.primary,
+          color: widget.isDisabled ? AppColors.board2 : (_isPressed ? AppColors.board2 : AppColors.primary),
           borderRadius: BorderRadius.circular(10),
         ),
         alignment: Alignment.center,
         child: Text(
-          text,
+          widget.text,
           style: GoogleFonts.urbanist(
-            color: AppColors.surface,
+            color: widget.isDisabled ? AppColors.surface : AppColors.surface,
             fontSize: 16,
             fontWeight: AppFontWeight.bold,
           ),
