@@ -8,16 +8,28 @@ class InternetCheckerProvider extends ChangeNotifier {
   bool isConnectedToInternet = true;
   StreamSubscription<InternetStatus>? _internetConnectionStreamSubscription;
   BuildContext? _context;
+  bool _isDialogShowing = false;
+  Timer? _debounceTimer;
+  final _debounceDuration = Duration(seconds: 2);
 
   InternetCheckerProvider() {
     _internetConnectionStreamSubscription =
         InternetConnection().onStatusChange.listen((status) {
-          isConnectedToInternet = (status == InternetStatus.connected);
-          notifyListeners();
+          _debounceTimer?.cancel();
+          _debounceTimer = Timer(_debounceDuration, () {
+            final newConnectionStatus = (status == InternetStatus.connected);
 
-          if (!isConnectedToInternet) {
-            _showErrorDialog();
-          }
+            if (isConnectedToInternet != newConnectionStatus) {
+              isConnectedToInternet = newConnectionStatus;
+              notifyListeners();
+
+              if (!isConnectedToInternet) {
+                _showErrorDialog();
+              } else if (_isDialogShowing) {
+                _dismissErrorDialog();
+              }
+            }
+          });
         });
   }
 
@@ -26,32 +38,55 @@ class InternetCheckerProvider extends ChangeNotifier {
   }
 
   void _showErrorDialog() {
-    if (_context == null) return;
+    if (_context == null || _isDialogShowing) return;
 
-    showDialog(
-      context: _context!,
-      barrierDismissible: false,
-      builder: (context) => CustomDialog(
-        message: "No internet connection.",
-        status: false,
-        buttonTitle: "Try Again",
-        onPressed: retryConnection,
-      ),
-    );
+    _isDialogShowing = true;
+
+    Future.microtask(() {
+      if (_context != null && _context!.mounted) {
+        showDialog(
+          context: _context!,
+          barrierDismissible: false,
+          builder: (context) => CustomDialog(
+            message: "No internet connection.",
+            status: false,
+            buttonTitle: "Try Again",
+            onPressed: retryConnection,
+          ),
+        );
+      }
+    });
+  }
+
+  void _dismissErrorDialog() {
+    if (_context != null && _context!.mounted && _isDialogShowing) {
+      Navigator.of(_context!).pop();
+      _isDialogShowing = false;
+    }
   }
 
   Future<void> retryConnection() async {
-    bool hasInternet = await InternetConnection().hasInternetAccess;
-    if (hasInternet) {
+    bool checkResult = false;
+    for (int i = 0; i < 3; i++) {
+      checkResult = await InternetConnection().hasInternetAccess;
+      if (checkResult) break;
+      await Future.delayed(Duration(milliseconds: 500));
+    }
+
+    if (checkResult) {
       isConnectedToInternet = true;
       notifyListeners();
-      Navigator.of(_context!).pop();
+      _isDialogShowing = false;
+      if (_context != null && _context!.mounted) {
+        Navigator.of(_context!).pop();
+      }
     }
   }
 
   @override
   void dispose() {
     _internetConnectionStreamSubscription?.cancel();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 }
