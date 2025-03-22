@@ -7,8 +7,14 @@ import 'package:wastesortapp/theme/fonts.dart';
 
 import '../../widget/bar_title.dart';
 
-class LeaderboardScreen extends StatelessWidget {
+class LeaderboardScreen extends StatefulWidget {
+  @override
+  _LeaderboardScreenState createState() => _LeaderboardScreenState();
+}
+
+class _LeaderboardScreenState extends State<LeaderboardScreen> {
   final UserService _userService = UserService(FirebaseAuth.instance);
+  final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
   @override
   Widget build(BuildContext context) {
@@ -51,10 +57,12 @@ class LeaderboardScreen extends StatelessWidget {
                   },
                 ),
               ),
-              if (users.length > 6)
+              if (users.any((user) => user['userId'] == currentUserId && user['rank'] > 12))
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
-                  child: _buildUserTile(users[6]),
+                  child: _buildUserTile(
+                    users.firstWhere((user) => user['userId'] == currentUserId),
+                  ),
                 ),
             ],
           );
@@ -90,7 +98,7 @@ class LeaderboardScreen extends StatelessWidget {
   }
 
   Widget _buildTopUser(Map<String, dynamic> user, Color color, double avatarSize) {
-    bool isHighlighted = user['rank'] == 1;
+    bool isCurrentUser = user['userId'] == currentUserId;
 
     return Column(
       children: [
@@ -101,7 +109,7 @@ class LeaderboardScreen extends StatelessWidget {
             Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: isHighlighted ? AppColors.secondary : AppColors.surface, width: 3),
+                border: Border.all(color: isCurrentUser ? AppColors.secondary : AppColors.surface, width: 3),
               ),
               child: CircleAvatar(
                 backgroundImage: AssetImage(user['image']),
@@ -114,7 +122,7 @@ class LeaderboardScreen extends StatelessWidget {
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(
-                  color: isHighlighted ? AppColors.secondary : AppColors.surface,
+                  color: isCurrentUser ? AppColors.secondary : AppColors.surface,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
@@ -130,7 +138,7 @@ class LeaderboardScreen extends StatelessWidget {
                   style: GoogleFonts.urbanist(
                     fontSize: 16,
                     fontWeight: AppFontWeight.bold,
-                    color: isHighlighted ? AppColors.surface : AppColors.secondary,
+                    color: isCurrentUser ? AppColors.surface : AppColors.secondary,
                   ),
                 ),
               ),
@@ -172,14 +180,14 @@ class LeaderboardScreen extends StatelessWidget {
   }
 
   Widget _buildUserTile(Map<String, dynamic> user) {
-    bool isHighlighted = user['rank'] == 12;
+    bool isCurrentUser = user['userId'] == currentUserId;
 
     return Container(
       height: 50,
       padding: EdgeInsets.symmetric(horizontal: 10),
       margin: EdgeInsets.symmetric(vertical: 5),
       decoration: ShapeDecoration(
-        color: isHighlighted ? AppColors.secondary : AppColors.surface,
+        color: isCurrentUser ? AppColors.secondary : AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -201,7 +209,7 @@ class LeaderboardScreen extends StatelessWidget {
               style: GoogleFonts.urbanist(
                 fontSize: 18,
                 fontWeight: AppFontWeight.bold,
-                color: isHighlighted ? AppColors.surface : AppColors.primary,
+                color: isCurrentUser ? AppColors.surface : AppColors.primary,
               ),
             ),
           ),
@@ -217,7 +225,7 @@ class LeaderboardScreen extends StatelessWidget {
               style: GoogleFonts.urbanist(
                 fontSize: 16,
                 fontWeight: AppFontWeight.semiBold,
-                color: isHighlighted ? AppColors.surface : AppColors.primary,
+                color: isCurrentUser ? AppColors.surface : AppColors.primary,
               ),
             ),
           ),
@@ -228,7 +236,7 @@ class LeaderboardScreen extends StatelessWidget {
                 style: GoogleFonts.urbanist(
                   fontSize: 16,
                   fontWeight: AppFontWeight.bold,
-                  color: isHighlighted ? AppColors.surface : AppColors.primary,
+                  color: isCurrentUser ? AppColors.surface : AppColors.primary,
                 ),
               ),
               SizedBox(width: 5),

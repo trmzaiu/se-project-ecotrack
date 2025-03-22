@@ -8,12 +8,12 @@ class Users {
 
   Users({
     required this.userId,
-    String? name,
+    required this.name,
     required this.email,
     this.dob,
     this.photoUrl = "",
     this.country = "",
-  }) : name = name ?? userId.substring(0, 10);
+  });
 
   Map<String, dynamic> toMap() {
     return {

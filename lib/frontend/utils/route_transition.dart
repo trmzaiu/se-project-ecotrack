@@ -7,7 +7,7 @@ Route moveLeftRoute(Widget page) {
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);
       const end = Offset.zero;
-      const curve = Curves.easeOut;
+      const curve = Curves.easeInOut;
 
       var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
       var offsetAnimation = animation.drive(tween);
@@ -27,7 +27,7 @@ Route moveUpRoute(Widget page) {
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(0.0, 1.0);
       const end = Offset.zero;
-      const curve = Curves.easeOut;
+      const curve = Curves.easeInOut;
 
       var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
       var offsetAnimation = animation.drive(tween);
@@ -47,7 +47,7 @@ Route moveDownRoute(Widget page) {
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(0.0, -1.0);
       const end = Offset.zero;
-      const curve = Curves.easeOut;
+      const curve = Curves.easeInOut;
 
       var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
       var offsetAnimation = animation.drive(tween);
@@ -67,7 +67,7 @@ Route moveRightRoute(Widget page) {
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(-1.0, 0.0);
       const end = Offset.zero;
-      const curve = Curves.easeOut;
+      const curve = Curves.easeInOut;
 
       var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
       var offsetAnimation = animation.drive(tween);

@@ -129,13 +129,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
     void _navigateToMainScreen(BuildContext context, String userId) {
       Navigator.of(context).pushReplacement(
-        scaleRoute(
-          RegisterScreen(),
+        moveUpRoute(
+          MainScreen(userId: userId),
         ),
       );
     }
-
-
 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(
@@ -343,7 +341,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
                           Navigator.of(context).pushReplacement(
-                            moveDownRoute(
+                            fadeRoute(
                               RegisterScreen(),
                             ),
                           );

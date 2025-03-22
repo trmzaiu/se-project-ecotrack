@@ -13,8 +13,7 @@ class OpeningScreen extends StatefulWidget {
   _OpeningScreenState createState() => _OpeningScreenState();
 }
 
-class _OpeningScreenState extends State<OpeningScreen>
-    with SingleTickerProviderStateMixin {
+class _OpeningScreenState extends State<OpeningScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -32,17 +31,12 @@ class _OpeningScreenState extends State<OpeningScreen>
     super.dispose();
   }
 
-  Future<void> _navigateToLogin() async {
-    await Future.delayed(Duration(milliseconds: 100));
-
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        scaleRoute(
-          LoginScreen(),
-        ),
-      );
-
-    }
+  void _navigateToLogin() {
+    Navigator.of(context).pushReplacement(
+      moveRightRoute(
+        LoginScreen(),
+      ),
+    );
   }
 
   @override

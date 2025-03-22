@@ -13,7 +13,6 @@ class UserService {
 
   Future<List<Map<String, dynamic>>> fetchUsersForLeaderboard() async {
     try {
-      // Fetch all users from 'users' collection
       QuerySnapshot userSnapshot = await _firestore.collection('users').get();
       if (userSnapshot.docs.isEmpty) return [];
 
@@ -21,15 +20,15 @@ class UserService {
       for (var doc in userSnapshot.docs) {
         var data = doc.data() as Map<String, dynamic>;
         usersData[doc.id] = {
+          'userId': doc.id,
           'name': data['name'] ?? 'Unknown',
           'image': data['photoUrl']?.isNotEmpty == true
               ? data['photoUrl']
               : 'lib/assets/images/avatar_default.png',
-          'tree': 0 // Default tree, will be updated
+          'tree': 0 // Default tree count
         };
       }
 
-      // Fetch all tree data in one query
       QuerySnapshot treeSnapshot = await _firestore.collection('tree').get();
       for (var doc in treeSnapshot.docs) {
         var data = doc.data() as Map<String, dynamic>;
@@ -39,11 +38,9 @@ class UserService {
         }
       }
 
-      // Convert to list and sort by tree
       List<Map<String, dynamic>> leaderboardData = usersData.values.toList();
       leaderboardData.sort((a, b) => b['tree'].compareTo(a['tree']));
 
-      // Assign ranks
       for (int i = 0; i < leaderboardData.length; i++) {
         leaderboardData[i]['rank'] = i + 1;
       }
@@ -54,4 +51,5 @@ class UserService {
       throw Exception("Failed to fetch leaderboard data: $e");
     }
   }
+
 }
