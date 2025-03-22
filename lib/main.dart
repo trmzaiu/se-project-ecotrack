@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import 'package:wastesortapp/theme/colors.dart';
+import 'package:wastesortapp/theme/fonts.dart';
 
 import 'frontend/screen/camera/camera_screen.dart';
 import 'frontend/screen/guide/guide_screen.dart';
@@ -214,10 +216,7 @@ class _MainScreenState extends State<MainScreen> {
           width: double.infinity,
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
-            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black12,
@@ -312,9 +311,9 @@ class _MainScreenState extends State<MainScreen> {
           SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.urbanist(
               fontSize: 12,
-              fontWeight: FontWeight.w600,
+              fontWeight: AppFontWeight.semiBold,
               color: _currentIndex == index ? AppColors.primary : AppColors.accent,
             ),
           ),
