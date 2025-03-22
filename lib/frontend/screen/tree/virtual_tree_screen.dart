@@ -10,6 +10,8 @@ import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../utils/route_transition.dart';
+import '../../widget/bar_title.dart';
 import 'leaderboard_screen.dart';
 
 
@@ -248,195 +250,219 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
   Widget build(BuildContext  context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        actions: [
-          // SizedBox(width: 20),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LeaderboardScreen(),
-                ),
-              );
-            },
-            child: SvgPicture.asset(
-              'lib/assets/icons/ic_leaderboard.svg',
-              width: 30,
-              height: 30,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -65,
+            left: -80,
+            child: SizedBox(
+              height: 400,
+              width: 400,
+              child: CustomPaint(
+                painter: BlobPainter(),
+              ),
             ),
           ),
-          const SizedBox(width: 20),
-        ],
-      ),
-      body: SingleChildScrollView(
-          child:
-          Stack(
+          Column(
             children: [
-              Positioned(
-                top: -65,
-                left: -80,
-                child: SizedBox(
-                  height: 400,
-                  width: 400,
-                  child: CustomPaint(
-                    painter: BlobPainter(),
-                  ),
-                ),
-
-              ),
-              Column(
-                spacing: 25,
+              Stack(
                 children: [
-                  const SizedBox(height: 120),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    // spacing: 10,
+                  Column(
                     children: [
-                      SizedBox(
-                        width: 150,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Image.asset(
-                                'lib/assets/images/drop.png', width: 25),
-                            const SizedBox(width: 5),
-                            TweenAnimationBuilder(
-                              tween: Tween<double>(begin: _drops.toDouble(), end: _drops.toDouble()),
-                              duration: Duration(milliseconds: 500),
-                              builder: (_, double value, __) {
-                                return Text('${value.round()}',
-                                    style: GoogleFonts.urbanist(fontSize: 30,
-                                        fontWeight: FontWeight.normal,
-                                        color: AppColors.secondary));
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      SizedBox(
-                        width: 150,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Image.asset(
-                                'lib/assets/images/tree.png', width: 25),
-                            const SizedBox(width: 5),
-                            TweenAnimationBuilder(
-                              tween: Tween<double>(begin: _trees.toDouble(), end: _trees.toDouble()),
-                              duration: Duration(milliseconds: 500),
-                              builder: (_, double value, __) {
-                                return Text('${value.round()}',
-                                    style: GoogleFonts.urbanist(fontSize: 30,
-                                        fontWeight: FontWeight.normal,
-                                        color: AppColors.secondary));
-                              },
-                            ),
-                          ],
-                        ),
-                      )
+                      BarTitle(title: '', showNotification: true),
+                      SizedBox(height: 30),
                     ],
                   ),
-                  SizedBox(
-                    height: 300,
-                    width: 300,
-                    child: CustomPaint(
-                      painter: GradientProgressPainter(progress: _progress),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          RepaintBoundary(
-                            child: Image.asset(_state[_levelOfTree][0], width: 200,
-                                height: 200),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            '${(_progress * _state[_levelOfTree][1]).round()}/${_state[_levelOfTree][1]}',
-                            style: GoogleFonts.urbanist(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w300,
-                              color: AppColors.surface,
+                  Positioned(
+                    left: 20,
+                    top: 47,
+                    child: Center(
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            moveUpRoute(
+                              LeaderboardScreen(),
+                            ),
+                          );
+                        },
+                        icon: SvgPicture.asset(
+                          'lib/assets/icons/ic_leaderboard.svg',
+                          width: 24,
+                          height: 24,
+                        ),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(AppColors.surface),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          const SizedBox(height: 15),
-                        ],
+                          shadowColor: MaterialStateProperty.all(Color(0x33333333)),
+                          elevation: MaterialStateProperty.all(2),
+                        ),
                       ),
                     ),
                   ),
-                  SizedBox(
-                      width: 200,
-                      height: 80,
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                ],
+              ),
+
+            ],
+          ),
+          SingleChildScrollView(
+            child:
+            Stack(
+              children: [
+                Column(
+                  spacing: 25,
+                  children: [
+                    const SizedBox(height: 120),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      // spacing: 10,
+                      children: [
+                        SizedBox(
+                          width: 150,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
+                              Image.asset(
+                                  'lib/assets/images/drop.png', width: 25),
+                              const SizedBox(width: 5),
                               TweenAnimationBuilder(
-                                tween: Tween<double>(begin: leftDrops.toDouble(), end: leftDrops.toDouble()),
+                                tween: Tween<double>(begin: _drops.toDouble(), end: _drops.toDouble()),
                                 duration: Duration(milliseconds: 500),
                                 builder: (_, double value, __) {
                                   return Text('${value.round()}',
-                                      style: GoogleFonts.urbanist(
-                                          fontSize: 30,
+                                      style: GoogleFonts.urbanist(fontSize: 30,
                                           fontWeight: FontWeight.normal,
                                           color: AppColors.secondary));
                                 },
                               ),
-                              // Text('$leftDrops', style: GoogleFonts.urbanist(
-                              //     fontSize: 30,
-                              //     fontWeight: FontWeight.normal,
-                              //     color: AppColors.secondary)),
-                              Image.asset(
-                                  'lib/assets/images/drop.png', width: 25,
-                                  height: 25),
                             ],
                           ),
-                          Text('drops of water left',
-                              style: GoogleFonts.urbanist(color: AppColors.secondary)),
-                        ],
-                      )
-                  ),
-                  // SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: _drops > 0
-                        ? () {
-                      waterTree();
-                    } : null,
-
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                            (Set<WidgetState> states) {
-                          if (states.contains(WidgetState.disabled)) {
-                            return Colors.grey;
-                          }
-                          return AppColors.primary;
-                        },
-                      ),
-                      foregroundColor: WidgetStateProperty.all(AppColors.surface),
-
-                      overlayColor: WidgetStateProperty.all(
-                          Color(0x4CE7E0DA)),
-                      shadowColor: WidgetStateProperty.all(
-                          Colors.transparent),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25)),
-                      ),
-                      elevation: WidgetStateProperty.all(1),
-                      fixedSize: WidgetStateProperty.all(Size(200, 50)),
-                      textStyle: WidgetStateProperty.all(GoogleFonts.urbanist(
-                          fontSize: 20, fontWeight: FontWeight.normal)),
+                        ),
+                        const SizedBox(width: 20),
+                        SizedBox(
+                          width: 150,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Image.asset(
+                                  'lib/assets/images/tree.png', width: 25),
+                              const SizedBox(width: 5),
+                              TweenAnimationBuilder(
+                                tween: Tween<double>(begin: _trees.toDouble(), end: _trees.toDouble()),
+                                duration: Duration(milliseconds: 500),
+                                builder: (_, double value, __) {
+                                  return Text('${value.round()}',
+                                      style: GoogleFonts.urbanist(fontSize: 30,
+                                          fontWeight: FontWeight.normal,
+                                          color: AppColors.secondary));
+                                },
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
                     ),
-                    child: Text('Watering'),
-                  ),
-                ],
-              )
-            ],
-          ),
+                    SizedBox(
+                      height: 300,
+                      width: 300,
+                      child: CustomPaint(
+                        painter: GradientProgressPainter(progress: _progress),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            RepaintBoundary(
+                              child: Image.asset(_state[_levelOfTree][0], width: 200,
+                                  height: 200),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              '${(_progress * _state[_levelOfTree][1]).round()}/${_state[_levelOfTree][1]}',
+                              style: GoogleFonts.urbanist(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: AppColors.surface,
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                        width: 200,
+                        height: 80,
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                TweenAnimationBuilder(
+                                  tween: Tween<double>(begin: leftDrops.toDouble(), end: leftDrops.toDouble()),
+                                  duration: Duration(milliseconds: 500),
+                                  builder: (_, double value, __) {
+                                    return Text('${value.round()}',
+                                        style: GoogleFonts.urbanist(
+                                            fontSize: 30,
+                                            fontWeight: FontWeight.normal,
+                                            color: AppColors.secondary));
+                                  },
+                                ),
+                                // Text('$leftDrops', style: GoogleFonts.urbanist(
+                                //     fontSize: 30,
+                                //     fontWeight: FontWeight.normal,
+                                //     color: AppColors.secondary)),
+                                Image.asset(
+                                    'lib/assets/images/drop.png', width: 25,
+                                    height: 25),
+                              ],
+                            ),
+                            Text('drops of water left',
+                                style: GoogleFonts.urbanist(color: AppColors.secondary)),
+                          ],
+                        )
+                    ),
+                    // SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: _drops > 0
+                          ? () {
+                        waterTree();
+                      } : null,
+
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                              (Set<WidgetState> states) {
+                            if (states.contains(WidgetState.disabled)) {
+                              return Colors.grey;
+                            }
+                            return AppColors.primary;
+                          },
+                        ),
+                        foregroundColor: WidgetStateProperty.all(AppColors.surface),
+
+                        overlayColor: WidgetStateProperty.all(
+                            Color(0x4CE7E0DA)),
+                        shadowColor: WidgetStateProperty.all(
+                            Colors.transparent),
+                        shape: WidgetStateProperty.all(
+                          RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25)),
+                        ),
+                        elevation: WidgetStateProperty.all(1),
+                        fixedSize: WidgetStateProperty.all(Size(200, 50)),
+                        textStyle: WidgetStateProperty.all(GoogleFonts.urbanist(
+                            fontSize: 20, fontWeight: FontWeight.normal)),
+                      ),
+                      child: Text('Watering'),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          )
+        ],
       )
     );
   }

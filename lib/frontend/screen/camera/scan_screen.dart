@@ -96,9 +96,21 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
     await completer.future;
   }
 
+  // void _handleTap() {
+  //   final validCategories = {"Recyclable", "Organic", "Hazardous", "General"};
+  //
+  //   if (validCategories.contains(_scanResult)) {
+  //     Navigator.of(context).push(moveLeftRoute(UploadScreen(
+  //       imagePath: widget.imagePath,
+  //       category: _scanResult!,
+  //     )));
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
+    bool isValidCategory = ["Recyclable", "Organic", "Hazardous", "General"].contains(_scanResult);
+
     double statusHeight = getStatusHeight(context);
     double phoneWidth = getPhoneWidth(context);
     double phoneHeight = getPhoneHeight(context);
@@ -237,18 +249,17 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                     right: 17,
                     top: 19,
                     child: GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          moveLeftRoute(
-                            UploadScreen(imagePath: widget.imagePath),
-                          ),
-                        );
-                      },
+                      onTap: isValidCategory
+                        ? () => Navigator.of(context).push(moveLeftRoute(UploadScreen(
+                          imagePath: widget.imagePath,
+                          category: _scanResult!,
+                          )))
+                        : null,
                       child: Container(
                         width: 45,
                         height: 45,
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
+                          color: isValidCategory ? AppColors.primary : AppColors.board2,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Center(

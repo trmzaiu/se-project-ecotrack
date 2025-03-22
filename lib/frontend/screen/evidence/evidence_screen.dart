@@ -15,6 +15,7 @@ import '../../../database/model/evidence.dart';
 import '../../../theme/colors.dart';
 import '../../service/evidence_service.dart';
 import '../../widget/bar_title.dart';
+import '../../widget/custom_dialog.dart';
 
 class EvidenceScreen extends StatefulWidget {
   @override
@@ -167,7 +168,10 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => UploadScreen(imagePath: "")),
+            MaterialPageRoute(
+              builder: (context) => UploadScreen(),
+              settings: RouteSettings(name: "UploadScreen"),
+            ),
           );
         },
         backgroundColor: AppColors.primary,
@@ -247,21 +251,21 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
                 ? Colors.green
                 : Colors.red;
             return GestureDetector(
-                onTap: () {
-                  preloadImages(filteredList, context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => EvidenceDetailScreen(
-                          category: item.category,
-                          status: item.status,
-                          point: item.point,
-                          date: DateFormat('dd MMM, yyyy').format(item.date),
-                          description: item.description,
-                          imagePaths: item.imagesUrl,
-                        )),
-                  );
-                },
+              onTap: () {
+                preloadImages(filteredList, context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EvidenceDetailScreen(
+                      category: item.category,
+                      status: item.status,
+                      point: item.point,
+                      date: DateFormat('dd MMM, yyyy').format(item.date),
+                      description: item.description,
+                      imagePaths: item.imagesUrl,
+                    )),
+                );
+              },
               child:  Container(
                 key: PageStorageKey(item.evidenceId),
                 margin: EdgeInsets.only(bottom: 12),

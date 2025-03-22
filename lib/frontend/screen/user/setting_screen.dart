@@ -40,7 +40,7 @@ class _SettingScreenState extends State<SettingScreen> {
     'photoUrl': 'lib/assets/images/user_image.png',
     'name': 'Gwen Stacy',
     'email': 'gwenstacy@example.com',
-    'dob': '20/03/2025',
+    'dob': '20/09/2024',
     'country': 'Vietnam',
   };
 
@@ -97,8 +97,6 @@ class _SettingScreenState extends State<SettingScreen> {
     DateTime focusedDate = selectedDate;
     int selectedYear = selectedDate.year;
     int selectedMonth = selectedDate.month;
-    bool isDropdownMonthOpened = false;
-    bool isDropdownYearOpened = false;
 
     await showModalBottomSheet(
       context: context,
@@ -108,7 +106,7 @@ class _SettingScreenState extends State<SettingScreen> {
           builder: (context, setState) {
             return Container(
               height: 440,
-              padding: EdgeInsets.symmetric(vertical: 25, horizontal: 15),
+              padding: EdgeInsets.symmetric(vertical: 25, horizontal: 20),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
                 color: AppColors.background,
@@ -116,34 +114,54 @@ class _SettingScreenState extends State<SettingScreen> {
               child: Column(
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SizedBox(
-                        width: 135,
+                        width: 130,
                         height: 35,
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton2<int>(
                             value: selectedMonth,
                             isExpanded: true,
-                            buttonStyleData: ButtonStyleData(
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: isDropdownMonthOpened
-                                    ? BorderRadius.vertical(top: Radius.circular(10))
-                                    : BorderRadius.circular(10),
-                              ),
+                            customButton: Container(
+                                padding: EdgeInsets.only(left: 15),
+                                decoration: BoxDecoration(
+                                  color: AppColors.background,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      DateFormat.MMMM().format(DateTime(0, selectedMonth)),
+                                      style: GoogleFonts.urbanist(
+                                        fontSize: 18,
+                                        fontWeight: AppFontWeight.medium,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                    Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                                  ],
+                                )
+                            ),
+                            iconStyleData: IconStyleData(
+                              icon: SizedBox.shrink(),
                             ),
                             dropdownStyleData: DropdownStyleData(
+                              isOverButton: true,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
+                                borderRadius: BorderRadius.circular(10),
                                 color: AppColors.surface,
                               ),
                               elevation: 0,
                               maxHeight: 200,
+                              scrollbarTheme: ScrollbarThemeData(
+                                thumbColor: MaterialStateProperty.all(AppColors.board2),
+                                thickness: MaterialStateProperty.all(2),
+                              ),
                             ),
                             items: List.generate(12, (index) {
                               bool isDisabled = selectedYear == DateTime.now().year && (index + 1) > DateTime.now().month;
                               int monthValue = index + 1;
+                              bool isSelected = monthValue == selectedMonth;
                               return DropdownMenuItem(
                                 value: monthValue,
                                 enabled: !isDisabled,
@@ -152,11 +170,15 @@ class _SettingScreenState extends State<SettingScreen> {
                                   style: GoogleFonts.urbanist(
                                     fontSize: 16,
                                     fontWeight: AppFontWeight.medium,
-                                    color: isDisabled ? AppColors.tertiary : AppColors.primary,
+                                    color: isDisabled ? AppColors.tertiary : isSelected ? AppColors.board2 : AppColors.primary,
                                   ),
                                 ),
                               );
                             }),
+                            menuItemStyleData: MenuItemStyleData(
+                              height: 40,
+                              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 0),
+                            ),
                             onChanged: (value) {
                               setState(() {
                                 if (value != null) {
@@ -172,63 +194,80 @@ class _SettingScreenState extends State<SettingScreen> {
                                 focusedDate = DateTime(selectedYear, selectedMonth, 1);
                               });
                             },
-
-                            onMenuStateChange: (isOpen) {
-                              setState(() {
-                                isDropdownMonthOpened = isOpen;
-                              });
-                            },
                           ),
                         ),
                       ),
 
-                      SizedBox(width: 20),
-
                       SizedBox(
-                        width: 100,
+                        width: 80,
                         height: 35,
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton2<int>(
                             value: selectedYear,
                             isExpanded: true,
-                            buttonStyleData: ButtonStyleData(
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: isDropdownYearOpened
-                                    ? BorderRadius.vertical(top: Radius.circular(10))
-                                    : BorderRadius.circular(10),
-                              ),
+                            customButton: Container(
+                                padding: EdgeInsets.only(right: 10),
+                                decoration: BoxDecoration(
+                                  color: AppColors.background,
+                                ),
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                          selectedYear.toString(),
+                                          style: GoogleFonts.urbanist(
+                                            fontSize: 16,
+                                            fontWeight: AppFontWeight.medium,
+                                            color: AppColors.primary,
+                                          )
+                                      ),
+                                      Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                                    ],
+                                  ),
+                                )
+                            ),
+                            iconStyleData: IconStyleData(
+                              icon: SizedBox.shrink(),
                             ),
                             dropdownStyleData: DropdownStyleData(
+                              isOverButton: true,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
+                                borderRadius: BorderRadius.circular(10),
                                 color: AppColors.surface,
                               ),
                               elevation: 0,
                               maxHeight: 200,
+                              scrollbarTheme: ScrollbarThemeData(
+                                thumbColor: MaterialStateProperty.all(AppColors.board2),
+                                thickness: MaterialStateProperty.all(2),
+                              ),
+                            ),
+                            menuItemStyleData: MenuItemStyleData(
+                              height: 30,
+                              padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
                             ),
                             items: List.generate(DateTime.now().year - 1900 + 1, (index) => DateTime.now().year - index)
-                                .map((year) => DropdownMenuItem(
-                              value: year,
-                              child: Text(
-                                "$year",
-                                style: GoogleFonts.urbanist(
-                                  fontSize: 16,
-                                  fontWeight: AppFontWeight.medium,
-                                  color: AppColors.primary,
-                                )
-                              ),
-                            ))
-                                .toList(),
+                                .map((year) {
+                              bool isSelected = year == selectedYear;
+                              return DropdownMenuItem(
+                                alignment: Alignment.center,
+                                value: year,
+                                child: Text(
+                                  "$year",
+                                  style: GoogleFonts.urbanist(
+                                    fontSize: 16,
+                                    fontWeight: AppFontWeight.medium,
+                                    color: isSelected ? AppColors.board2 : AppColors.primary,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                             onChanged: (value) {
                               setState(() {
                                 selectedYear = value!;
                                 focusedDate = DateTime(selectedYear, selectedMonth, 1);
-                              });
-                            },
-                            onMenuStateChange: (isOpen) {
-                              setState(() {
-                                isDropdownYearOpened = isOpen;
                               });
                             },
                           ),
@@ -248,11 +287,11 @@ class _SettingScreenState extends State<SettingScreen> {
                         weekdayStyle: GoogleFonts.urbanist(
                           fontSize: 16,
                           fontWeight: AppFontWeight.medium,
-                          color: AppColors.board1,
+                          color: AppColors.secondary,
                         ),
                         weekendStyle: GoogleFonts.urbanist(
                           fontSize: 16,
-                          fontWeight: AppFontWeight.semiBold,
+                          fontWeight: AppFontWeight.medium,
                           color: AppColors.secondary,
                         ),
                       ),
@@ -279,11 +318,11 @@ class _SettingScreenState extends State<SettingScreen> {
                         defaultTextStyle: GoogleFonts.urbanist(
                           fontSize: 16,
                           fontWeight: AppFontWeight.regular,
-                          color: AppColors.board1,
+                          color: AppColors.secondary,
                         ),
                         weekendTextStyle: GoogleFonts.urbanist(
                           fontSize: 16,
-                          fontWeight: AppFontWeight.medium,
+                          fontWeight: AppFontWeight.regular,
                           color: AppColors.secondary,
                         ),
                         disabledTextStyle: GoogleFonts.urbanist(
@@ -466,28 +505,28 @@ class _SettingScreenState extends State<SettingScreen> {
                 right: 5,
                 bottom: 0,
                 child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    // color: AppColors.surface,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.accent.withOpacity(0.5),
-                      width: 2,
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      // color: AppColors.surface,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.accent.withOpacity(0.5),
+                        width: 2,
+                      ),
                     ),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: () => showImageSelection(),
-                    style: ElevatedButton.styleFrom(
-                      shape: CircleBorder(),
-                      padding: EdgeInsets.zero,
-                      backgroundColor: AppColors.surface,
-                      elevation: 0,
-                      shadowColor: Colors.transparent,
-                      overlayColor: AppColors.primary
-                    ),
-                    child: Icon(Icons.camera_alt, color: AppColors.accent),
-                  )
+                    child: ElevatedButton(
+                      onPressed: () => showImageSelection(),
+                      style: ElevatedButton.styleFrom(
+                          shape: CircleBorder(),
+                          padding: EdgeInsets.zero,
+                          backgroundColor: AppColors.surface,
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          overlayColor: AppColors.primary
+                      ),
+                      child: Icon(Icons.camera_alt, color: AppColors.accent),
+                    )
                 ),
               )
             ],

@@ -230,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     "Login",
                     style: GoogleFonts.urbanist(
                         fontSize: 34,
-                        fontWeight: FontWeight.bold,
+                        fontWeight:  AppFontWeight.bold,
                         color: AppColors.secondary
                     ),
                   ),

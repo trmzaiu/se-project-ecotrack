@@ -1,17 +1,23 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:wastesortapp/theme/colors.dart';
+import 'package:wastesortapp/theme/fonts.dart';
 
+import '../../ScanAI/processImage.dart';
 import '../../database/CloudinaryConfig.dart';
 import '../../database/model/evidence.dart';
 import '../screen/evidence/evidence_screen.dart';
 
 class EvidenceService{
   final BuildContext context;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   EvidenceService(this.context);
 
@@ -23,12 +29,12 @@ class EvidenceService{
 
   }) async {
     if (selectedImages!.isEmpty) {
-      showSnackbar("No image selected.");
+      showSnackBar("No image selected");
       return;
     }
 
     if (selectedCategory == null) {
-      showSnackbar("Please select a category.");
+      showSnackBar("Please select a category");
       return;
     }
 
@@ -43,14 +49,23 @@ class EvidenceService{
       }
 
       if (uploadedImageUrls.isEmpty) {
-        showSnackbar("Image upload failed.");
+        showSnackBar("Image upload failed");
         return;
-      } else if(uploadedImageUrls.length > 2){
+      }
+
+      if (uploadedImageUrls.length == 5) {
+        totalPoint += 10;
+      } else if (uploadedImageUrls.length > 2) {
         totalPoint += 5;
       }
 
-      if(descriptionController != null && descriptionController.text.trim().isNotEmpty){
-        totalPoint += 5;
+      if (descriptionController != null) {
+        String description = descriptionController.text.trim();
+        if (description.length >= 50) {
+          totalPoint += 10;
+        } else if (description.isNotEmpty) {
+          totalPoint += 5;
+        }
       }
 
       String evidenceId = FirebaseFirestore.instance
@@ -74,33 +89,41 @@ class EvidenceService{
           .doc(evidenceId)
           .set(evidence.toMap());
 
-      showSnackbar("Upload successful!", success: true);
+      showSnackBar("Upload successful!", success: true);
 
-      Future.delayed(Duration(milliseconds: 500), () {
-        if (context.mounted) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => EvidenceScreen()),
-                (route) => false,
-          );
-        }
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => EvidenceScreen()),
+            (route) => route.settings.name != "UploadScreen",
+      );
+
+      await FirebaseFirestore.instance
+          .collection('evidences')
+          .doc(evidenceId)
+          .set(evidence.toMap());
+
+      Future.delayed(Duration(seconds: 5), () async {
+        await verifyEvidence(evidence);
       });
     } catch (e) {
-      showSnackbar("Error uploading: $e");
+      showSnackBar("Error uploading: $e");
     }
   }
 
-  void showSnackbar(String message, {bool success = false}) {
+  void showSnackBar(String message, {bool success = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Center(
           child: Text(
             message,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: GoogleFonts.urbanist(
+              fontSize: 16,
+              fontWeight: AppFontWeight.semiBold,
+              color: AppColors.surface
+            )
           ),
         ),
-        backgroundColor: success ? Colors.green : Colors.red,
+        backgroundColor: success ? AppColors.board2 : AppColors.board1,
         duration: Duration(seconds: 2),
       ),
     );
@@ -116,4 +139,46 @@ class EvidenceService{
           .toList()
           ..sort((a, b) => b.date.compareTo(a.date)));
   }
+
+  Future<void> verifyEvidence(Evidence evidence) async {
+    try {
+      bool allMatched = true;
+
+      for (String imageUrl in evidence.imagesUrl) {
+        File imageFile = await downloadImage(imageUrl);
+        String? predictedCategory = await ApiService.classifyImage(imageFile);
+
+        if (predictedCategory == null || predictedCategory != evidence.category) {
+          allMatched = false;
+          break;
+        }
+      }
+
+      String newStatus = allMatched ? "Accepted" : "Rejected";
+
+      await FirebaseFirestore.instance
+          .collection('evidences')
+          .doc(evidence.evidenceId)
+          .update({'status': newStatus});
+
+      showSnackBar("Evidence verified: $newStatus", success: true);
+    } catch (e) {
+      print("Error verifying evidence: $e");
+    }
+  }
+
+  Future<File> downloadImage(String imageUrl) async {
+    final response = await http.get(Uri.parse(imageUrl));
+
+    if (response.statusCode == 200) {
+      final tempDir = await getTemporaryDirectory();
+      final filePath = '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final file = File(filePath);
+      await file.writeAsBytes(response.bodyBytes);
+      return file;
+    } else {
+      throw Exception("Failed to download image");
+    }
+  }
+
 }
