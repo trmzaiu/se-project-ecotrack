@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wastesortapp/frontend/screen/auth/opening_screen.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
-import 'package:wastesortapp/frontend/screen/auth/reset_password_sheet.dart';
-import 'package:wastesortapp/frontend/screen/auth/verify_code_sheet.dart';
 import 'package:wastesortapp/frontend/service/auth_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/frontend/widget/my_button.dart';
@@ -16,9 +14,6 @@ import '../../widget/custom_dialog.dart';
 import '../../widget/my_textfield.dart';
 import '../../widget/square_tile.dart';
 import 'forgot_password_sheet.dart';
-import 'package:wastesortapp/frontend/service/auth_service.dart';
-import 'package:provider/provider.dart';
-import 'package:wastesortapp/frontend/service/internet_checker_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -28,13 +23,13 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController emailResetController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _isShowSheet = true;
   bool _isGoogleLoading = false;
   bool _isFacebookLoading = false;
-  bool _isShowSheet = false;
-  int _currentSheetState = 0;
 
   Future<void> signIn(BuildContext context) async {
     final email = emailController.text.trim();
@@ -104,6 +99,29 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> resetPassword(BuildContext context) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final email = emailResetController.text.trim();
+      print("Email: $email");
+
+      if (email.isEmpty) {
+        throw "Please enter your email address.";
+      }
+
+      if (!_isValidEmail(email)) {
+        throw "The email address you entered is not in a valid format. Please check and try again.";
+      }
+
+      await _authService.sendPasswordResetEmail(email);
+
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showErrorDialog(context, "Password Reset Error");
+    }
+  }
+
   bool _isValidEmail(String email) {
     return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
   }
@@ -126,59 +144,38 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _toggleSheet(BuildContext context, int state) {
-    if (_isShowSheet) return;
+  void handleForgotPassword(String email) {
+    if (email.isEmpty) {
+      _showErrorDialog(context, "Empty Email");
+      return;
+    }
 
+    resetPassword(context);
+  }
+
+  void _toggleSheet(BuildContext context) {
     setState(() {
-      _isShowSheet = true;
-      _currentSheetState = state;
+      _isShowSheet = false;
     });
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        return _buildSheet(state);
-      },
+      builder: (context) => ForgotPasswordSheet(
+        onResetPassword: handleForgotPassword,
+        emailController: emailResetController,
+      ),
     ).whenComplete(() {
-      if (mounted) {
-        setState(() {
-          _isShowSheet = false;
-        });
-      }
+      setState(() {
+        _isShowSheet = true;
+      });
     });
-  }
-
-  Widget _buildSheet(int state) {
-    switch (state) {
-      case 0:
-        return ForgotPasswordSheet(onNext: () {
-          Navigator.pop(context);
-          Future.delayed(Duration(milliseconds: 200), () {
-            _toggleSheet(context, 1);
-          });
-        });
-      case 1:
-        return VerifyCodeSheet(onNext: () {
-          Navigator.pop(context);
-          Future.delayed(Duration(milliseconds: 200), () {
-            _toggleSheet(context, 2);
-          });
-        });
-      case 2:
-        return ResetPasswordSheet(onNext: () {
-          Navigator.pop(context);
-        });
-      default:
-        return SizedBox.shrink();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     double phoneHeight= getPhoneHeight(context);
-    // Provider.of<InternetCheckerProvider>(context, listen: false).setContext(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -188,12 +185,12 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               children: [
                 Container(
-                  height: 350,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary,
-                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-                  ),
-                  child: !_isShowSheet ?
+                    height: 350,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+                    ),
+                    child: _isShowSheet ?
                     Center(
                       child: Image.asset(
                         "lib/assets/images/trash.png", width: 370,
@@ -229,9 +226,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     "Login",
                     style: GoogleFonts.urbanist(
-                        fontSize: 34,
-                        fontWeight:  AppFontWeight.bold,
-                        color: AppColors.secondary
+                      fontSize: 34,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.secondary
                     ),
                   ),
                   SizedBox(height: 20),
@@ -254,7 +251,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     alignment: Alignment.centerRight,
                     child: GestureDetector(
                       onTap: () {
-                        _toggleSheet(context, 0);
+                        _toggleSheet(context);
                       },
                       child: Text(
                         "Forgot your password?",
@@ -326,18 +323,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: "Don't have an account? ",
-                      style: GoogleFonts.urbanist(
-                        color: AppColors.primary,
-                        fontSize: 14,
-                      )
+                        text: "Don't have an account? ",
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.primary,
+                          fontSize: 14,
+                        )
                     ),
                     TextSpan(
                       text: "Register",
                       style: GoogleFonts.urbanist(
-                        color: AppColors.secondary,
-                        fontSize: 15,
-                        fontWeight: AppFontWeight.bold
+                          color: AppColors.secondary,
+                          fontSize: 15,
+                          fontWeight: AppFontWeight.bold
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
