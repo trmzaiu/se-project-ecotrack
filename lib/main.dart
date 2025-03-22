@@ -14,6 +14,8 @@ import 'package:wastesortapp/database/firebase_options.dart';
 import 'package:wastesortapp/frontend/screen/user/profile_screen.dart';
 
 import 'frontend/utils/phone_size.dart';
+import 'package:provider/provider.dart';
+import 'package:wastesortapp/frontend/service/internet_checker_provider.dart';
 
 void main() async{
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -27,7 +29,13 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+  runApp(
+      MyApp()
+  //   ChangeNotifierProvider(
+  //     create: (context) => InternetCheckerProvider(),
+  //     child: MyApp(),
+  //   ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -87,6 +95,16 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  void _onSheetFullyOpened() {
+    Future.delayed(Duration(milliseconds: 200), () {
+      if (mounted) {
+        setState(() {
+          _isFullyOpened = true;
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double phoneWidth = getPhoneWidth(context);
@@ -94,6 +112,7 @@ class _MainScreenState extends State<MainScreen> {
     double minChildSize = 0.15;
     double maxChildSize = 1.0;
 
+    // Provider.of<InternetCheckerProvider>(context, listen: false).setContext(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -125,7 +144,7 @@ class _MainScreenState extends State<MainScreen> {
                   width: phoneWidth,
                   decoration: BoxDecoration(
                     color: AppColors.background,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
                   ),
                   child: Column(
                     children: [
@@ -149,7 +168,7 @@ class _MainScreenState extends State<MainScreen> {
                           child: Column(
                             children: [
                               SizedBox(
-                                height: phoneHeight - 65,
+                                height: _isFullyOpened ? (phoneHeight - 65) : phoneHeight,
                                 child: PageView(
                                   physics: NeverScrollableScrollPhysics(),
                                   controller: _pageController,
@@ -161,7 +180,16 @@ class _MainScreenState extends State<MainScreen> {
                                   ],
                                 ),
                               ),
-                              _buildBottomNavigationBar(),
+                              AnimatedSlide(
+                                duration: Duration(milliseconds: 1000),
+                                curve: Curves.easeInOut,
+                                offset: _isFullyOpened ? Offset(0, 0) : Offset(0, 1),
+                                child: AnimatedOpacity(
+                                  duration: Duration(milliseconds: 500),
+                                  opacity: _isFullyOpened ? 1.0 : 0.0,
+                                  child: _buildBottomNavigationBar(),
+                                ),
+                              ),
                             ],
                           ),
                         ),

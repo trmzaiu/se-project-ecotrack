@@ -146,7 +146,6 @@ class _SettingScreenState extends State<SettingScreen> {
                               icon: SizedBox.shrink(),
                             ),
                             dropdownStyleData: DropdownStyleData(
-                              isOverButton: true,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
                                 color: AppColors.surface,
@@ -232,7 +231,6 @@ class _SettingScreenState extends State<SettingScreen> {
                               icon: SizedBox.shrink(),
                             ),
                             dropdownStyleData: DropdownStyleData(
-                              isOverButton: true,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
                                 color: AppColors.surface,

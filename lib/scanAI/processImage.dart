@@ -20,17 +20,17 @@ class ApiService {
           "Plastic": "Recyclable", "Paper": "Recyclable", "Glass": "Recyclable",
           "Metal": "Recyclable", "Cardboard": "Recyclable", "Cans": "Recyclable",
           "Vehicle": "Recyclable", "Air Condition": "Recyclable",
-          "Furnitures": "Recyclable", "Faucet": "General",
+          "Furniture": "Recyclable", "Faucet": "General",
 
           "Electronic": "Hazardous", "Medical": "Hazardous", "Chemical": "Hazardous",
           "Toxic": "Hazardous", "LED": "Hazardous", "Batteries": "Hazardous",
-          "Computer Mouse": "Hazardous", "Gamepad": "Hazardous",
+          "Computer Mouse": "Hazardous", "Game pad": "Hazardous",
 
           "Used Tissue": "General", "Packaging": "General","Clothes": "General",
           "Wrapper": "General", "Polystyrene": "General",
           "Fabric": "General", "Ceramic": "General",
           "Toothbrush": "General", "Sponges": "General",
-          "Rubber": "General", "Crocs": "General",
+          "Rubber": "General", "Cross": "General",
           "Bag": "General", "Curtain": "General",
 
           "Organic": "Organic", "Man": "Organic", "Woman": "Organic",

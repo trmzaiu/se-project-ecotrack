@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wastesortapp/frontend/screen/auth/opening_screen.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
+import 'package:wastesortapp/frontend/screen/auth/reset_password_sheet.dart';
+import 'package:wastesortapp/frontend/screen/auth/verify_code_sheet.dart';
 import 'package:wastesortapp/frontend/service/auth_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/frontend/widget/my_button.dart';
@@ -14,6 +16,9 @@ import '../../widget/custom_dialog.dart';
 import '../../widget/my_textfield.dart';
 import '../../widget/square_tile.dart';
 import 'forgot_password_sheet.dart';
+import 'package:wastesortapp/frontend/service/auth_service.dart';
+import 'package:provider/provider.dart';
+import 'package:wastesortapp/frontend/service/internet_checker_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -23,115 +28,81 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController emailResetController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   bool _isLoading = false;
-  bool _isShowSheet = true;
+  bool _isGoogleLoading = false;
+  bool _isFacebookLoading = false;
+  bool _isShowSheet = false;
+  int _currentSheetState = 0;
 
   Future<void> signIn(BuildContext context) async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    if (email.isEmpty) {
-      _showErrorDialog(context, "Empty Email", "Please enter your email address to continue. This field cannot be left blank.");
+    if (email.isEmpty || password.isEmpty) {
+      _showErrorDialog(context, "Email or password is empty");
       return;
     }
 
     if (!_isValidEmail(email)) {
-      _showErrorDialog(context, "Invalid Email", "The email address you entered is not in the correct format. Please check and try again.");
-      return;
-    }
-
-    if (password.isEmpty) {
-      _showErrorDialog(context, "Empty Password", "Please enter your password to continue. This field cannot be left blank.");
+      _showErrorDialog(context, "Invalid email format");
       return;
     }
 
     setState(() => _isLoading = true);
 
-    final result = await _authService.signIn(email: email, password: password);
+    try {
+      await _authService.signIn(email: email, password: password);
 
-    setState(() => _isLoading = false);
-
-    if (result != null) {
-      _showErrorDialog(context, "Login Error", result);
-    } else {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         _navigateToMainScreen(context, user.uid);
       }
+    } on FirebaseAuthException catch (e) {
+      _showErrorDialog(context, "Incorrect email or password");
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
   Future<void> signInWithGoogle(BuildContext context) async {
-    setState(() => _isLoading = true);
+    setState(() => _isGoogleLoading = true);
 
     try {
-      final userCredential = await _authService.signInWithGoogle();
+      await _authService.signInWithGoogle();
 
-      setState(() => _isLoading = false);
-
-      if (userCredential?.user != null) {
-        _navigateToMainScreen(context, userCredential!.user!.uid);
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        _navigateToMainScreen(context, user.uid);
       } else {
-        _showErrorDialog(context, "Google Sign-In Failed", "Please try again.");
+        _showErrorDialog(context, "Google Sign-In failed.");
       }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showErrorDialog(context, "Google Sign-In Error", "An error occurred: $e");
+    } on FirebaseAuthException {
+      _showErrorDialog(context, "Google Sign-In error.");
+    } finally {
+      setState(() => _isGoogleLoading = false);
     }
   }
 
   Future<void> signInWithFacebook(BuildContext context) async {
-    setState(() => _isLoading = true);
+    setState(() => _isFacebookLoading = true);
 
     try {
-      final userCredential = await _authService.signInWithFacebook();
+      await _authService.signInWithFacebook();
 
-      setState(() => _isLoading = false);
-
-      if (userCredential.user != null) {
-        _navigateToMainScreen(context, userCredential.user!.uid);
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        _navigateToMainScreen(context, user.uid);
       } else {
-        _showErrorDialog(context, "Facebook Sign-In Failed", "Please try again.");
+        _showErrorDialog(context, "Facebook Sign-In failed.");
       }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showErrorDialog(context, "Facebook Sign-In Error", "An error occurred: $e");
+    } on FirebaseAuthException {
+      _showErrorDialog(context, "Facebook Sign-In error.");
+    } finally {
+      setState(() => _isFacebookLoading = false);
     }
   }
-
-  Future<void> resetPassword(BuildContext context) async {
-    setState(() => _isLoading = true);
-
-    try {
-      final email = emailResetController.text.trim();
-      print("Email: $email");
-
-      if (email.isEmpty) {
-        throw "Please enter your email address.";
-      }
-
-      if (!_isValidEmail(email)) {
-        throw "The email address you entered is not in a valid format. Please check and try again.";
-      }
-
-      final success = await _authService.sendPasswordResetEmail(email);
-
-      setState(() => _isLoading = false);
-
-      if (success) {
-        _showSuccessDialog(context, "Success", 'The email has been sent, please check your email.');
-      } else {
-        throw "Failed to send password reset email. Please try again.";
-      }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showErrorDialog(context, "Password Reset Error", e.toString());
-    }
-  }
-
 
   bool _isValidEmail(String email) {
     return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
@@ -144,66 +115,70 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _showErrorDialog(BuildContext context, String title, String message) {
+  void _showErrorDialog(BuildContext context, String message) {
     showDialog(
       context: context,
       builder: (context) => CustomDialog(
-        title: title,
         message: message,
+        status: false,
         buttonTitle: "Try Again",
       ),
     );
   }
 
-  void _showSuccessDialog(BuildContext context, String title, String message) {
-    showDialog(
-      context: context,
-      builder: (context) => CustomDialog(
-        title: title,
-        message: message,
-        buttonTitle: "Continue",
-        onPressed: () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => OpeningScreen()),
-          );
-        },
-      ),
-    );
-  }
+  void _toggleSheet(BuildContext context, int state) {
+    if (_isShowSheet) return;
 
-  void handleForgotPassword(String email) {
-    if (email.isEmpty) {
-      _showErrorDialog(context, "Empty Email", "Please enter your email.");
-      return;
-    }
-
-    resetPassword(context);
-  }
-
-  void _toggleSheet(BuildContext context) {
     setState(() {
-      _isShowSheet = false;
+      _isShowSheet = true;
+      _currentSheetState = state;
     });
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ForgotPasswordSheet(
-        onResetPassword: handleForgotPassword,
-        emailController: emailResetController,
-      ),
+      builder: (context) {
+        return _buildSheet(state);
+      },
     ).whenComplete(() {
-      setState(() {
-        _isShowSheet = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isShowSheet = false;
+        });
+      }
     });
+  }
+
+  Widget _buildSheet(int state) {
+    switch (state) {
+      case 0:
+        return ForgotPasswordSheet(onNext: () {
+          Navigator.pop(context);
+          Future.delayed(Duration(milliseconds: 200), () {
+            _toggleSheet(context, 1);
+          });
+        });
+      case 1:
+        return VerifyCodeSheet(onNext: () {
+          Navigator.pop(context);
+          Future.delayed(Duration(milliseconds: 200), () {
+            _toggleSheet(context, 2);
+          });
+        });
+      case 2:
+        return ResetPasswordSheet(onNext: () {
+          Navigator.pop(context);
+        });
+      default:
+        return SizedBox.shrink();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     double phoneHeight= getPhoneHeight(context);
+    // Provider.of<InternetCheckerProvider>(context, listen: false).setContext(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -218,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: AppColors.secondary,
                     borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
                   ),
-                  child: _isShowSheet ?
+                  child: !_isShowSheet ?
                     Center(
                       child: Image.asset(
                         "lib/assets/images/trash.png", width: 370,
@@ -255,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     "Login",
                     style: GoogleFonts.urbanist(
                         fontSize: 34,
-                        fontWeight: FontWeight.bold,
+                        fontWeight:  AppFontWeight.bold,
                         color: AppColors.secondary
                     ),
                   ),
@@ -279,7 +254,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     alignment: Alignment.centerRight,
                     child: GestureDetector(
                       onTap: () {
-                        _toggleSheet(context);
+                        _toggleSheet(context, 0);
                       },
                       child: Text(
                         "Forgot your password?",
@@ -293,7 +268,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: 30),
 
-                  MyButton(text: 'Login', onTap: () => signIn(context)),
+                  MyButton(
+                    text: _isLoading ? 'Loading...' : 'Login',
+                    onTap: () => signIn(context),
+                    isDisabled: _isLoading ? true : false,
+                  ),
 
                   SizedBox(height: 30),
 
@@ -321,18 +300,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       GestureDetector(
                         onTap: () => signInWithGoogle(context),
-                        child: SquareTile(imagePath: 'lib/assets/icons/icons8-google.svg'),
+                        child: SquareTile(imagePath: 'lib/assets/icons/icons8-google.svg', isLoading: _isGoogleLoading),
                       ),
                       SizedBox(width: 50),
                       GestureDetector(
                         onTap: () => signInWithFacebook(context),
-                        child: SquareTile(imagePath: 'lib/assets/icons/icons8-facebook.svg'),
+                        child: SquareTile(imagePath: 'lib/assets/icons/icons8-facebook.svg', isLoading: _isFacebookLoading),
                       ),
                       SizedBox(width: 50),
                       SquareTile(imagePath: 'lib/assets/icons/icons8-apple.svg'),
                     ],
                   ),
-                  SizedBox(height: 13),
+                  SizedBox(height: 15),
                 ],
               ),
             ),

@@ -12,6 +12,7 @@ import '../../utils/phone_size.dart';
 import '../../widget/custom_dialog.dart';
 import '../../widget/my_button.dart';
 import '../../widget/my_textfield.dart';
+import 'package:wastesortapp/frontend/service/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -33,27 +34,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!_isValidEmail(email)) {
       _showErrorDialog(
-          context,
-          "Invalid Email",
-          "The email address you entered is not valid. Please check for typos or missing characters and try again."
+        context,
+        "The email address is invalid format!",
       );
       return;
     }
 
     if (password.isEmpty || confirmPassword.isEmpty) {
       _showErrorDialog(
-          context,
-          "Empty Password",
-          "Both password fields must be filled in to create an account."
+        context,
+        "Please enter your password!",
       );
       return;
     }
 
     if (password != confirmPassword) {
       _showErrorDialog(
-          context,
-          "Password Mismatch",
-          "The passwords you entered do not match. Please make sure both passwords are identical."
+        context,
+        "Your password is mismatch!",
       );
       return;
     }
@@ -65,9 +63,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = false);
 
     if (result != null) {
-      _showErrorDialog(context, "Register Error", result);
+      _showErrorDialog(context, "Register Error: $result");
     } else {
-      _showSuccessDialog(context, "Resgister Success Full", "");
+      _showSuccessDialog(context, "Register Successfully");
     }
   }
 
@@ -83,31 +81,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void _showErrorDialog(BuildContext context, String title, String message) {
+  void _showErrorDialog(BuildContext context, String message) {
     showDialog(
       context: context,
       builder: (context) => CustomDialog(
-        title: title,
         message: message,
+        status: false,
         buttonTitle: "Try Again",
       ),
     );
   }
 
-  void _showSuccessDialog(BuildContext context, String title, String message) {
+  void _showSuccessDialog(BuildContext context, String message) {
     showDialog(
       context: context,
       builder: (context) => CustomDialog(
-        title: title,
         message: message,
+        status: true,
         buttonTitle: "Continue",
-        onPressed: () {
-          Navigator.of(context).pop();
-          final user = FirebaseAuth.instance.currentUser;
-          if (user != null) {
-            _navigateToMainScreen(context, user.uid);
-          }
-        },
+        onPressed: () => _navigateToMainScreen,
       ),
     );
   }
@@ -124,16 +116,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               children: [
                 Container(
-                  height: 350,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary,
-                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-                  ),
-                  child: Center(
-                    child: Image.asset(
-                      "lib/assets/images/trash.png", width: 370,
+                    height: 350,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
                     ),
-                  )
+                    child: Center(
+                      child: Image.asset(
+                        "lib/assets/images/trash.png", width: 370,
+                      ),
+                    )
                 ),
               ],
             ),
@@ -208,11 +200,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: "Already have an account? ",
-                      style: GoogleFonts.urbanist(
-                        color: AppColors.primary,
-                        fontSize: 14,
-                      )
+                        text: "Already have an account? ",
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.primary,
+                          fontSize: 14,
+                        )
                     ),
                     TextSpan(
                       text: "Login",

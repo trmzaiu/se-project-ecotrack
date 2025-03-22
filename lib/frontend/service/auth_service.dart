@@ -1,47 +1,90 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:wastesortapp/database/model/user.dart';
+import 'package:email_otp/email_otp.dart';
+import 'package:wastesortapp/database/model/tree.dart';
+import 'package:wastesortapp/frontend/service/tree_service.dart';
+import '../widget/custom_dialog.dart';
 
 class AuthenticationService {
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FacebookAuth _facebookAuth = FacebookAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+  final TreeService _treeService = TreeService();
   AuthenticationService(this._firebaseAuth);
+
 
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
   String? get userId => _firebaseAuth.currentUser?.uid;
 
-  Future<String?> signIn({required String email, required String password}) async {
+  bool _isValidEmail(String email) {
+    return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        message: message,
+        status: false,
+        buttonTitle: "Try Again",
+      ),
+    );
+  }
+
+  // Function sign in with email & password
+  Future<void> signIn({required String email, required String password}) async {
     try {
       await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-      return null;
     } on FirebaseAuthException catch (e) {
-      return _handleFirebaseAuthException(e);
+      rethrow;
     } catch (e) {
-      return "An unexpected error occurred";
+      throw FirebaseAuthException(code: 'unexpected-error', message: 'Something went wrong.');
     }
   }
 
+  // Function sign up with email & password
   Future<String?> signUp({required String email, required String password}) async {
     try {
+      if (!_isValidEmail(email)) {
+        return "Invalid email format";
+      }
+
+      // if (!_isValidPassword(password)) {
+      //   return "Password must be at least 8 characters long and include uppercase, lowercase, a number, and a special character.";
+      // }
+
       UserCredential userCredential = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-      saveUserToFirestore(uid: userCredential.user!.uid, name: userCredential.user!.uid, email: email);
+      print("User registered with UID: \${userCredential.user!.uid}"); // Debugging
+
+      await saveUserInformation(userId: userCredential.user!.uid, name: userCredential.user!.uid, email: email);
+      print("User saved to Firestore"); // Debugging
+
+      await _treeService.createTree(userCredential.user!.uid);
 
       return null;
     } on FirebaseAuthException catch (e) {
-      return _handleFirebaseAuthException(e);
+      print("FirebaseAuthException: \${e.code}"); // Debugging
+      return "Error";
     } catch (e) {
+      print("Unexpected error during sign-up: \$e"); // Debugging
       return "An unexpected error occurred";
     }
   }
 
-  Future<UserCredential?> signInWithGoogle() async {
+  // Function sign in with Google
+  Future<void> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
+      if (googleUser == null) {
+        throw FirebaseAuthException(code: 'sign-in-cancelled', message: 'Google Sign-In was cancelled.');
+      }
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
@@ -54,22 +97,26 @@ class AuthenticationService {
       User? user = userCredential.user;
 
       if (user != null) {
-        await saveUserToFirestore(
-          uid: user.uid,
-          name: user.displayName ?? "Unknown",
+        await saveUserInformation(
+          userId: user.uid,
+          name: user.displayName ?? user.uid.substring(0, 10),
           email: user.email ?? "",
         );
       }
-
-      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      rethrow;
     } catch (e) {
-      throw Exception("Google Sign-In failed. Please try again later.");
+      throw FirebaseAuthException(code: 'unexpected-error', message: 'Something went wrong.');
     }
   }
 
-  Future<UserCredential> signInWithFacebook() async {
+  // Function sign in with Facebook
+  Future<void> signInWithFacebook() async {
     try {
       final LoginResult loginResult = await FacebookAuth.instance.login();
+      if (loginResult.status != LoginStatus.success || loginResult.accessToken == null) {
+        throw FirebaseAuthException(code: 'sign-in-cancelled', message: 'Facebook Sign-In was cancelled.');
+      }
 
       final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(
         loginResult.accessToken!.tokenString,
@@ -80,79 +127,79 @@ class AuthenticationService {
 
       if (user != null) {
         final userData = await FacebookAuth.instance.getUserData();
-        await saveUserToFirestore(
-          uid: user.uid,
-          name: userData['name'] ?? "Unknown",
+        await saveUserInformation(
+          userId: user.uid,
+          name: userData['name'] ?? user.uid.substring(0, 10),
           email: user.email ?? "",
         );
       }
-
-      return userCredential;
-    } catch(e) {
-      throw Exception("Facebook Sign-In failed. Please try again later.");
+    } on FirebaseAuthException catch (e) {
+      rethrow;
+    } catch (e) {
+      throw FirebaseAuthException(code: 'unexpected-error', message: 'Something went wrong.');
     }
   }
 
+  // Function sign out
   Future<void> signOut() async {
     try {
-      await _firebaseAuth.signOut();
-      await _googleSignIn.signOut();
+      await Future.wait([
+        _firebaseAuth.signOut(),
+        _googleSignIn.signOut(),
+        _facebookAuth.logOut(),
+      ]);
     } catch (e) {
-      print("Error during logout: $e");
+      throw Exception("Sign-out failed. Please try again.");
     }
   }
 
-  Future<void> saveUserToFirestore({
-    required String uid,
+  // Save user information to Firebase
+  Future<void> saveUserInformation({
+    required String userId,
     required String name,
     required String email,
   }) async {
-    final userDocRef = _firestore.collection('users').doc(uid);
-    final docSnapshot = await userDocRef.get();
+    final userDocRef = _firestore.collection('users').doc(userId);
 
-    if (!docSnapshot.exists) {
-      // If user does not exist, create a new record
-      await userDocRef.set({
-        'uid': uid,
+    await userDocRef.set(
+      {
+        'userId': userId,
         'name': name,
         'email': email,
         'dob': DateTime.now().toIso8601String(),
-        'photoUrl': "https://res.cloudinary.com/dosqd0oni/image/upload/v1742131075/anonymous-user_n2vxh0.png",
-        'region': "Viet Nam",
-        'water': 0,
-        'tree': 0
-      });
-    }
+        'photoUrl': "",
+        'country': "",
+      },
+      SetOptions(merge: true),
+    );
   }
 
+  // Send password reset email
   Future<bool> sendPasswordResetEmail(String email) async {
     try {
-      // Check if the email exists in Firebase
-      await _firebaseAuth.sendPasswordResetEmail(email: email);
-      return true; // Successfully sent the email
+      EmailOTP.config(
+        appName: 'EcoTrack',
+        otpType: OTPType.numeric,
+        expiry : 150000,
+        emailTheme: EmailTheme.v6,
+        appEmail: 'wastesortapp@gmail.com',
+        otpLength: 4,
+      );
+
+      bool result = await EmailOTP.sendOTP(email: email);
+      if (result) {
+        print("OTP sent successfully!");
+        return true;
+      } else {
+        print("Failed to send OTP.");
+        return false;
+      }
     } catch (e) {
       // Handle errors
       print("Error sending password reset email: $e");
-      return false; // Failed to send the email
+      return false;
     }
   }
 
-  String _handleFirebaseAuthException(FirebaseAuthException e) {
-    switch (e.code) {
-      case 'invalid-email':
-        return "Invalid email address.";
-      case 'user-not-found':
-        return "No account found with this email.";
-      case 'wrong-password':
-        return "Incorrect password.";
-      case 'email-already-in-use':
-        return "Email is already in use.";
-      case 'weak-password':
-        return "Password is too weak.";
-      case 'network-request-failed':
-        return "Network error. Please try again.";
-      default:
-        return "Error: ${e.message}";
-    }
-  }
 }
+

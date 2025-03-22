@@ -15,8 +15,9 @@ import '../../utils/phone_size.dart';
 
 class UploadScreen extends StatefulWidget {
   final String imagePath;
+  final String category;
 
-  UploadScreen({required this.imagePath});
+  UploadScreen({super.key, this.imagePath = "", this.category = ""});
 
   @override
   _UploadScreenState createState() => _UploadScreenState();
@@ -44,6 +45,7 @@ class _UploadScreenState extends State<UploadScreen> {
         _scrollToEnd();
       });
     }
+    selectedCategory = widget.category.isNotEmpty ? widget.category : "";
   }
 
   void _scrollToEnd() {
@@ -151,7 +153,9 @@ class _UploadScreenState extends State<UploadScreen> {
                           ),
                         ),
                       ),
+
                       SizedBox(height: 5),
+
                       Center(
                         child: Stack(
                           alignment: Alignment.center,
@@ -178,6 +182,7 @@ class _UploadScreenState extends State<UploadScreen> {
                                               ),
                                             ),
                                           ),
+
                                           Positioned(
                                             top: 10,
                                             right: 10,
@@ -203,6 +208,7 @@ class _UploadScreenState extends State<UploadScreen> {
                                           ),
                                         ],
                                       ),
+
                                       SizedBox(width: 20),
                                     ],
 
@@ -272,13 +278,14 @@ class _UploadScreenState extends State<UploadScreen> {
                           builder: (context, setState) {
                             return Container(
                               width: phoneWidth - 60,
+                              height: 50,
                               decoration: BoxDecoration(
                                 color: AppColors.accent,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: DropdownButtonHideUnderline(
                                 child: DropdownButton2<String>(
-                                  value: selectedCategory,
+                                  value: (selectedCategory!.isNotEmpty) ? selectedCategory : null,
                                   isExpanded: true,
                                   buttonStyleData: ButtonStyleData(
                                     decoration: BoxDecoration(
@@ -286,6 +293,12 @@ class _UploadScreenState extends State<UploadScreen> {
                                       borderRadius: isDropdownOpened
                                           ? BorderRadius.vertical(top: Radius.circular(10))
                                           : BorderRadius.circular(10),
+                                      border: isDropdownOpened
+                                          ? Border(bottom: BorderSide(
+                                        color: AppColors.tertiary,
+                                        width: 0.5
+                                      ))
+                                          : null,
                                     ),
                                   ),
 
@@ -295,11 +308,12 @@ class _UploadScreenState extends State<UploadScreen> {
                                       color: AppColors.accent,
                                     ),
                                     elevation: 0,
-                                    maxHeight: 250,
+                                    maxHeight: 160,
                                   ),
 
                                   menuItemStyleData: MenuItemStyleData(
                                     padding: EdgeInsets.symmetric(vertical: 0, horizontal: 15),
+                                    height: 35
                                   ),
 
                                   hint: Text(
@@ -324,9 +338,9 @@ class _UploadScreenState extends State<UploadScreen> {
                                     });
                                   },
 
-                                  onChanged: (String? newValue) {
+                                  onChanged: (value) {
                                     setState(() {
-                                      selectedCategory = newValue;
+                                      selectedCategory = value;
                                     });
                                   },
 
@@ -368,7 +382,7 @@ class _UploadScreenState extends State<UploadScreen> {
                           ),
                           child: TextField(
                             controller: descriptionController,
-                            maxLines: 3,
+                            maxLines: 4,
                             style: GoogleFonts.urbanist(
                               color: AppColors.tertiary,
                               fontSize: 15,
@@ -395,7 +409,7 @@ class _UploadScreenState extends State<UploadScreen> {
                             width: phoneWidth - 112,
                             height: 50,
                             decoration: ShapeDecoration(
-                              color: isUploading ? AppColors.tertiary : AppColors.primary,
+                              color: isUploading ? AppColors.board2 : AppColors.primary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),

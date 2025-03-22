@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 import 'package:wastesortapp/frontend/screen/evidence/evidence_detail_screen.dart';
 import 'package:wastesortapp/frontend/screen/evidence/upload_evidence_screen.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
-import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
 import '../../../database/model/evidence.dart';
@@ -166,9 +165,11 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).push(
-            moveUpRoute(
-              UploadScreen(imagePath: "")
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UploadScreen(),
+              settings: RouteSettings(name: "UploadScreen"),
             ),
           );
         },
@@ -249,21 +250,21 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
                 ? Colors.green
                 : Colors.red;
             return GestureDetector(
-                onTap: () {
-                  preloadImages(filteredList, context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => EvidenceDetailScreen(
-                          category: item.category,
-                          status: item.status,
-                          point: item.point,
-                          date: DateFormat('dd MMM, yyyy').format(item.date),
-                          description: item.description,
-                          imagePaths: item.imagesUrl,
-                        )),
-                  );
-                },
+              onTap: () {
+                preloadImages(filteredList, context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EvidenceDetailScreen(
+                      category: item.category,
+                      status: item.status,
+                      point: item.point,
+                      date: DateFormat('dd MMM, yyyy').format(item.date),
+                      description: item.description,
+                      imagePaths: item.imagesUrl,
+                    )),
+                );
+              },
               child:  Container(
                 key: PageStorageKey(item.evidenceId),
                 margin: EdgeInsets.only(bottom: 12),

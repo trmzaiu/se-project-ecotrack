@@ -43,6 +43,9 @@ dependencies:
   intl: ^0.20.2
   country_picker: ^2.0.27
   table_calendar: ^3.2.0
+  email_otp: ^3.0.2
+  internet_connection_checker_plus: ^2.7.1
+  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:
