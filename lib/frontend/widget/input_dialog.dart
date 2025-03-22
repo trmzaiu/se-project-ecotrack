@@ -56,7 +56,7 @@ class InputDialog extends StatelessWidget {
             ),
 
             if (isPass) ...[
-              SizedBox(height: 20),
+              SizedBox(height: 15),
               MyTextField(
                 controller: controllerPass ?? TextEditingController(),
                 hintText: 'Confirm password',

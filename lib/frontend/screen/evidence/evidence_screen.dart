@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:wastesortapp/frontend/screen/evidence/evidence_detail_screen.dart';
 import 'package:wastesortapp/frontend/screen/evidence/upload_evidence_screen.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
+import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
 import '../../../database/model/evidence.dart';
@@ -165,9 +166,10 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => UploadScreen(imagePath: "")),
+          Navigator.of(context).push(
+            moveUpRoute(
+              UploadScreen(imagePath: "")
+            ),
           );
         },
         backgroundColor: AppColors.primary,
