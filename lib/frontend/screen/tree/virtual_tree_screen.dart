@@ -305,17 +305,11 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                   ),
                 ],
               ),
-
-            ],
-          ),
-          SingleChildScrollView(
-            child:
-            Stack(
-              children: [
-                Column(
+              SizedBox(height: 30),
+              Expanded(
+                child: Column(
                   spacing: 25,
                   children: [
-                    const SizedBox(height: 120),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       // spacing: 10,
@@ -392,37 +386,37 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                       ),
                     ),
                     SizedBox(
-                        width: 200,
-                        height: 80,
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                TweenAnimationBuilder(
-                                  tween: Tween<double>(begin: leftDrops.toDouble(), end: leftDrops.toDouble()),
-                                  duration: Duration(milliseconds: 500),
-                                  builder: (_, double value, __) {
-                                    return Text('${value.round()}',
-                                        style: GoogleFonts.urbanist(
-                                            fontSize: 30,
-                                            fontWeight: FontWeight.normal,
-                                            color: AppColors.secondary));
-                                  },
-                                ),
-                                // Text('$leftDrops', style: GoogleFonts.urbanist(
-                                //     fontSize: 30,
-                                //     fontWeight: FontWeight.normal,
-                                //     color: AppColors.secondary)),
-                                Image.asset(
-                                    'lib/assets/images/drop.png', width: 25,
-                                    height: 25),
-                              ],
-                            ),
-                            Text('drops of water left',
-                                style: GoogleFonts.urbanist(color: AppColors.secondary)),
-                          ],
-                        )
+                      width: 200,
+                      height: 80,
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TweenAnimationBuilder(
+                                tween: Tween<double>(begin: leftDrops.toDouble(), end: leftDrops.toDouble()),
+                                duration: Duration(milliseconds: 500),
+                                builder: (_, double value, __) {
+                                  return Text('${value.round()}',
+                                    style: GoogleFonts.urbanist(
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.normal,
+                                        color: AppColors.secondary));
+                                },
+                              ),
+                              // Text('$leftDrops', style: GoogleFonts.urbanist(
+                              //     fontSize: 30,
+                              //     fontWeight: FontWeight.normal,
+                              //     color: AppColors.secondary)),
+                              Image.asset(
+                                'lib/assets/images/drop.png', width: 25,
+                                height: 25),
+                            ],
+                          ),
+                          Text('drops of water left',
+                              style: GoogleFonts.urbanist(color: AppColors.secondary)),
+                        ],
+                      )
                     ),
                     // SizedBox(height: 10),
                     ElevatedButton(
@@ -458,10 +452,10 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                       child: Text('Watering'),
                     ),
                   ],
-                )
-              ],
-            ),
-          )
+                ),
+              )
+            ],
+          ),
         ],
       )
     );
