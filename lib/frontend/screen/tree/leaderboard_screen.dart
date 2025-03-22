@@ -1,25 +1,21 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wastesortapp/frontend/service/auth_service.dart'; // Import AuthenticationService
-import 'package:wastesortapp/frontend/service/user_service.dart'; // Import AuthenticationService
+import 'package:wastesortapp/frontend/service/user_service.dart'; // Import UserService
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
 import '../../widget/bar_title.dart';
 
 class LeaderboardScreen extends StatelessWidget {
- final UserService _userService;
-
-  // Update constructor to accept AuthenticationService
-  LeaderboardScreen({required UserService userService})
-      : _userService = userService;
+  final UserService _userService = UserService(FirebaseAuth.instance);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _userService.fetchUsersForLeaderboard(), // Use the new service method
+        future: _userService.fetchUsersForLeaderboard(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -94,23 +90,31 @@ class LeaderboardScreen extends StatelessWidget {
   }
 
   Widget _buildTopUser(Map<String, dynamic> user, Color color, double avatarSize) {
+    bool isHighlighted = user['rank'] == 1;
+
     return Column(
       children: [
         Stack(
           alignment: Alignment.center,
           clipBehavior: Clip.none,
           children: [
-            CircleAvatar(
-              backgroundImage: AssetImage(user['image']),
-              radius: avatarSize / 2,
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: isHighlighted ? AppColors.secondary : AppColors.surface, width: 3),
+              ),
+              child: CircleAvatar(
+                backgroundImage: AssetImage(user['image']),
+                radius: avatarSize / 2,
+              ),
             ),
             Positioned(
-              bottom: -13,
+              bottom: -10,
               child: Container(
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: isHighlighted ? AppColors.secondary : AppColors.surface,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
@@ -123,12 +127,10 @@ class LeaderboardScreen extends StatelessWidget {
                 alignment: Alignment.center,
                 child: Text(
                   user['rank'].toString(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.urbanist(
                     fontSize: 16,
                     fontWeight: AppFontWeight.bold,
-                    color: AppColors.secondary,
+                    color: isHighlighted ? AppColors.surface : AppColors.secondary,
                   ),
                 ),
               ),
@@ -154,7 +156,7 @@ class LeaderboardScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              user['score'].toString(),
+              user['tree'].toString(),
               style: GoogleFonts.urbanist(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -222,7 +224,7 @@ class LeaderboardScreen extends StatelessWidget {
           Row(
             children: [
               Text(
-                user['score'].toString(),
+                user['tree'].toString(),
                 style: GoogleFonts.urbanist(
                   fontSize: 16,
                   fontWeight: AppFontWeight.bold,

@@ -1,12 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:wastesortapp/database/model/user.dart';
 import 'package:email_otp/email_otp.dart';
-import 'package:wastesortapp/database/model/tree.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
 import '../widget/custom_dialog.dart';
 
@@ -17,7 +14,6 @@ class AuthenticationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TreeService _treeService = TreeService();
   AuthenticationService(this._firebaseAuth);
-
 
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
@@ -103,6 +99,8 @@ class AuthenticationService {
           email: user.email ?? "",
         );
       }
+      await _treeService.createTree(userCredential.user!.uid);
+
     } on FirebaseAuthException catch (e) {
       rethrow;
     } catch (e) {
@@ -133,6 +131,8 @@ class AuthenticationService {
           email: user.email ?? "",
         );
       }
+
+      await _treeService.createTree(userCredential.user!.uid);
     } on FirebaseAuthException catch (e) {
       rethrow;
     } catch (e) {
