@@ -1,76 +1,94 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wastesortapp/frontend/widget/bar_title.dart';
+import 'package:wastesortapp/frontend/service/auth_service.dart'; // Import AuthenticationService
+import 'package:wastesortapp/frontend/service/user_service.dart'; // Import AuthenticationService
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
-import '../../utils/phone_size.dart';
+import '../../widget/bar_title.dart';
 
 class LeaderboardScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> users = [
-    {'rank': 1, 'name': 'You', 'score': 43, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 2, 'name': 'Meghan Jesjghyuv ku', 'score': 40, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 3, 'name': 'Alex Turner', 'score': 38, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 4, 'name': 'Marsha Fisher', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 5, 'name': 'Juanita Cormier', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 6, 'name': 'Jenifer Hamlet', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 7, 'name': 'Tamara Schmidt', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 8, 'name': 'Ricardo Veum', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 9, 'name': 'Gary Sanford', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 10, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 11, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 12, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 13, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 14, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 15, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-    {'rank': 99, 'name': 'Becky Bartell', 'score': 36, 'image': 'lib/assets/images/caution.png'},
-  ];
+ final UserService _userService;
+
+  // Update constructor to accept AuthenticationService
+  LeaderboardScreen({required UserService userService})
+      : _userService = userService;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          BarTitle(title: "Leaderboard", textColor: AppColors.secondary, showBackButton: true, buttonColor: AppColors.secondary,),
-          SizedBox(height: 15),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: _buildTopThree(),
-          ),
-          SizedBox(height: 20),
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-              itemCount: users.length - 3,
-              itemBuilder: (context, index) {
-                final user = users[index + 3];
-                return _buildUserTile(user);
-              },
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
-            child: _buildUserTile(users[6]),
-          ),
-        ],
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _userService.fetchUsersForLeaderboard(), // Use the new service method
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error loading leaderboard'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No users found'));
+          }
+
+          final users = snapshot.data!;
+
+          return Column(
+            children: [
+              BarTitle(
+                title: "Leaderboard",
+                textColor: AppColors.secondary,
+                showBackButton: true,
+                buttonColor: AppColors.secondary,
+              ),
+              SizedBox(height: 15),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _buildTopThree(users),
+              ),
+              SizedBox(height: 20),
+              Expanded(
+                child: ListView.builder(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                  itemCount: users.length > 3 ? users.length - 3 : 0,
+                  itemBuilder: (context, index) {
+                    final user = users[index + 3];
+                    return _buildUserTile(user);
+                  },
+                ),
+              ),
+              if (users.length > 6)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+                  child: _buildUserTile(users[6]),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildTopThree() {
+  Widget _buildTopThree(List<Map<String, dynamic>> users) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Padding(
-          padding: EdgeInsets.only(top: 40),
-          child: _buildTopUser(users[1], AppColors.background, 75),
-        ),
-        _buildTopUser(users[0], AppColors.background, 85),
-        Padding(
-          padding: EdgeInsets.only(top: 40),
-          child: _buildTopUser(users[2], AppColors.background, 75),
-        ),
+        if (users.length > 1)
+          Padding(
+            padding: EdgeInsets.only(top: 40),
+            child: _buildTopUser(users[1], AppColors.background, 75),
+          )
+        else
+          SizedBox(),
+        if (users.isNotEmpty)
+          _buildTopUser(users[0], AppColors.background, 85)
+        else
+          SizedBox(),
+        if (users.length > 2)
+          Padding(
+            padding: EdgeInsets.only(top: 40),
+            child: _buildTopUser(users[2], AppColors.background, 75),
+          )
+        else
+          SizedBox(),
       ],
     );
   }
@@ -100,7 +118,7 @@ class LeaderboardScreen extends StatelessWidget {
                       blurRadius: 10,
                       color: Color(0x40000000),
                     )
-                  ]
+                  ],
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -117,9 +135,7 @@ class LeaderboardScreen extends StatelessWidget {
             ),
           ],
         ),
-
         SizedBox(height: 18),
-
         SizedBox(
           width: 100,
           child: Text(
@@ -134,7 +150,6 @@ class LeaderboardScreen extends StatelessWidget {
             ),
           ),
         ),
-
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -147,7 +162,7 @@ class LeaderboardScreen extends StatelessWidget {
               ),
             ),
             SizedBox(width: 5),
-            Image.asset('lib/assets/images/tree.png', width: 12,),
+            Image.asset('lib/assets/images/tree.png', width: 12),
           ],
         ),
       ],
@@ -189,14 +204,11 @@ class LeaderboardScreen extends StatelessWidget {
             ),
           ),
           SizedBox(width: 10),
-
           CircleAvatar(
             backgroundImage: AssetImage(user['image']),
             radius: 18,
           ),
-
           SizedBox(width: 10),
-
           Expanded(
             child: Text(
               user['name'],
@@ -207,7 +219,6 @@ class LeaderboardScreen extends StatelessWidget {
               ),
             ),
           ),
-
           Row(
             children: [
               Text(
