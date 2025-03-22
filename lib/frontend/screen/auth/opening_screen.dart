@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 
 import '../../../theme/fonts.dart';
+import '../../utils/route_transition.dart';
 
 class OpeningScreen extends StatefulWidget {
   const OpeningScreen({Key? key}) : super(key: key);
@@ -36,23 +37,11 @@ class _OpeningScreenState extends State<OpeningScreen>
 
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          transitionDuration: Duration(milliseconds: 600),
-          pageBuilder: (_, __, ___) => LoginScreen(),
-          transitionsBuilder: (_, animation, __, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.easeInOut;
-
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        scaleRoute(
+          LoginScreen(),
         ),
       );
+
     }
   }
 

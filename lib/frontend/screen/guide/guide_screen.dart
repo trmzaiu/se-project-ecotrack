@@ -5,6 +5,7 @@ import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
 import '../../utils/phone_size.dart';
+import '../../utils/route_transition.dart';
 import '../../widget/bar_title.dart';
 
 class GuideScreen extends StatefulWidget {
@@ -38,6 +39,7 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
   void _goToScreen(int index) {
     Widget nextScreen;
 
+    // Xác định màn hình tiếp theo dựa trên index
     switch (index % 4) {
       case 0:
         nextScreen = GuideDetailScreen(slide: 0);
@@ -55,20 +57,13 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
         nextScreen = GuideDetailScreen(slide: 4);
     }
 
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        transitionDuration: Duration(milliseconds: 500),
-        pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
+    Navigator.of(context).push(
+      moveUpRoute(
+        nextScreen,
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {

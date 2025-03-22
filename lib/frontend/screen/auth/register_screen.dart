@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../main.dart';
 import '../../../theme/fonts.dart';
 import '../../utils/phone_size.dart';
+import '../../utils/route_transition.dart';
 import '../../widget/custom_dialog.dart';
 import '../../widget/my_button.dart';
 import '../../widget/my_textfield.dart';
@@ -75,10 +76,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _navigateToMainScreen(BuildContext context, String userId) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
+    Navigator.of(context).pushReplacement(
+      moveUpRoute(
+        MainScreen(userId: '',),
+      ),
     );
+
   }
 
   void _showErrorDialog(BuildContext context, String message) {
@@ -215,9 +218,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => LoginScreen()),
+                          Navigator.of(context).pushReplacement(
+                            moveUpRoute(
+                              MainScreen(userId: '',),
+                            ),
                           );
                         },
                     ),

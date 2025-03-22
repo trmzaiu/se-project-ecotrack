@@ -10,6 +10,7 @@ import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 import '../../../main.dart';
+import '../../utils/route_transition.dart';
 import '../../widget/custom_dialog.dart';
 import '../../widget/my_textfield.dart';
 import '../../widget/square_tile.dart';
@@ -126,12 +127,15 @@ class _LoginScreenState extends State<LoginScreen> {
     return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
   }
 
-  void _navigateToMainScreen(BuildContext context, String userId) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => MainScreen(userId: userId)),
-    );
-  }
+    void _navigateToMainScreen(BuildContext context, String userId) {
+      Navigator.of(context).pushReplacement(
+        scaleRoute(
+          RegisterScreen(),
+        ),
+      );
+    }
+
+
 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(
@@ -338,10 +342,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => RegisterScreen()),
+                          Navigator.of(context).pushReplacement(
+                            moveDownRoute(
+                              RegisterScreen(),
+                            ),
                           );
+
                         },
                     ),
                   ],
