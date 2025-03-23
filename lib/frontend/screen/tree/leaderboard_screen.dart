@@ -10,26 +10,47 @@ import '../../widget/bar_title.dart';
 class LeaderboardScreen extends StatelessWidget {
  final UserService _userService;
 
+
   // Update constructor to accept AuthenticationService
   LeaderboardScreen({required UserService userService})
       : _userService = userService;
 
   @override
   Widget build(BuildContext context) {
+    // Get the current user's ID
+    final String? currentUserId = _userService.userId;
+
+    // Handle case where user is not logged in
+    if (currentUserId == null) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(child: Text('Please log in to view the leaderboard')),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _userService.fetchUsersForLeaderboard(), // Use the new service method
+        future: _userService.fetchUsersForLeaderboard(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error loading leaderboard'));
+            return Center(child: Text('Error loading leaderboard: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(child: Text('No users found'));
           }
 
           final users = snapshot.data!;
+
+          // Find the current user in the leaderboard
+          Map<String, dynamic>? currentUser;
+          for (var user in users) {
+            if (user['userId'] == currentUserId) {
+              currentUser = user;
+              break;
+            }
+          }
 
           return Column(
             children: [
@@ -51,14 +72,15 @@ class LeaderboardScreen extends StatelessWidget {
                   itemCount: users.length > 3 ? users.length - 3 : 0,
                   itemBuilder: (context, index) {
                     final user = users[index + 3];
-                    return _buildUserTile(user);
+                    return _buildUserTile(user, currentUserId);
                   },
                 ),
               ),
-              if (users.length > 6)
+              // Display the current user at the bottom, if they exist and are not in the top 3
+              if (currentUser != null && currentUser['rank'] > 3)
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
-                  child: _buildUserTile(users[6]),
+                  child: _buildUserTile(currentUser, currentUserId),
                 ),
             ],
           );
@@ -93,84 +115,92 @@ class LeaderboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTopUser(Map<String, dynamic> user, Color color, double avatarSize) {
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            CircleAvatar(
-              backgroundImage: AssetImage(user['image']),
-              radius: avatarSize / 2,
-            ),
-            Positioned(
-              bottom: -13,
-              child: Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      offset: Offset(0, 0),
-                      blurRadius: 10,
-                      color: Color(0x40000000),
-                    )
-                  ],
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  user['rank'].toString(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.urbanist(
-                    fontSize: 16,
-                    fontWeight: AppFontWeight.bold,
-                    color: AppColors.secondary,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 18),
-        SizedBox(
-          width: 100,
-          child: Text(
-            user['name'],
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.urbanist(
-              fontSize: 16,
-              fontWeight: AppFontWeight.bold,
-              color: AppColors.secondary,
-            ),
-          ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              user['score'].toString(),
-              style: GoogleFonts.urbanist(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: AppColors.secondary,
-              ),
-            ),
-            SizedBox(width: 5),
-            Image.asset('lib/assets/images/tree.png', width: 12),
-          ],
-        ),
-      ],
-    );
-  }
+ Widget _buildTopUser(Map<String, dynamic> user, Color color, double avatarSize) {
+   final String? currentUserId = _userService.userId;
+   bool isCurrentUser = user['userId'] == currentUserId;
 
-  Widget _buildUserTile(Map<String, dynamic> user) {
-    bool isHighlighted = user['rank'] == 12;
+   return Column(
+     children: [
+       Stack(
+         alignment: Alignment.center,
+         clipBehavior: Clip.none,
+         children: [
+           Container(
+             decoration: BoxDecoration(
+               shape: BoxShape.circle,
+               border: Border.all(color: isCurrentUser ? AppColors.secondary : AppColors.surface, width: 3),
+             ),
+             child: CircleAvatar(
+               backgroundImage: AssetImage(user['image']),
+               radius: avatarSize / 2,
+             ),
+           ),
+           Positioned(
+             bottom: -10,
+             child: Container(
+               width: 28,
+               height: 28,
+               decoration: BoxDecoration(
+                 color: isCurrentUser ? AppColors.secondary : AppColors.surface,
+                 shape: BoxShape.circle,
+                 boxShadow: [
+                   BoxShadow(
+                     offset: Offset(0, 0),
+                     blurRadius: 10,
+                     color: Color(0x40000000),
+                   )
+                 ],
+               ),
+               alignment: Alignment.center,
+               child: Text(
+                 user['rank'].toString(),
+                 style: GoogleFonts.urbanist(
+                   fontSize: 16,
+                   fontWeight: AppFontWeight.bold,
+                   color: isCurrentUser ? AppColors.surface : AppColors.secondary,
+                 ),
+               ),
+             ),
+           ),
+         ],
+       ),
+       SizedBox(height: 18),
+       SizedBox(
+         width: 100,
+         child: Text(
+           user['name'],
+           maxLines: 1,
+           overflow: TextOverflow.ellipsis,
+           textAlign: TextAlign.center,
+           style: GoogleFonts.urbanist(
+             fontSize: 16,
+             fontWeight: AppFontWeight.bold,
+             color: AppColors.secondary,
+           ),
+         ),
+       ),
+       Row(
+         mainAxisAlignment: MainAxisAlignment.center,
+         children: [
+           Text(
+             user['score'].toString(),
+             style: GoogleFonts.urbanist(
+               fontSize: 14,
+               fontWeight: FontWeight.bold,
+               color: AppColors.secondary,
+             ),
+           ),
+           SizedBox(width: 5),
+           Image.asset('lib/assets/images/tree.png', width: 12),
+         ],
+       ),
+     ],
+   );
+ }
+
+  Widget _buildUserTile(Map<String, dynamic> user, String currentUserId) {
+    final String? currentUserId = _userService.userId;
+    bool isHighlighted = user['userId'] == currentUserId;
 
     return Container(
       height: 50,

@@ -48,8 +48,9 @@ class UserService {
           print('No tree data found for userId: "$userId"'); // Debug print
         }
 
-        // Add user data with their tree count (score) to the leaderboard list
+        // Add user data with their tree count (score) and userId to the leaderboard list
         leaderboardData.add({
+          'userId': userId,  // Added userId field here
           'name': userData['name'] ?? 'Unknown',
           'score': treeCount,
           'image': userData['photoUrl']?.isNotEmpty == true
