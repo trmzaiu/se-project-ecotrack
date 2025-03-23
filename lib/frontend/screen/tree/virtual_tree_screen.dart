@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:wastesortapp/frontend/screen/test_screen.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
@@ -68,8 +69,8 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
         setState(() {
           _levelOfTree = (data['levelOfTree'] as int? ?? 0).clamp(0, 3);
           _progress = (data['progress'] as num?)?.toDouble() ?? 0.0;
-          _drops = data['water'] as int? ?? 0;
-          _trees = data['tree'] as int? ?? 0;
+          _drops = data['drops'] as int? ?? 0;
+          _trees = data['trees'] as int? ?? 0;
           leftDrops = getLeftDrops(_levelOfTree, _progress);
         });
       }
@@ -201,7 +202,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                       'lib/assets/images/state4.png', width: 100, height: 100),
                   SizedBox(height: 10),
                   Text(
-                      "Congratulations! You have grown ${totalTrees} ${totalTrees >
+                      "Congratulations! You have grown $totalTrees ${totalTrees >
                           1 ? 'trees' : 'tree'}!",
                       style: GoogleFonts.urbanist(color: AppColors.secondary)
                   ),
@@ -281,7 +282,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                         onPressed: () {
                           Navigator.of(context).push(
                             moveUpRoute(
-                              LeaderboardScreen(),
+                              Screen(),
                             ),
                           );
                         },

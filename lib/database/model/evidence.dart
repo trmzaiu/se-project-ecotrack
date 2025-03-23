@@ -1,7 +1,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Evidence {
+class Evidences {
   final String userId;
   final String evidenceId;
   final String category;
@@ -11,7 +11,7 @@ class Evidence {
   final String status;
   final int point;
 
-  Evidence({
+  Evidences({
     required this.userId,
     required this.evidenceId,
     required this.category,
@@ -37,10 +37,10 @@ class Evidence {
     };
   }
 
-  factory Evidence.fromFirestore(DocumentSnapshot doc) {
+  factory Evidences.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-    return Evidence(
+    return Evidences(
       userId: data['userId'],
       evidenceId: doc.id,
       category: data['category'],

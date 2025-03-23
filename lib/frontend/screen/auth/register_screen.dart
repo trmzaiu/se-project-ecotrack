@@ -33,43 +33,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final password = passwordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
 
-    if (!_isValidEmail(email)) {
-      _showErrorDialog(
-        context,
-        "The email address is invalid format!",
-      );
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      _showErrorDialog(context, "Email or password is empty");
       return;
     }
 
-    if (password.isEmpty || confirmPassword.isEmpty) {
-      _showErrorDialog(
-        context,
-        "Please enter your password!",
-      );
+    if (!_isValidEmail(email)) {
+      _showErrorDialog(context, "Invalid email format");
       return;
     }
 
     if (password != confirmPassword) {
-      _showErrorDialog(
-        context,
-        "Your password is mismatch!",
-      );
+      _showErrorDialog(context, "Your password does not match!");
       return;
     }
 
     setState(() => _isLoading = true);
 
-    final result = await _authService.signUp(email: email, password: password);
+    try {
+      await _authService.signUp(email: email, password: password);
 
-    setState(() => _isLoading = false);
-
-    if (result != null) {
-      _showErrorDialog(context, "Register Error: $result");
-    } else {
-      _showSuccessDialog(context, "Register Successfully");
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        _showSuccessDialog(context, "Create account successful");
+      }
+    } on FirebaseAuthException catch (e) {
+      _showErrorDialog(context, "Register failed");
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
-
 
   bool _isValidEmail(String email) {
     return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
@@ -78,7 +71,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _navigateToMainScreen(BuildContext context, String userId) {
     Navigator.of(context).pushReplacement(
       moveUpRoute(
-        MainScreen(userId: '',),
+        MainScreen(userId: userId),
       ),
     );
 
@@ -102,7 +95,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         message: message,
         status: true,
         buttonTitle: "Continue",
-        onPressed: () => _navigateToMainScreen,
+        onPressed: () {
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            _navigateToMainScreen(context, user.uid);
+          }
+        },
       ),
     );
   }
@@ -156,7 +154,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Register",
+                   'Register',
                     style: GoogleFonts.urbanist(
                       fontSize: 34,
                       fontWeight: FontWeight.bold,
@@ -186,7 +184,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   SizedBox(height: 50),
 
-                  MyButton(text: 'Create Account', onTap: () => signUp(context)),
+                  MyButton(text: _isLoading ? 'Loading...' : 'Create Account', onTap: () => signUp(context)),
 
                   SizedBox(height: 15),
                 ],
@@ -203,24 +201,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextSpan(
                   children: [
                     TextSpan(
-                        text: "Already have an account? ",
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.primary,
-                          fontSize: 14,
-                        )
+                      text: "Already have an account? ",
+                      style: GoogleFonts.urbanist(
+                        color: AppColors.primary,
+                        fontSize: 14,
+                      )
                     ),
                     TextSpan(
                       text: "Login",
                       style: GoogleFonts.urbanist(
-                          color: AppColors.secondary,
-                          fontSize: 15,
-                          fontWeight: AppFontWeight.bold
+                        color: AppColors.secondary,
+                        fontSize: 15,
+                        fontWeight: AppFontWeight.bold
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
                           Navigator.of(context).pushReplacement(
-                            moveUpRoute(
-                              MainScreen(userId: '',),
+                            fadeRoute(
+                              LoginScreen(),
                             ),
                           );
                         },

@@ -47,6 +47,7 @@ dependencies:
   internet_connection_checker_plus: ^2.7.1
   provider: ^6.1.2
   visibility_detector: ^0.4.0+2
+  animated_leaderboard: ^0.1.4
 
 dev_dependencies:
   flutter_test:

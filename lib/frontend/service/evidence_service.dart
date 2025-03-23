@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:wastesortapp/frontend/service/tree_service.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
@@ -18,6 +19,9 @@ import '../screen/evidence/evidence_screen.dart';
 
 class EvidenceService{
   final BuildContext context;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final TreeService _treeService = TreeService();
 
   EvidenceService(this.context);
 
@@ -26,7 +30,6 @@ class EvidenceService{
    String? selectedCategory,
    TextEditingController? descriptionController,
    int totalPoint = 5,
-
   }) async {
     if (selectedImages!.isEmpty) {
       showSnackBar("No image selected");
@@ -68,13 +71,12 @@ class EvidenceService{
         }
       }
 
-      String evidenceId = FirebaseFirestore.instance
-          .collection('evidences')
+      String evidenceId = _db.collection('evidences')
           .doc()
           .id;
 
-      Evidence evidence = Evidence(
-        userId: FirebaseAuth.instance.currentUser!.uid,
+      Evidences evidence = Evidences(
+        userId: _auth.currentUser!.uid,
         evidenceId: evidenceId,
         category: selectedCategory,
         imagesUrl: uploadedImageUrls,
@@ -97,8 +99,7 @@ class EvidenceService{
             (route) => route.settings.name != "UploadScreen",
       );
 
-      await FirebaseFirestore.instance
-          .collection('evidences')
+      await _db.collection('evidences')
           .doc(evidenceId)
           .set(evidence.toMap());
 
@@ -129,18 +130,17 @@ class EvidenceService{
     );
   }
 
-  Stream<List<Evidence>> fetchEvidences(String userId) {
-    return FirebaseFirestore.instance
-        .collection('evidences')
+  Stream<List<Evidences>> fetchEvidences(String userId) {
+    return _db.collection('evidences')
         .where('userId', isEqualTo: userId)
         .snapshots()
         .map((snapshot) => snapshot.docs
-        .map((doc) => Evidence.fromFirestore(doc))
+        .map((doc) => Evidences.fromFirestore(doc))
           .toList()
           ..sort((a, b) => b.date.compareTo(a.date)));
   }
 
-  Future<void> verifyEvidence(Evidence evidence) async {
+  Future<void> verifyEvidence(Evidences evidence) async {
     try {
       bool allMatched = true;
 
@@ -156,12 +156,26 @@ class EvidenceService{
 
       String newStatus = allMatched ? "Accepted" : "Rejected";
 
-      await FirebaseFirestore.instance
-          .collection('evidences')
+      await _db.collection('evidences')
           .doc(evidence.evidenceId)
           .update({'status': newStatus});
 
       showSnackBar("Evidence verified: $newStatus", success: true);
+
+      var evidenceDoc = await _db.collection('evidences')
+          .doc(evidence.evidenceId)
+          .get();
+
+      String? userId = evidenceDoc.data()?['userId'];
+      int point = evidenceDoc.data()?['point'] ?? 0;
+
+      if (userId != null) {
+        String? treeId = await _treeService.getTreeIdByUserId(userId);
+
+        if (treeId != null && newStatus == "Accepted") {
+          await _treeService.increaseDrops(treeId, point);
+        }
+      }
     } catch (e) {
       print("Error verifying evidence: $e");
     }

@@ -1,4 +1,4 @@
-class Tree {
+class Trees {
   final String treeId;
   final String userId;
   final int? drops;
@@ -6,7 +6,7 @@ class Tree {
   final int? levelOfTree;
   final double? progress;
 
-  Tree({
+  Trees({
     required this.treeId,
     required this.userId,
     this.drops,
@@ -28,8 +28,8 @@ class Tree {
     };
   }
 
-  factory Tree.fromMap(Map<String, dynamic> map) {
-    return Tree(
+  factory Trees.fromMap(Map<String, dynamic> map) {
+    return Trees(
       treeId: map['treeId'] ?? '',
       userId: map['userId'] ?? '',
       drops: map['drops'],

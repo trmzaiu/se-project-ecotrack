@@ -38,7 +38,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
     super.dispose();
   }
 
-  void preloadImages(List<Evidence> evidences, BuildContext context) {
+  void preloadImages(List<Evidences> evidences, BuildContext context) {
     for (var item in evidences) {
       if (item.imagesUrl.isNotEmpty) {
         precacheImage(CachedNetworkImageProvider(item.imagesUrl.first), context);
@@ -184,7 +184,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
   }
 
   Widget _buildTabContent(String category, String userId) {
-    return StreamBuilder<List<Evidence>>(
+    return StreamBuilder<List<Evidences>>(
       stream: EvidenceService(context).fetchEvidences(userId),
       builder: (context, snapshot) {
         // if (snapshot.connectionState == ConnectionState.waiting) {
@@ -208,9 +208,9 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
           );
         }
 
-        List<Evidence> evidenceList = snapshot.data!;
+        List<Evidences> evidenceList = snapshot.data!;
 
-        List<Evidence> filteredList = category == "All"
+        List<Evidences> filteredList = category == "All"
             ? evidenceList
             : evidenceList.where((item) => item.status == category).toList();
 
