@@ -10,34 +10,38 @@ import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import 'package:wastesortapp/frontend/widget/bar_title.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
+import '../../service/user_service.dart';
 
 import '../../service/auth_service.dart';
 import '../evidence/evidence_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   final String userId;
 
-  ProfileScreen({Key? key, required this.userId}) : super(key: key);
+  const ProfileScreen({Key? key, required this.userId}) : super(key: key);
 
-  final Map<String, dynamic> user = {
-    'photoUrl': 'lib/assets/images/user_image.png',
-    'name': 'Gwen Stacy',
-    'email': 'gwenstacy@example.com',
-    'water': '56',
-    'tree': '4',
-    'evidence': '14'
-  };
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
 
-  final List<Map<String, dynamic>> evidence = [
-    {'time': '20'},
-    {'time': '40'},
-    {'time': '50'},
-    {'time': '60'},
-  ];
+class _ProfileScreenState extends State<ProfileScreen> {
+  Map<String, dynamic>? user;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+
+  Future<void> loadUserData() async {
+    final fetchedUser = await getCurrentUser(widget.userId);
+    setState(() {
+      user = fetchedUser;
+    });
+  }
 
   Future<void> _signOut(BuildContext context) async {
     await AuthenticationService(FirebaseAuth.instance).signOut();
-
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -48,37 +52,53 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     double phoneWidth = getPhoneWidth(context);
 
+    // If user data is not loaded yet, show a loading spinner
+    if (user == null) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          BarTitle(title: "Profile", textColor: AppColors.secondary, showNotification: true,),
+          BarTitle(
+            title: "Profile",
+            textColor: AppColors.secondary,
+            showNotification: true,
+          ),
 
-          SizedBox(height: 25),
+          const SizedBox(height: 25),
 
+          // Profile Image
           Container(
             width: 125,
             height: 125,
             decoration: ShapeDecoration(
-              color: Color(0xE0E0E0FF),
+              color: const Color(0xE0E0E0FF),
               image: DecorationImage(
-                image: AssetImage(user['photoUrl']),
+                image: NetworkImage(user!['photoUrl']), // Use fetched user data
                 fit: BoxFit.cover,
               ),
               shape: OvalBorder(
                 side: BorderSide(
                   width: 5,
                   color: AppColors.tertiary.withOpacity(0.8),
-                )
-              )
+                ),
+              ),
             ),
           ),
 
-          SizedBox(height: 5),
+          const SizedBox(height: 5),
 
+          // Name
           Text(
-            user['name'],
+            user!['name'],
             style: GoogleFonts.urbanist(
               color: AppColors.secondary,
               fontSize: 24,
@@ -86,8 +106,9 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
 
+          // Email
           Text(
-            user['email'],
+            user!['email'],
             style: GoogleFonts.urbanist(
               color: AppColors.tertiary,
               fontSize: 16,
@@ -95,8 +116,9 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
 
+          // Edit Profile Button
           GestureDetector(
             onTap: () {
               Navigator.of(context).push(
@@ -107,10 +129,12 @@ class ProfileScreen extends StatelessWidget {
             },
             child: Container(
               width: 135,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: ShapeDecoration(
                 color: AppColors.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -131,139 +155,52 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  SizedBox(height: 10),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Statistics',
-                        textAlign: TextAlign.left,
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.secondary,
-                          fontSize: 20,
-                          fontWeight: AppFontWeight.semiBold,
-                        ),
-                      ),
-                    ),
-                  ),
+          // Statistics Section
+          Align(
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _statistic('Drops', user!['water']),
+                _statistic('Trees', user!['tree']),
+                _statistic('Evidences', user!['evidence']),
+              ],
+            ),
+          ),
 
-                  SizedBox(height: 10),
+          const SizedBox(height: 25),
 
-                  Align(
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _statistic('Drops', user['water']),
-                        _statistic('Trees', user['tree']),
-                        _statistic('Evidences', user['evidence']),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: 25),
-
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            'History',
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.secondary,
-                              fontSize: 20,
-                              fontWeight: AppFontWeight.semiBold,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                moveLeftRoute(
-                                  EvidenceScreen(),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              'See more',
-                              style: GoogleFonts.urbanist(
-                                color: AppColors.tertiary,
-                                fontSize: 13,
-                                fontWeight: AppFontWeight.regular,
-                              ),
-                            ),
-                          )
-                        ]
-                    ),
-                  ),
-
-                  SizedBox(height: 10),
-
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _history('lib/assets/images/recycle.png', 'Recyclable \nWaste', evidence[0]['time']),
-                        _history('lib/assets/images/organic.png', 'Organic \nWaste', evidence[1]['time'])
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: phoneWidth - 155*2 - 60),
-
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _history('lib/assets/images/hazard.png', 'Hazardous \nWaste', evidence[2]['time']),
-                        _history('lib/assets/images/general.png', 'General \nWaste', evidence[3]['time'])
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: 30),
-
-                  GestureDetector(
-                    onTap: () => _signOut(context),
-                    child: Container(
-                      width: phoneWidth - 60,
-                      padding: EdgeInsets.symmetric(vertical: 15),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Log out',
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.surface,
-                          fontSize: 16,
-                          fontWeight: AppFontWeight.bold,
-                        ),
-                      )
-                    ),
-                  ),
-
-                  SizedBox(height: 35),
-                ],
+          // Logout Button
+          GestureDetector(
+            onTap: () => _signOut(context),
+            child: Container(
+              width: phoneWidth - 60,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              decoration: BoxDecoration(
+                color: AppColors.secondary,
+                borderRadius: BorderRadius.circular(10),
               ),
-            )
-          )
+              alignment: Alignment.center,
+              child: Text(
+                'Log out',
+                style: GoogleFonts.urbanist(
+                  color: AppColors.surface,
+                  fontSize: 16,
+                  fontWeight: AppFontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 35),
         ],
-      )
+      ),
     );
   }
 
+  // Widget for Statistics
   Widget _statistic(String title, String number) {
     return SizedBox(
       width: 90,
@@ -282,83 +219,6 @@ class ProfileScreen extends StatelessWidget {
             style: GoogleFonts.urbanist(
               color: AppColors.tertiary,
               fontSize: 16,
-              fontWeight: AppFontWeight.regular,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _history(String image, String title, String time) {
-    return Container(
-      width: 155,
-      height: 155,
-      padding: EdgeInsets.all(15),
-      decoration: ShapeDecoration(
-        color: Color(0x80EBDCD6),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(17),
-        ),
-        shadows: [
-          BoxShadow(
-            color: AppColors.tertiary.withOpacity(0.1),
-            blurRadius: 2,
-            offset: Offset(1, 2),
-            spreadRadius: 0,
-          )
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                height: 35,
-                width: 35,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: Image.asset(
-                    image,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-
-              SizedBox(width: 10),
-
-              Text(
-                title,
-                style: GoogleFonts.urbanist(
-                    color: AppColors.secondary,
-                    fontSize: 15,
-                    fontWeight: AppFontWeight.regular,
-                    letterSpacing: 1,
-                    height: 1.2
-                ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: 5),
-
-          Text(
-            time,
-            style: GoogleFonts.urbanist(
-              color: AppColors.secondary,
-              fontSize: 50,
-              fontWeight: AppFontWeight.medium,
-            ),
-          ),
-
-          Text(
-            'Times',
-            style: GoogleFonts.urbanist(
-              color: AppColors.tertiary,
-              fontSize: 13,
               fontWeight: AppFontWeight.regular,
             ),
           ),
