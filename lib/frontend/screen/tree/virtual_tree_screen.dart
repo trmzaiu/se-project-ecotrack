@@ -5,9 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:wastesortapp/frontend/service/auth_service.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
-import 'package:wastesortapp/frontend/service/user_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,6 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../utils/route_transition.dart';
 import '../../widget/bar_title.dart';
 import 'leaderboard_screen.dart';
+
 
 class VirtualTreeScreen extends StatefulWidget {
   final String userId;
@@ -76,7 +75,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
       }
     });
   }
-
+  
   int getLeftDrops(int state, double currentProgress) {
     int totalDrops = 0;
     List<int> reductions = [5, 15, 30, 50];
@@ -141,7 +140,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
 
       if (_drops <= currentNeededDrops) {
         double newProgress = _progress + (_drops / totalNeededDrops);
-        if (newProgress == 1) {
+        if (newProgress == 1){
           newProgress = 0;
           _levelOfTree++;
           if (_levelOfTree >= _state.length) {
@@ -165,7 +164,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
             setState(() {
               _progress = 0;
               print("Before: value = $_levelOfTree");
-              _levelOfTree++;
+              _levelOfTree ++;
               _treeService.updateProgress(widget.userId, _progress);
               _treeService.updateLevelOfTree(widget.userId, _levelOfTree);
             });
@@ -198,17 +197,22 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (totalTrees > 0) ...[
-                  Image.asset('lib/assets/images/state4.png', width: 100, height: 100),
+                  Image.asset(
+                      'lib/assets/images/state4.png', width: 100, height: 100),
                   SizedBox(height: 10),
                   Text(
-                      "Congratulations! You have grown ${totalTrees} ${totalTrees > 1 ? 'trees' : 'tree'}!",
-                      style: GoogleFonts.urbanist(color: AppColors.secondary)),
-                ] else ...[
-                  Image.asset('lib/assets/images/state$state.png', width: 100, height: 100),
-                  SizedBox(height: 10),
-                  Text("You are at level $state",
-                      style: GoogleFonts.urbanist(color: AppColors.secondary)),
-                ],
+                      "Congratulations! You have grown ${totalTrees} ${totalTrees >
+                          1 ? 'trees' : 'tree'}!",
+                      style: GoogleFonts.urbanist(color: AppColors.secondary)
+                  ),
+                ] else
+                  ...[
+                    Image.asset('lib/assets/images/state$state.png', width: 100,
+                        height: 100),
+                    SizedBox(height: 10),
+                    Text("You are at level $state",
+                        style: GoogleFonts.urbanist(color: AppColors.secondary)),
+                  ],
               ]),
           actionsAlignment: MainAxisAlignment.center,
           actions: [
@@ -226,7 +230,8 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                 overlayColor: WidgetStateProperty.all(Color(0x4CE7E0DA)),
                 shadowColor: WidgetStateProperty.all(Colors.transparent),
                 shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25)),
                 ),
                 elevation: WidgetStateProperty.all(1),
                 fixedSize: WidgetStateProperty.all(Size(100, 40)),
@@ -242,12 +247,11 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext  context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: Stack(
         children: [
-          // Background BlobPainter
           Positioned(
             top: -65,
             left: -80,
@@ -259,238 +263,201 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
               ),
             ),
           ),
-          // Main content
           Column(
             children: [
-              // Custom header with BarTitle and Leaderboard icon
-              SafeArea(
-                child: Stack(
-                  children: [
-                    Column(
-                      children: [
-                        BarTitle(
-                          title: '',
-                          showNotification: true,
-                          textColor: AppColors.secondary,
-                          buttonColor: AppColors.secondary,
-                        ),
-                        SizedBox(height: 30),
-                      ],
-                    ),
-                    Positioned(
-                      left: 20,
-                      top: 60, // Adjusted for visibility
-                      child: Center(
-                        child: Container(
-                          padding: EdgeInsets.all(10), // Increase tap area
-                          child: IconButton(
-                            onPressed: () async {
-                              print('Leaderboard icon pressed'); // Debug print
-                              try {
-                                await Navigator.of(context).push(
-                                  moveUpRoute(
-                                    LeaderboardScreen(
-                                      userService: UserService(FirebaseAuth.instance),
-                                    ),
-                                  ),
-                                );
-                              } catch (e) {
-                                print('Navigation error: $e'); // Debug print
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Failed to navigate to Leaderboard: $e')),
-                                );
-                              }
-                            },
-                            icon: SvgPicture.asset(
-                              'lib/assets/icons/ic_leaderboard.svg',
-                              width: 24,
-                              height: 24,
-                            ),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(AppColors.surface), // Temporary for debugging
-                              shape: MaterialStateProperty.all(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              shadowColor: MaterialStateProperty.all(Color(0x33333333)),
-                              elevation: MaterialStateProperty.all(2),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Scrollable content
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
+              Stack(
+                children: [
+                  Column(
                     children: [
-                      const SizedBox(height: 60), // Adjust spacing to account for header
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 150,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Image.asset('lib/assets/images/drop.png', width: 25),
-                                const SizedBox(width: 5),
-                                TweenAnimationBuilder(
-                                  tween: Tween<double>(begin: _drops.toDouble(), end: _drops.toDouble()),
-                                  duration: Duration(milliseconds: 500),
-                                  builder: (_, double value, __) {
-                                    return Text(
-                                      '${value.round()}',
-                                      style: GoogleFonts.urbanist(
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.normal,
-                                        color: AppColors.secondary,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
+                      BarTitle(title: '', showNotification: true),
+                      SizedBox(height: 30),
+                    ],
+                  ),
+                  Positioned(
+                    left: 20,
+                    top: 47,
+                    child: Center(
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            moveUpRoute(
+                              LeaderboardScreen(),
+                            ),
+                          );
+                        },
+                        icon: SvgPicture.asset(
+                          'lib/assets/icons/ic_leaderboard.svg',
+                          width: 24,
+                          height: 24,
+                        ),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(AppColors.surface),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          const SizedBox(width: 20),
-                          SizedBox(
-                            width: 150,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Image.asset('lib/assets/images/tree.png', width: 25),
-                                const SizedBox(width: 5),
-                                TweenAnimationBuilder(
-                                  tween: Tween<double>(begin: _trees.toDouble(), end: _trees.toDouble()),
-                                  duration: Duration(milliseconds: 500),
-                                  builder: (_, double value, __) {
-                                    return Text(
-                                      '${value.round()}',
-                                      style: GoogleFonts.urbanist(
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.normal,
-                                        color: AppColors.secondary,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                          shadowColor: MaterialStateProperty.all(Color(0x33333333)),
+                          elevation: MaterialStateProperty.all(2),
+                        ),
                       ),
-                      SizedBox(
-                        height: 300,
-                        width: 300,
-                        child: CustomPaint(
-                          painter: GradientProgressPainter(progress: _progress),
-                          child: Column(
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 30),
+              Expanded(
+                child: Column(
+                  spacing: 25,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      // spacing: 10,
+                      children: [
+                        SizedBox(
+                          width: 150,
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              RepaintBoundary(
-                                child: Image.asset(
-                                  _state[_levelOfTree][0],
-                                  width: 200,
-                                  height: 200,
-                                ),
+                              Image.asset(
+                                  'lib/assets/images/drop.png', width: 25),
+                              const SizedBox(width: 5),
+                              TweenAnimationBuilder(
+                                tween: Tween<double>(begin: _drops.toDouble(), end: _drops.toDouble()),
+                                duration: Duration(milliseconds: 500),
+                                builder: (_, double value, __) {
+                                  return Text('${value.round()}',
+                                      style: GoogleFonts.urbanist(fontSize: 30,
+                                          fontWeight: FontWeight.normal,
+                                          color: AppColors.secondary));
+                                },
                               ),
-                              const SizedBox(height: 20),
-                              Text(
-                                '${(_progress * _state[_levelOfTree][1]).round()}/${_state[_levelOfTree][1]}',
-                                style: GoogleFonts.urbanist(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w300,
-                                  color: AppColors.surface,
-                                ),
-                              ),
-                              const SizedBox(height: 15),
                             ],
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        width: 200,
-                        height: 80,
+                        const SizedBox(width: 20),
+                        SizedBox(
+                          width: 150,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Image.asset(
+                                  'lib/assets/images/tree.png', width: 25),
+                              const SizedBox(width: 5),
+                              TweenAnimationBuilder(
+                                tween: Tween<double>(begin: _trees.toDouble(), end: _trees.toDouble()),
+                                duration: Duration(milliseconds: 500),
+                                builder: (_, double value, __) {
+                                  return Text('${value.round()}',
+                                      style: GoogleFonts.urbanist(fontSize: 30,
+                                          fontWeight: FontWeight.normal,
+                                          color: AppColors.secondary));
+                                },
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                    SizedBox(
+                      height: 300,
+                      width: 300,
+                      child: CustomPaint(
+                        painter: GradientProgressPainter(progress: _progress),
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                TweenAnimationBuilder(
-                                  tween: Tween<double>(begin: leftDrops.toDouble(), end: _drops.toDouble()),
-                                  duration: Duration(milliseconds: 500),
-                                  builder: (_, double value, __) {
-                                    return Text(
-                                      '${value.round()}',
-                                      style: GoogleFonts.urbanist(
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.normal,
-                                        color: AppColors.secondary,
-                                      ),
-                                    );
-                                  },
-                                ),
-                                Image.asset(
-                                  'lib/assets/images/drop.png',
-                                  width: 25,
-                                  height: 25,
-                                ),
-                              ],
+                            RepaintBoundary(
+                              child: Image.asset(_state[_levelOfTree][0], width: 200,
+                                  height: 200),
                             ),
+                            const SizedBox(height: 20),
                             Text(
-                              'drops of water left',
-                              style: GoogleFonts.urbanist(color: AppColors.secondary),
+                              '${(_progress * _state[_levelOfTree][1]).round()}/${_state[_levelOfTree][1]}',
+                              style: GoogleFonts.urbanist(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: AppColors.surface,
+                              ),
                             ),
+                            const SizedBox(height: 15),
                           ],
                         ),
                       ),
-                      ElevatedButton(
-                        onPressed: _drops > 0
-                            ? () {
-                          waterTree();
-                        }
-                            : null,
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                                (Set<WidgetState> states) {
-                              if (states.contains(WidgetState.disabled)) {
-                                return Colors.grey;
-                              }
-                              return AppColors.primary;
-                            },
+                    ),
+                    SizedBox(
+                      width: 200,
+                      height: 80,
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TweenAnimationBuilder(
+                                tween: Tween<double>(begin: leftDrops.toDouble(), end: leftDrops.toDouble()),
+                                duration: Duration(milliseconds: 500),
+                                builder: (_, double value, __) {
+                                  return Text('${value.round()}',
+                                    style: GoogleFonts.urbanist(
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.normal,
+                                        color: AppColors.secondary));
+                                },
+                              ),
+                              // Text('$leftDrops', style: GoogleFonts.urbanist(
+                              //     fontSize: 30,
+                              //     fontWeight: FontWeight.normal,
+                              //     color: AppColors.secondary)),
+                              Image.asset(
+                                'lib/assets/images/drop.png', width: 25,
+                                height: 25),
+                            ],
                           ),
-                          foregroundColor: WidgetStateProperty.all(AppColors.surface),
-                          overlayColor: WidgetStateProperty.all(Color(0x4CE7E0DA)),
-                          shadowColor: WidgetStateProperty.all(Colors.transparent),
-                          shape: WidgetStateProperty.all(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                          ),
-                          elevation: WidgetStateProperty.all(1),
-                          fixedSize: WidgetStateProperty.all(Size(200, 50)),
-                          textStyle: WidgetStateProperty.all(
-                            GoogleFonts.urbanist(
-                              fontSize: 20,
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
+                          Text('drops of water left',
+                              style: GoogleFonts.urbanist(color: AppColors.secondary)),
+                        ],
+                      )
+                    ),
+                    // SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: _drops > 0
+                          ? () {
+                        waterTree();
+                      } : null,
+
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                              (Set<WidgetState> states) {
+                            if (states.contains(WidgetState.disabled)) {
+                              return Colors.grey;
+                            }
+                            return AppColors.primary;
+                          },
                         ),
-                        child: Text('Watering'),
+                        foregroundColor: WidgetStateProperty.all(AppColors.surface),
+
+                        overlayColor: WidgetStateProperty.all(
+                            Color(0x4CE7E0DA)),
+                        shadowColor: WidgetStateProperty.all(
+                            Colors.transparent),
+                        shape: WidgetStateProperty.all(
+                          RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25)),
+                        ),
+                        elevation: WidgetStateProperty.all(1),
+                        fixedSize: WidgetStateProperty.all(Size(200, 50)),
+                        textStyle: WidgetStateProperty.all(GoogleFonts.urbanist(
+                            fontSize: 20, fontWeight: FontWeight.normal)),
                       ),
-                      const SizedBox(height: 20), // Add some padding at the bottom
-                    ],
-                  ),
+                      child: Text('Watering'),
+                    ),
+                  ],
                 ),
-              ),
+              )
             ],
           ),
         ],
-      ),
+      )
     );
   }
 }
@@ -577,10 +544,11 @@ class BlobPainter extends CustomPainter {
     canvas.drawPath(path, paint);
 
     Paint outlinePaint = Paint()
-    ..color = AppColors.accent.withOpacity(0.5)
-    ..strokeWidth = 2
-    ..style = PaintingStyle.stroke;
+      ..color = AppColors.accent.withOpacity(0.5)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
     canvas.drawPath(path, outlinePaint);
+
   }
 
   @override
