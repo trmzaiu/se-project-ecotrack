@@ -250,10 +250,13 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                     top: 19,
                     child: GestureDetector(
                       onTap: isValidCategory
-                        ? () => Navigator.of(context).push(moveLeftRoute(UploadScreen(
-                          imagePath: widget.imagePath,
-                          category: _scanResult!,
-                          )))
+                        ? () => Navigator.of(context).pushAndRemoveUntil(
+                            moveLeftRoute(
+                              UploadScreen(imagePath: widget.imagePath, category: _scanResult!),
+                              settings: RouteSettings(name: "UploadScreen"),
+                            ),
+                              (route) => route.settings.name != "ScanScreen" || route.isFirst,
+                          )
                         : null,
                       child: Container(
                         width: 45,
@@ -313,6 +316,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                         Navigator.of(context).push(
                           moveLeftRoute(
                             UploadScreen(imagePath: widget.imagePath),
+                            settings: RouteSettings(name: "UploadScreen"),
                           ),
                         );
                       },

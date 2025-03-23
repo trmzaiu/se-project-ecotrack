@@ -320,17 +320,16 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Image.asset(
-                                  'lib/assets/images/drop.png', width: 25),
+                              Image.asset('lib/assets/images/drop.png', width: 25),
                               const SizedBox(width: 5),
                               TweenAnimationBuilder(
                                 tween: Tween<double>(begin: _drops.toDouble(), end: _drops.toDouble()),
                                 duration: Duration(milliseconds: 500),
                                 builder: (_, double value, __) {
                                   return Text('${value.round()}',
-                                      style: GoogleFonts.urbanist(fontSize: 30,
-                                          fontWeight: FontWeight.normal,
-                                          color: AppColors.secondary));
+                                    style: GoogleFonts.urbanist(fontSize: 30,
+                                      fontWeight: FontWeight.normal,
+                                      color: AppColors.secondary));
                                 },
                               ),
                             ],

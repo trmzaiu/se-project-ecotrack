@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 /// Move from Right to Left
-Route moveLeftRoute(Widget page) {
+Route moveLeftRoute(Widget page, {RouteSettings? settings}) {
   return PageRouteBuilder(
+    settings: settings,
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);

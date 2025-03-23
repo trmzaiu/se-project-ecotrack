@@ -246,6 +246,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                     Navigator.of(context).push(
                       moveLeftRoute(
                         ScanScreen(imagePath: single.file?.path ?? ""),
+                        settings: RouteSettings(name: "ScanScreen"),
                       ),
                     );
                   });

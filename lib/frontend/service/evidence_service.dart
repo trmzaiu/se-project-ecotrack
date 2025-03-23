@@ -16,6 +16,7 @@ import '../../ScanAI/processImage.dart';
 import '../../database/CloudinaryConfig.dart';
 import '../../database/model/evidence.dart';
 import '../screen/evidence/evidence_screen.dart';
+import '../utils/route_transition.dart';
 
 class EvidenceService{
   final BuildContext context;
@@ -93,10 +94,10 @@ class EvidenceService{
 
       showSnackBar("Upload successful!", success: true);
 
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => EvidenceScreen()),
-            (route) => route.settings.name != "UploadScreen",
+      Navigator.of(context).pushAndRemoveUntil(
+        moveLeftRoute(
+          EvidenceScreen()),
+          (route) => route.settings.name != "ScanScreen" || route.isFirst,
       );
 
       await _db.collection('evidences')
