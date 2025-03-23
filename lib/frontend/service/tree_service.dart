@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 
 class TreeService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -52,28 +53,29 @@ class TreeService {
         .update({'trees': trees});
   }
 
-  Future<void> increaseDrops(String treeId, int increment) async {
+  Future<void> increaseDrops(String userId, int increment) async {
     try {
-      await _db.collection('trees')
-          .doc(treeId)
-          .update({'drops': FieldValue.increment(increment),});
-      print("Drops incremented successfully");
+
+      var treesRef = await _db.collection('trees')
+          .where('userId', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (treesRef.docs.isNotEmpty) {
+        String treeId = treesRef.docs.first.id;
+        debugPrint("🌱 Found treeId: $treeId");
+
+        await _db.collection('trees')
+            .doc(treeId)
+            .update({'drops': FieldValue.increment(increment)});
+
+        debugPrint("✅ Drops incremented by $increment for treeId: $treeId");
+      } else {
+        debugPrint("🚨 No tree found for userId: $userId");
+      }
     } catch (e) {
-      print("Failed to increment drops: $e");
+      debugPrint("❌ Error updating drops: $e");
     }
-  }
-
-  Future<String?> getTreeIdByUserId(String userId) async {
-    var treesRef = await _db.collection('trees')
-        .where('userId', isEqualTo: userId)
-        .limit(1)
-        .get();
-
-    if (treesRef.docs.isNotEmpty) {
-      return treesRef.docs.first.id;
-    }
-
-    return null;
   }
 
 }

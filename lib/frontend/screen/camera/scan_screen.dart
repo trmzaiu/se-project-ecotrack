@@ -313,11 +313,11 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                     alignment: Alignment.center,
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.of(context).push(
-                          moveLeftRoute(
+                        Navigator.of(context).pushReplacement(
+                          moveUpRoute(
                             UploadScreen(imagePath: widget.imagePath),
                             settings: RouteSettings(name: "UploadScreen"),
-                          ),
+                          )
                         );
                       },
                       child: Text(

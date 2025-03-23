@@ -20,8 +20,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _userService.fetchUsersForLeaderboard(),
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: _userService.leaderboardStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());

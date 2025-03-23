@@ -11,45 +11,40 @@ class UserService {
 
   String? get userId => _firebaseAuth.currentUser?.uid;
 
-  Future<List<Map<String, dynamic>>> fetchUsersForLeaderboard() async {
-    try {
-      QuerySnapshot userSnapshot = await _firestore.collection('users').get();
+  Stream<List<Map<String, dynamic>>> leaderboardStream() {
+    return _firestore.collection('users').snapshots().asyncMap((userSnapshot) async {
       if (userSnapshot.docs.isEmpty) return [];
 
       Map<String, Map<String, dynamic>> usersData = {};
       for (var doc in userSnapshot.docs) {
-        var data = doc.data() as Map<String, dynamic>;
+        var data = doc.data();
         usersData[doc.id] = {
           'userId': doc.id,
           'name': data['name'] ?? 'Unknown',
           'image': data['photoUrl']?.isNotEmpty == true
               ? data['photoUrl']
               : 'lib/assets/images/avatar_default.png',
-          'tree': 0 // Default tree count
+          'trees': 0 // Default tree count
         };
       }
 
-      QuerySnapshot treeSnapshot = await _firestore.collection('tree').get();
+      QuerySnapshot treeSnapshot = await _firestore.collection('trees').get();
       for (var doc in treeSnapshot.docs) {
         var data = doc.data() as Map<String, dynamic>;
         String userId = data['userId']?.toString().trim() ?? '';
         if (usersData.containsKey(userId)) {
-          usersData[userId]!['tree'] = (data['tree'] ?? 0);
+          usersData[userId]!['trees'] = (data['trees'] ?? 0);
         }
       }
 
       List<Map<String, dynamic>> leaderboardData = usersData.values.toList();
-      leaderboardData.sort((a, b) => b['tree'].compareTo(a['tree']));
+      leaderboardData.sort((a, b) => b['trees'].compareTo(a['trees']));
 
       for (int i = 0; i < leaderboardData.length; i++) {
         leaderboardData[i]['rank'] = i + 1;
       }
 
       return leaderboardData;
-    } catch (e) {
-      print("Error fetching leaderboard data: $e");
-      throw Exception("Failed to fetch leaderboard data: $e");
-    }
+    });
   }
-
 }

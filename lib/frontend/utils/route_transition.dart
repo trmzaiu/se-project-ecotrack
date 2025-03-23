@@ -22,8 +22,9 @@ Route moveLeftRoute(Widget page, {RouteSettings? settings}) {
 }
 
 /// Move from Bottom to Top
-Route moveUpRoute(Widget page) {
+Route moveUpRoute(Widget page, {RouteSettings? settings}) {
   return PageRouteBuilder(
+    settings: settings,
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(0.0, 1.0);

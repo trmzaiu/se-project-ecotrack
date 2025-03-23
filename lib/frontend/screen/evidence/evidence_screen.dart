@@ -191,7 +191,17 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
         //   return Center(child: CircularProgressIndicator());
         // }
         if (snapshot.hasError) {
-          return Center(child: Text("Error fetching evidences"));
+          return Center(
+            child: Text(
+              "Error fetching evidences",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.urbanist(
+                color: AppColors.secondary,
+                fontSize: 16,
+                fontWeight: AppFontWeight.medium,
+              ),
+            )
+          );
         }
 
         if (!snapshot.hasData || snapshot.data == null) {
@@ -200,7 +210,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
               "Fail to load evidences",
               textAlign: TextAlign.center,
               style: GoogleFonts.urbanist(
-                color: Color(0xFF7C3F3E),
+                color: AppColors.secondary,
                 fontSize: 16,
                 fontWeight: AppFontWeight.medium,
               ),
@@ -222,7 +232,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
                   : "No ${category.toLowerCase()} evidence available",
               textAlign: TextAlign.center,
               style: GoogleFonts.urbanist(
-                color: Color(0xFF7C3F3E),
+                color: AppColors.secondary,
                 fontSize: 16,
                 fontWeight: AppFontWeight.medium,
               ),

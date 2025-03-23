@@ -15,7 +15,9 @@ import 'package:wastesortapp/theme/fonts.dart';
 import '../../ScanAI/processImage.dart';
 import '../../database/CloudinaryConfig.dart';
 import '../../database/model/evidence.dart';
+import '../screen/camera/camera_screen.dart';
 import '../screen/evidence/evidence_screen.dart';
+import '../screen/user/profile_screen.dart';
 import '../utils/route_transition.dart';
 
 class EvidenceService{
@@ -27,92 +29,83 @@ class EvidenceService{
   EvidenceService(this.context);
 
   Future<void> submitData({
-   List<File>? selectedImages,
-   String? selectedCategory,
-   TextEditingController? descriptionController,
-   int totalPoint = 5,
+    required List<File> selectedImages,
+    required String selectedCategory,
+    required TextEditingController descriptionController,
+    int totalPoint = 5,
   }) async {
-    if (selectedImages!.isEmpty) {
-      showSnackBar("No image selected");
+    if (selectedImages.isEmpty) {
+      _showSnackBar("No image selected");
       return;
     }
 
-    if (selectedCategory == null) {
-      showSnackBar("Please select a category");
+    if (selectedCategory == '') {
+      _showSnackBar("Please select a category");
       return;
     }
 
     try {
-      List<String> uploadedImageUrls = [];
-
-      for (File image in selectedImages) {
-        String? imageUrl = await CloudinaryConfig().uploadImage(image);
-        if (imageUrl != null) {
-          uploadedImageUrls.add(imageUrl);
-        }
-      }
+      // Upload images concurrently
+      List<String> uploadedImageUrls = await Future.wait(
+        selectedImages.map((image) async => await CloudinaryConfig().uploadImage(image)),
+      ).then((urls) => urls.whereType<String>().toList());
 
       if (uploadedImageUrls.isEmpty) {
-        showSnackBar("Image upload failed");
+        _showSnackBar("Image upload failed");
         return;
       }
 
+      // Points calculation
       if (uploadedImageUrls.length == 5) {
         totalPoint += 10;
       } else if (uploadedImageUrls.length > 2) {
         totalPoint += 5;
       }
 
-      if (descriptionController != null) {
-        String description = descriptionController.text.trim();
-        if (description.length >= 50) {
-          totalPoint += 10;
-        } else if (description.isNotEmpty) {
-          totalPoint += 5;
-        }
+      String description = descriptionController.text.trim();
+      if (description.length >= 50) {
+        totalPoint += 10;
+      } else if (description.isNotEmpty) {
+        totalPoint += 5;
       }
 
-      String evidenceId = _db.collection('evidences')
-          .doc()
-          .id;
+      String evidenceId = _db.collection('evidences').doc().id;
 
       Evidences evidence = Evidences(
         userId: _auth.currentUser!.uid,
         evidenceId: evidenceId,
         category: selectedCategory,
         imagesUrl: uploadedImageUrls,
-        description: descriptionController?.text.trim(),
+        description: description,
         date: DateTime.now(),
         status: "Pending",
         point: totalPoint,
       );
 
-      await FirebaseFirestore.instance
-          .collection('evidences')
-          .doc(evidenceId)
-          .set(evidence.toMap());
+      // Save evidence in Firestore
+      await _db.collection('evidences').doc(evidenceId).set(evidence.toMap());
 
-      showSnackBar("Upload successful!", success: true);
+      _showSnackBar("Upload successful!", success: true);
 
       Navigator.of(context).pushAndRemoveUntil(
-        moveLeftRoute(
-          EvidenceScreen()),
-          (route) => route.settings.name != "ScanScreen" || route.isFirst,
+        moveLeftRoute(EvidenceScreen(), settings: RouteSettings(name: "EvidenceScreen")),
+            (route) => route.settings.name != "UploadScreen" && route.settings.name != "EvidenceScreen" || route.isFirst,
       );
 
       await _db.collection('evidences')
           .doc(evidenceId)
           .set(evidence.toMap());
 
+      // Schedule verification after delay
       Future.delayed(Duration(seconds: 5), () async {
         await verifyEvidence(evidence);
       });
     } catch (e) {
-      showSnackBar("Error uploading: $e");
+      _showSnackBar("Error uploading: $e");
     }
   }
 
-  void showSnackBar(String message, {bool success = false}) {
+  void _showSnackBar(String message, {bool success = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Center(
@@ -121,8 +114,8 @@ class EvidenceService{
             style: GoogleFonts.urbanist(
               fontSize: 16,
               fontWeight: AppFontWeight.semiBold,
-              color: AppColors.surface
-            )
+              color: AppColors.surface,
+            ),
           ),
         ),
         backgroundColor: success ? AppColors.board2 : AppColors.board1,
@@ -137,8 +130,8 @@ class EvidenceService{
         .snapshots()
         .map((snapshot) => snapshot.docs
         .map((doc) => Evidences.fromFirestore(doc))
-          .toList()
-          ..sort((a, b) => b.date.compareTo(a.date)));
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date)));
   }
 
   Future<void> verifyEvidence(Evidences evidence) async {
@@ -146,7 +139,7 @@ class EvidenceService{
       bool allMatched = true;
 
       for (String imageUrl in evidence.imagesUrl) {
-        File imageFile = await downloadImage(imageUrl);
+        File imageFile = await _downloadImage(imageUrl);
         String? predictedCategory = await ApiService.classifyImage(imageFile);
 
         if (predictedCategory == null || predictedCategory != evidence.category) {
@@ -156,35 +149,20 @@ class EvidenceService{
       }
 
       String newStatus = allMatched ? "Accepted" : "Rejected";
+      await _db.collection('evidences').doc(evidence.evidenceId).update({'status': newStatus});
 
-      await _db.collection('evidences')
-          .doc(evidence.evidenceId)
-          .update({'status': newStatus});
+      if (newStatus == "Accepted") {
+        debugPrint("📝 Fetching treeId for user: ${evidence.userId}, ${evidence.point}");
 
-      showSnackBar("Evidence verified: $newStatus", success: true);
-
-      var evidenceDoc = await _db.collection('evidences')
-          .doc(evidence.evidenceId)
-          .get();
-
-      String? userId = evidenceDoc.data()?['userId'];
-      int point = evidenceDoc.data()?['point'] ?? 0;
-
-      if (userId != null) {
-        String? treeId = await _treeService.getTreeIdByUserId(userId);
-
-        if (treeId != null && newStatus == "Accepted") {
-          await _treeService.increaseDrops(treeId, point);
-        }
+        await _treeService.increaseDrops(evidence.userId, evidence.point);
       }
     } catch (e) {
-      print("Error verifying evidence: $e");
+      debugPrint("Error verifying evidence: $e");
     }
   }
 
-  Future<File> downloadImage(String imageUrl) async {
+  Future<File> _downloadImage(String imageUrl) async {
     final response = await http.get(Uri.parse(imageUrl));
-
     if (response.statusCode == 200) {
       final tempDir = await getTemporaryDirectory();
       final filePath = '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -195,5 +173,4 @@ class EvidenceService{
       throw Exception("Failed to download image");
     }
   }
-
 }

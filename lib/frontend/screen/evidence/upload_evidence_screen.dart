@@ -76,7 +76,7 @@ class _UploadScreenState extends State<UploadScreen> {
 
     EvidenceService(context).submitData(
       selectedImages: selectedImages,
-      selectedCategory: selectedCategory,
+      selectedCategory: selectedCategory!,
       descriptionController: descriptionController,
     ).then((_) {
       setState(() => isUploading = false);
