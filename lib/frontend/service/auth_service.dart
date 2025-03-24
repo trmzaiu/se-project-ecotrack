@@ -5,17 +5,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
 
 class AuthenticationService {
-  final FirebaseAuth _firebaseAuth;
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FacebookAuth _facebookAuth = FacebookAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TreeService _treeService = TreeService();
 
-  AuthenticationService(this._firebaseAuth);
-
-  Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
-
-  String? get userId => _firebaseAuth.currentUser?.uid;
+  // Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
+  //
+  // String? get userId => _firebaseAuth.currentUser?.uid;
 
   // Function sign in with email & password
   Future<void> signIn({required String email, required String password}) async {

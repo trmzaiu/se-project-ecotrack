@@ -44,7 +44,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _signOut(BuildContext context) async {
-    await AuthenticationService(FirebaseAuth.instance).signOut();
+    await AuthenticationService().signOut();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -167,18 +167,70 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
 
-          // Statistics Section
-          Align(
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _statistic('Drops', user!['water']),
-                _statistic('Trees', user!['tree']),
-                _statistic('Evidences', user!['evidence']),
-              ],
-            ),
-          ),
+                  SizedBox(height: 10),
+
+                  Align(
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _statistic('Drops', user!['water']),
+                        _statistic('Trees', user!['tree']),
+                        _statistic('Evidences', user!['evidence']),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: 25),
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'History',
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.secondary,
+                              fontSize: 20,
+                              fontWeight: AppFontWeight.semiBold,
+                            ),
+                          ),
+
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                moveLeftRoute(
+                                  EvidenceScreen(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              'See more',
+                              style: GoogleFonts.urbanist(
+                                color: AppColors.tertiary,
+                                fontSize: 13,
+                                fontWeight: AppFontWeight.regular,
+                              ),
+                            ),
+                          )
+                        ]
+                    ),
+                  ),
+
+                  SizedBox(height: 10),
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _history(context, 'lib/assets/images/recycle.png', 'Recyclable \nWaste', '0'),
+                        _history(context, 'lib/assets/images/organic.png', 'Organic \nWaste', '0'),
+                      ],
+                    ),
+                  ),
 
                   SizedBox(height: phoneWidth - phoneWidth*0.82 - 60),
 
@@ -187,8 +239,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _history(context, 'lib/assets/images/hazard.png', 'Hazardous \nWaste', evidence[2]['time']),
-                        _history(context, 'lib/assets/images/general.png', 'General \nWaste', evidence[3]['time'])
+                        _history(context, 'lib/assets/images/hazard.png', 'Hazardous \nWaste', '0'),
+                        _history(context, 'lib/assets/images/general.png', 'General \nWaste', '0')
                       ],
                     ),
                   ),

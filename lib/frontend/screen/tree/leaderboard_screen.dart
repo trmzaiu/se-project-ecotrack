@@ -15,7 +15,7 @@ class LeaderboardScreen extends StatefulWidget {
 }
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
-  final UserService _userService = UserService(FirebaseAuth.instance);
+  final UserService _userService = UserService();
   final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
   final ValueNotifier<bool> _isCurrentUserVisibleNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _isScrollingUpNotifier = ValueNotifier<bool>(false);

@@ -22,7 +22,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
+  final AuthenticationService _authService = AuthenticationService();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController emailResetController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();

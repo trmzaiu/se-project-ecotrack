@@ -3,10 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart'; // Import RxDart
 
 class UserService {
-  final FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  UserService(this._firebaseAuth);
+  UserService();
 
   Stream<List<Map<String, dynamic>>> leaderboardStream() {
     Stream<QuerySnapshot> usersStream = _db.collection('users').snapshots();
@@ -45,5 +44,27 @@ class UserService {
 
       return leaderboardData;
     });
+  }
+
+  Future<Map<String, dynamic>> getCurrentUser(String userId) async {
+    final userDoc = await _db.collection('users')
+        .doc(userId)
+        .get();
+
+    if (!userDoc.exists) {
+      return {
+        'photoUrl': 'lib/assets/images/avatar_default.png',
+        'name': userId.substring(0, 10),
+        'email': '',
+      };
+    }
+
+    final data = userDoc.data() ?? {};
+
+    return {
+      'photoUrl': data['photoUrl'] ?? 'lib/assets/images/avatar_default.png',
+      'name': data['name'] ?? userId.substring(0, 10),
+      'email': data['email'] ?? '',
+    };
   }
 }

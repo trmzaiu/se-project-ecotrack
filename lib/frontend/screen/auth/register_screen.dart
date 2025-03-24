@@ -21,7 +21,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final AuthenticationService _authService = AuthenticationService(FirebaseAuth.instance);
+  final AuthenticationService _authService = AuthenticationService();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
