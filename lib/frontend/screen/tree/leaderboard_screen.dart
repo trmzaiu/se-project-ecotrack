@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/service/user_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
@@ -16,15 +17,39 @@ class LeaderboardScreen extends StatefulWidget {
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
   final UserService _userService = UserService(FirebaseAuth.instance);
   final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-
   final ValueNotifier<bool> _isCurrentUserVisibleNotifier = ValueNotifier<bool>(false);
-
+  final ValueNotifier<bool> _isScrollingUpNotifier = ValueNotifier<bool>(false);
+  late ScrollController _scrollController;
   final double _topContainer = 0;
 
   @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+
+    // Lắng nghe sự kiện cuộn
+    _scrollController.addListener(() {
+      if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+        print('Scrolling Down');
+        // Đặt lại giá trị khi cuộn xuống
+        if (_isScrollingUpNotifier.value != false) {
+          _isScrollingUpNotifier.value = false;
+        }
+      } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
+        print('Scrolling Up');
+        // Đặt giá trị true khi cuộn lên
+        if (_isScrollingUpNotifier.value != true) {
+          _isScrollingUpNotifier.value = true;
+        }
+      }
+    });
+  }
+
+  @override
   void dispose() {
-    // Don't forget to dispose the notifier when the screen is disposed
-    _isCurrentUserVisibleNotifier.dispose();
+    _scrollController.dispose();  // Dispose the controller
+    _isCurrentUserVisibleNotifier.dispose(); // Dispose the notifier
+    _isScrollingUpNotifier.dispose(); // Dispose the scrolling direction notifier
     super.dispose();
   }
 
@@ -79,8 +104,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               Expanded(
                 child: NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification scrollInfo) {
+                    // Handle scroll updates for visibility of current user
                     if (scrollInfo is ScrollUpdateNotification) {
-                      // Find current user in the list
                       int currentUserIndex = -1;
                       for (int i = 3; i < users.length; i++) {
                         if (users[i]['userId'] == currentUserId) {
@@ -90,16 +115,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       }
 
                       if (currentUserIndex >= 3) {
-                        // Calculate visible items range based on scroll metrics
-                        final itemHeight = 71.0; // Estimated height of each item
+                        final itemHeight = 71.0;
                         final firstVisible = scrollInfo.metrics.pixels ~/ itemHeight;
-                        final lastVisible = ((scrollInfo.metrics.pixels + scrollInfo.metrics.viewportDimension) ~/ itemHeight) + 1;
-
-                        // Check if current user's position is visible (accounting for top 3 being separate)
+                        final lastVisible = ((scrollInfo.metrics.pixels + scrollInfo.metrics.viewportDimension) ~/ itemHeight);
                         final adjustedIndex = currentUserIndex - 3;
-                        final bool visible = adjustedIndex >= firstVisible && adjustedIndex <= lastVisible;
+                        final bool visible = adjustedIndex >= firstVisible && adjustedIndex <= lastVisible - (_isScrollingUpNotifier.value ? 1 : 0);
+                        print('visible: ${(_isScrollingUpNotifier.value ? 1 : 0)}');
+                        print('firstVisible: $firstVisible, lastVisible: $lastVisible, adjustedIndex: $adjustedIndex');
 
-                        // Instead of setState, update the ValueNotifier
                         if (visible != _isCurrentUserVisibleNotifier.value) {
                           _isCurrentUserVisibleNotifier.value = visible;
                         }
@@ -108,7 +131,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     return false;
                   },
                   child: ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                    controller: _scrollController,
+                    padding: EdgeInsets.symmetric(horizontal: 20),
                     itemCount: users.length > 3 ? users.length - 3 : 0,
                     itemBuilder: (context, index) {
                       final user = users[index + 3];
@@ -117,17 +141,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   ),
                 ),
               ),
-              // Use ValueListenableBuilder for the current user tile at bottom
+              // Current user tile at the bottom, shown based on scroll state
               ValueListenableBuilder<bool>(
                 valueListenable: _isCurrentUserVisibleNotifier,
                 builder: (context, isVisible, _) {
-                  // Only show the current user tile if they're not visible in the list
-                  // and they exist in the list with rank > 3
                   final shouldShowCurrentUser = !isVisible &&
                       users.any((user) => user['userId'] == currentUserId && user['rank'] > 3);
 
                   if (!shouldShowCurrentUser) {
-                    return SizedBox.shrink(); // Return empty widget if we don't need to show the user
+                    return SizedBox.shrink();
                   }
 
                   return Padding(
