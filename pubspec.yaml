@@ -48,6 +48,8 @@ dependencies:
   provider: ^6.1.2
   visibility_detector: ^0.4.0+2
   animated_leaderboard: ^0.1.4
+  flutter_animate: ^4.5.2
+  rxdart: ^0.28.0
 
 dev_dependencies:
   flutter_test:

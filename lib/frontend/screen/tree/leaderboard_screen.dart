@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wastesortapp/frontend/service/user_service.dart'; // Import UserService
+import 'package:wastesortapp/frontend/service/user_service.dart';
+import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
@@ -15,6 +16,17 @@ class LeaderboardScreen extends StatefulWidget {
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
   final UserService _userService = UserService(FirebaseAuth.instance);
   final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
+  final ValueNotifier<bool> _isCurrentUserVisibleNotifier = ValueNotifier<bool>(false);
+
+  final double _topContainer = 0;
+
+  @override
+  void dispose() {
+    // Don't forget to dispose the notifier when the screen is disposed
+    _isCurrentUserVisibleNotifier.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,30 +52,92 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 textColor: AppColors.secondary,
                 showBackButton: true,
                 buttonColor: AppColors.secondary,
+                showNotification: true,
               ),
               SizedBox(height: 15),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _buildTopThree(users),
-              ),
-              SizedBox(height: 20),
-              Expanded(
-                child: ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                  itemCount: users.length > 3 ? users.length - 3 : 0,
-                  itemBuilder: (context, index) {
-                    final user = users[index + 3];
-                    return _buildUserTile(user);
-                  },
-                ),
-              ),
-              if (users.any((user) => user['userId'] == currentUserId && user['rank'] > 12))
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
-                  child: _buildUserTile(
-                    users.firstWhere((user) => user['userId'] == currentUserId),
+                child: AnimatedOpacity(
+                  duration: Duration(milliseconds: 200),
+                  opacity: (1 - _topContainer * 2).clamp(0.0, 1.0),
+                  child: AnimatedContainer(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    duration: Duration(milliseconds: 200),
+                    height: (1 - _topContainer * 2).clamp(0.0, 1.0) * (getPhoneHeight(context) / 3),
+                    width: getPhoneWidth(context),
+                    child: FittedBox(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: <Widget>[
+                          _buildTopThree(users)
+                        ],
+                      ),
+                    ),
                   ),
                 ),
+              ),
+              Expanded(
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (ScrollNotification scrollInfo) {
+                    if (scrollInfo is ScrollUpdateNotification) {
+                      // Find current user in the list
+                      int currentUserIndex = -1;
+                      for (int i = 3; i < users.length; i++) {
+                        if (users[i]['userId'] == currentUserId) {
+                          currentUserIndex = i;
+                          break;
+                        }
+                      }
+
+                      if (currentUserIndex >= 3) {
+                        // Calculate visible items range based on scroll metrics
+                        final itemHeight = 71.0; // Estimated height of each item
+                        final firstVisible = scrollInfo.metrics.pixels ~/ itemHeight;
+                        final lastVisible = ((scrollInfo.metrics.pixels + scrollInfo.metrics.viewportDimension) ~/ itemHeight) + 1;
+
+                        // Check if current user's position is visible (accounting for top 3 being separate)
+                        final adjustedIndex = currentUserIndex - 3;
+                        final bool visible = adjustedIndex >= firstVisible && adjustedIndex <= lastVisible;
+
+                        // Instead of setState, update the ValueNotifier
+                        if (visible != _isCurrentUserVisibleNotifier.value) {
+                          _isCurrentUserVisibleNotifier.value = visible;
+                        }
+                      }
+                    }
+                    return false;
+                  },
+                  child: ListView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                    itemCount: users.length > 3 ? users.length - 3 : 0,
+                    itemBuilder: (context, index) {
+                      final user = users[index + 3];
+                      return _buildUserTile(user);
+                    },
+                  ),
+                ),
+              ),
+              // Use ValueListenableBuilder for the current user tile at bottom
+              ValueListenableBuilder<bool>(
+                valueListenable: _isCurrentUserVisibleNotifier,
+                builder: (context, isVisible, _) {
+                  // Only show the current user tile if they're not visible in the list
+                  // and they exist in the list with rank > 3
+                  final shouldShowCurrentUser = !isVisible &&
+                      users.any((user) => user['userId'] == currentUserId && user['rank'] > 3);
+
+                  if (!shouldShowCurrentUser) {
+                    return SizedBox.shrink(); // Return empty widget if we don't need to show the user
+                  }
+
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+                    child: _buildUserTile(
+                      users.firstWhere((user) => user['userId'] == currentUserId),
+                    ),
+                  );
+                },
+              ),
             ],
           );
         },
@@ -164,10 +238,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              user['tree'].toString(),
+              user['trees'].toString(),
               style: GoogleFonts.urbanist(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                fontWeight: AppFontWeight.bold,
                 color: AppColors.secondary,
               ),
             ),
@@ -183,9 +257,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     bool isCurrentUser = user['userId'] == currentUserId;
 
     return Container(
-      height: 50,
+      height: 55,
       padding: EdgeInsets.symmetric(horizontal: 10),
-      margin: EdgeInsets.symmetric(vertical: 5),
+      margin: EdgeInsets.symmetric(vertical: 8),
       decoration: ShapeDecoration(
         color: isCurrentUser ? AppColors.secondary : AppColors.surface,
         shape: RoundedRectangleBorder(
@@ -216,7 +290,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           SizedBox(width: 10),
           CircleAvatar(
             backgroundImage: AssetImage(user['image']),
-            radius: 18,
+            radius: 20,
           ),
           SizedBox(width: 10),
           Expanded(
@@ -232,7 +306,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           Row(
             children: [
               Text(
-                user['tree'].toString(),
+                user['trees'].toString(),
                 style: GoogleFonts.urbanist(
                   fontSize: 16,
                   fontWeight: AppFontWeight.bold,

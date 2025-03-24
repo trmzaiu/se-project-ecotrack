@@ -47,6 +47,8 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double phoneWidth = getPhoneWidth(context);
+    print("Height: ${getPhoneHeight(context)}");
+    print("Width: ${getPhoneWidth(context)}");
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -112,21 +114,14 @@ class ProfileScreen extends StatelessWidget {
                 color: AppColors.primary,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    'Edit Profile',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.urbanist(
-                      color: AppColors.surface,
-                      fontSize: 14,
-                      fontWeight: AppFontWeight.semiBold,
-                    ),
-                  ),
-                ],
+              child: Text(
+                'Edit Profile',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.urbanist(
+                  color: AppColors.surface,
+                  fontSize: 14,
+                  fontWeight: AppFontWeight.semiBold,
+                ),
               ),
             ),
           ),
@@ -135,9 +130,10 @@ class ProfileScreen extends StatelessWidget {
 
           Expanded(
             child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
               child: Column(
                 children: [
-                  SizedBox(height: 10),
+                  // SizedBox(height: 10),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 30),
                     child: Align(
@@ -173,35 +169,36 @@ class ProfileScreen extends StatelessWidget {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 30),
                     child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            'History',
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'History',
+                          style: GoogleFonts.urbanist(
+                            color: AppColors.secondary,
+                            fontSize: 20,
+                            fontWeight: AppFontWeight.semiBold,
+                          ),
+                        ),
+
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              moveLeftRoute(
+                                EvidenceScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'See more',
                             style: GoogleFonts.urbanist(
-                              color: AppColors.secondary,
-                              fontSize: 20,
-                              fontWeight: AppFontWeight.semiBold,
+                              color: AppColors.tertiary,
+                              fontSize: 13,
+                              fontWeight: AppFontWeight.regular,
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                moveLeftRoute(
-                                  EvidenceScreen(),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              'See more',
-                              style: GoogleFonts.urbanist(
-                                color: AppColors.tertiary,
-                                fontSize: 13,
-                                fontWeight: AppFontWeight.regular,
-                              ),
-                            ),
-                          )
-                        ]
+                        )
+                      ]
                     ),
                   ),
 
@@ -212,21 +209,21 @@ class ProfileScreen extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _history('lib/assets/images/recycle.png', 'Recyclable \nWaste', evidence[0]['time']),
-                        _history('lib/assets/images/organic.png', 'Organic \nWaste', evidence[1]['time'])
+                        _history(context, 'lib/assets/images/recycle.png', 'Recyclable \nWaste', evidence[0]['time']),
+                        _history(context, 'lib/assets/images/organic.png', 'Organic \nWaste', evidence[1]['time'])
                       ],
                     ),
                   ),
 
-                  SizedBox(height: phoneWidth - 155*2 - 60),
+                  SizedBox(height: phoneWidth - phoneWidth*0.82 - 60),
 
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 30),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _history('lib/assets/images/hazard.png', 'Hazardous \nWaste', evidence[2]['time']),
-                        _history('lib/assets/images/general.png', 'General \nWaste', evidence[3]['time'])
+                        _history(context, 'lib/assets/images/hazard.png', 'Hazardous \nWaste', evidence[2]['time']),
+                        _history(context, 'lib/assets/images/general.png', 'General \nWaste', evidence[3]['time'])
                       ],
                     ),
                   ),
@@ -262,6 +259,8 @@ class ProfileScreen extends StatelessWidget {
         ],
       )
     );
+    
+    
   }
 
   Widget _statistic(String title, String number) {
@@ -290,10 +289,10 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _history(String image, String title, String time) {
+  Widget _history(BuildContext context, String image, String title, String time) {
     return Container(
-      width: 155,
-      height: 155,
+      width: getPhoneWidth(context) * 0.41,
+      height: getPhoneWidth(context) * 0.41,
       padding: EdgeInsets.all(15),
       decoration: ShapeDecoration(
         color: Color(0x80EBDCD6),
@@ -314,8 +313,8 @@ class ProfileScreen extends StatelessWidget {
           Row(
             children: [
               Container(
-                height: 35,
-                width: 35,
+                height: getPhoneWidth(context) * 0.4 * 0.23,
+                width: getPhoneWidth(context) * 0.4 * 0.23,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(6),
                 ),
@@ -333,11 +332,11 @@ class ProfileScreen extends StatelessWidget {
               Text(
                 title,
                 style: GoogleFonts.urbanist(
-                    color: AppColors.secondary,
-                    fontSize: 15,
-                    fontWeight: AppFontWeight.regular,
-                    letterSpacing: 1,
-                    height: 1.2
+                  color: AppColors.secondary,
+                  fontSize: getPhoneWidth(context) * 0.4 * 0.095,
+                  fontWeight: AppFontWeight.regular,
+                  letterSpacing: 1,
+                  height: 1.2
                 ),
               ),
             ],
@@ -349,7 +348,7 @@ class ProfileScreen extends StatelessWidget {
             time,
             style: GoogleFonts.urbanist(
               color: AppColors.secondary,
-              fontSize: 50,
+              fontSize: getPhoneWidth(context) * 0.4 * 0.34,
               fontWeight: AppFontWeight.medium,
             ),
           ),
@@ -358,7 +357,7 @@ class ProfileScreen extends StatelessWidget {
             'Times',
             style: GoogleFonts.urbanist(
               color: AppColors.tertiary,
-              fontSize: 13,
+              fontSize: getPhoneWidth(context) * 0.4 * 0.09,
               fontWeight: AppFontWeight.regular,
             ),
           ),

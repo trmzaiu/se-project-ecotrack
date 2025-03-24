@@ -282,9 +282,13 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                         onPressed: () {
                           Navigator.of(context).push(
                             moveUpRoute(
-                              Screen(),
+                              LeaderboardScreen(),
                             ),
                           );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(builder: (context) => TestScreen()),
+                          // );
                         },
                         icon: SvgPicture.asset(
                           'lib/assets/icons/ic_leaderboard.svg',

@@ -407,7 +407,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_animate:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_animate
       sha256: "7befe2d3252728afb77aecaaea1dec88a89d35b9b1d2eea6d04479e8af9117b5"
@@ -985,7 +985,7 @@ packages:
     source: hosted
     version: "6.1.2"
   rxdart:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: rxdart
       sha256: "5c3004a4a8dbb94bd4bf5412a4def4acdaa12e12f269737a5751369e12d1a962"

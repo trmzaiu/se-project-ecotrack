@@ -208,91 +208,98 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildBottomNavigationBar() {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          height: 65,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 30,
-                spreadRadius: 5,
-                offset: Offset(0, -2)
+    return Container(
+      color: _currentIndex == 2 ? AppColors.surface : AppColors.background,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            height: 65,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 10,
+                    spreadRadius: 5,
+                    offset: Offset(0, -2)
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem('lib/assets/icons/ic_home.svg', 'Home', 0),
+                  _buildNavItem('lib/assets/icons/ic_guide.svg', 'Guide', 1),
+                  SizedBox(width: 50),
+                  _buildNavItem('lib/assets/icons/ic_virtual_tree.svg', 'Tree', 2),
+                  _buildNavItem('lib/assets/icons/ic_profile.svg', 'Profile', 3),
+                ],
               ),
-            ],
+            ),
           ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+          Positioned(
+            bottom: 8,
+            left: MediaQuery.of(context).size.width / 2 - 85/2,
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                _buildNavItem('lib/assets/icons/ic_home.svg', 'Home', 0),
-                _buildNavItem('lib/assets/icons/ic_guide.svg', 'Guide', 1),
-                SizedBox(width: 50),
-                _buildNavItem('lib/assets/icons/ic_virtual_tree.svg', 'Tree', 2),
-                _buildNavItem('lib/assets/icons/ic_profile.svg', 'Profile', 3),
+                CustomPaint(
+                  size: Size(85, 85),
+                  painter: TopHalfShadowPainter(),
+                ),
+                Container(
+                  width: 85,
+                  height: 85 / 2,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                Container(
+                  width: 85,
+                  height: 85,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: Color(0x4CE7E0DA),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                FloatingActionButton(
+                  backgroundColor: Color(0x66E7E0DA),
+                  hoverColor: Colors.transparent,
+                  hoverElevation: 0,
+                  focusColor: Colors.transparent,
+                  focusElevation: 0,
+                  highlightElevation: 0,
+                  splashColor: Colors.transparent,
+                  disabledElevation: 0,
+                  elevation: 0,
+                  shape: CircleBorder(),
+                  onPressed: () => Navigator.of(context).push(moveUpRoute(CameraScreen())),
+                  child: SvgPicture.asset(
+                    'lib/assets/icons/ic_camera.svg',
+                    width: 30,
+                    height: 30,
+                    colorFilter: ColorFilter.mode(AppColors.accent, BlendMode.srcIn),
+                  ),
+                ),
               ],
             ),
           ),
-        ),
-        Positioned(
-          bottom: 8,
-          left: MediaQuery.of(context).size.width / 2 - 85/2,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: 85,
-                height: 85/2,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              Container(
-                width: 85,
-                height: 85,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: Color(0x4CE7E0DA),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              FloatingActionButton(
-                backgroundColor: Color(0x66E7E0DA),
-                hoverColor: Colors.transparent,
-                hoverElevation: 0,
-                focusColor: Colors.transparent,
-                focusElevation: 0,
-                highlightElevation: 0,
-                splashColor: Colors.transparent,
-                disabledElevation: 0,
-                elevation: 0,
-                shape: CircleBorder(),
-                onPressed: () => Navigator.of(context).push(moveUpRoute(CameraScreen())),
-                child: SvgPicture.asset(
-                  'lib/assets/icons/ic_camera.svg',
-                  width: 30,
-                  height: 30,
-                  colorFilter: ColorFilter.mode(AppColors.accent, BlendMode.srcIn),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -321,4 +328,28 @@ class _MainScreenState extends State<MainScreen> {
       )
     );
   }
+}
+
+class TopHalfShadowPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint shadowPaint = Paint()
+      ..color = Colors.black12
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 10);
+
+    // Adjust the center position by offsetting it by (85 + 8 - 65) which equals 28
+    double offsetX = 28;  // Adjusted X position
+    double offsetY = size.height / 2; // Y remains centered vertically
+
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(offsetX, offsetY), radius: size.width / 2),
+      4.17,
+      1.57,
+      false,
+      shadowPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

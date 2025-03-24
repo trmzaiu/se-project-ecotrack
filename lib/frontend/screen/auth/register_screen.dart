@@ -184,7 +184,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   SizedBox(height: 50),
 
-                  MyButton(text: _isLoading ? 'Loading...' : 'Create Account', onTap: () => signUp(context)),
+                  MyButton(
+                    text: _isLoading ? 'Loading...' : 'Create Account',
+                    onTap: () => signUp(context),
+                    isDisabled: _isLoading ? true : false,
+                  ),
 
                   SizedBox(height: 15),
                 ],

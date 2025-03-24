@@ -39,7 +39,6 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
   void _goToScreen(int index) {
     Widget nextScreen;
 
-    // Xác định màn hình tiếp theo dựa trên index
     switch (index % 4) {
       case 0:
         nextScreen = GuideDetailScreen(slide: 0);
@@ -67,6 +66,7 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     double phoneHeight = getPhoneHeight(context);
     double phoneWidth = getPhoneWidth(context);
 
@@ -94,9 +94,8 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
             child: Column(
               children: [
                 BarTitle(title: 'Guide', showNotification: true),
-
                 SizedBox(
-                  height: 530,
+                  height: phoneHeight * 0.65,
                   child: PageView.builder(
                     controller: _pageController,
                     onPageChanged: (index) {

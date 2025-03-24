@@ -314,7 +314,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                     child: GestureDetector(
                       onTap: () {
                         Navigator.of(context).pushReplacement(
-                          moveUpRoute(
+                          moveLeftRoute(
                             UploadScreen(imagePath: widget.imagePath),
                             settings: RouteSettings(name: "UploadScreen"),
                           )
