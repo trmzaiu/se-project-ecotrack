@@ -108,6 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     double phoneHeight= getPhoneHeight(context);
+    double phoneWidth = getPhoneWidth(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -117,27 +118,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               children: [
                 Container(
-                    height: 350,
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary,
-                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+                  height: phoneWidth - 30,
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary,
+                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+                  ),
+                  child: Center(
+                    child: Image.asset(
+                      "lib/assets/images/trash.png", width: 370,
                     ),
-                    child: Center(
-                      child: Image.asset(
-                        "lib/assets/images/trash.png", width: 370,
-                      ),
-                    )
+                  )
                 ),
               ],
             ),
           ),
 
           Positioned(
-            top: 180,
+            top: phoneHeight/4.5,
             right: 20,
             left: 20,
             child: Container(
-              width: 370,
+              width: phoneWidth - 40,
               padding: EdgeInsets.symmetric(horizontal: 22, vertical: 24),
               decoration: BoxDecoration(
                 color: AppColors.background,

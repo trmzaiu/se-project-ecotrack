@@ -76,13 +76,13 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
         children: [
           // Background Circle
           Positioned(
-            top: -450,
-            left: MediaQuery.of(context).size.width / 2 - 400,
+            top: - phoneWidth*1.2,
+            left: phoneWidth / 2 - (phoneWidth*2.1)/2,
             child: Container(
-              width: 800,
-              height: 800,
+              width: phoneWidth*2.1,
+              height: phoneWidth*2.1,
               decoration: BoxDecoration(
-                color: Color(0xFF7C3F3E),
+                color: AppColors.secondary,
                 shape: BoxShape.circle,
               ),
             ),
@@ -95,7 +95,7 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
               children: [
                 BarTitle(title: 'Guide', showNotification: true),
                 SizedBox(
-                  height: phoneHeight * 0.65,
+                  height: phoneHeight * 0.64,
                   child: PageView.builder(
                     controller: _pageController,
                     onPageChanged: (index) {
@@ -109,44 +109,50 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
                   ),
                 ),
 
-                GestureDetector(
-                  onTap: () => _goToScreen(_currentIndex),
-                  child: Container(
-                    width: 280,
-                    height: 45,
-                    decoration: ShapeDecoration(
-                      color: AppColors.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Read More',
-                      style: GoogleFonts.urbanist(
-                        color: AppColors.surface,
-                        fontSize: 14,
-                        fontWeight: AppFontWeight.medium,
-                      ),
-                    ),
-                  ),
-                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () => _goToScreen(_currentIndex),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            fixedSize: Size(phoneWidth - 100, 45),
+                          ),
+                          child: Text(
+                            'Read More',
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.surface,
+                              fontSize: 14,
+                              fontWeight: AppFontWeight.medium,
+                            ),
+                          ),
+                        ),
 
-                SizedBox(height: 50),
+                        SizedBox(height: phoneWidth/8),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(4, (index) {
-                    return AnimatedContainer(
-                      duration: Duration(milliseconds: 300),
-                      margin: EdgeInsets.symmetric(horizontal: 3),
-                      width: _currentIndex == index ? 10 : 5,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: _currentIndex == index ? AppColors.secondary : Color(0xFFC4C4C4),
-                      ),
-                    );
-                  }),
-                ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(4, (index) {
+                            return AnimatedContainer(
+                              duration: Duration(milliseconds: 300),
+                              margin: EdgeInsets.symmetric(horizontal: 3),
+                              width: _currentIndex == index ? 10 : 5,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: _currentIndex == index ? AppColors.secondary : Color(0xFFC4C4C4),
+                              ),
+                            );
+                          }),
+                        ),
+                      ],
+                    ),
+                  )
+                )
               ],
             )
           ),
@@ -172,10 +178,10 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
     ];
 
     final List<String> images = [
-      "lib/assets/images/recycle_bin.png",
-      "lib/assets/images/organic_bin.png",
-      "lib/assets/images/hazardous_bin.png",
-      "lib/assets/images/general_bin.png",
+      "lib/assets/images/bin_recycle.png",
+      "lib/assets/images/bin_organic.png",
+      "lib/assets/images/bin_hazardous.png",
+      "lib/assets/images/bin_general.png",
     ];
 
     return Column(

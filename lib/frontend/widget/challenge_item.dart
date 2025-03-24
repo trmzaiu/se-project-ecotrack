@@ -10,11 +10,14 @@ class ChallengeItem extends StatelessWidget {
   final String image;
   final String title;
   final String info;
+  final String attend;
 
-  const ChallengeItem({required this.image, required this.title, required this.info, Key? key}) : super(key: key);
+  const ChallengeItem({required this.image, required this.title, required this.info, required this.attend, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    double phoneWidth = getPhoneWidth(context);
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -37,9 +40,11 @@ class ChallengeItem extends StatelessWidget {
           left: 14,
           bottom: 12,
           child: Container(
-            height: 140,
+            // height: 140,
+            width: 110,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.surface, width: 2.5),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.3),
@@ -59,12 +64,12 @@ class ChallengeItem extends StatelessWidget {
         ),
 
         Positioned(
-          top: 12,
-          left: 130,
+          top: 15,
+          left: 14 + 110 + 14,
           child: Text(
             title,
             style: GoogleFonts.urbanist(
-              fontSize: 15,
+              fontSize: phoneWidth * 0.4 * 0.1,
               fontWeight: AppFontWeight.semiBold,
               color: AppColors.secondary,
             ),
@@ -74,13 +79,13 @@ class ChallengeItem extends StatelessWidget {
 
         Positioned(
           top: 40,
-          left: 130,
+          left: 14 + 110 + 14,
           child: SizedBox(
-            width: getPhoneWidth(context) - 190,
+            width: phoneWidth - 40 - 14 - 110 - 14 - 14,
             child: Text(
               info,
               style: GoogleFonts.urbanist(
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: AppFontWeight.medium,
                 color: AppColors.tertiary,
                 letterSpacing: 0,
@@ -93,33 +98,30 @@ class ChallengeItem extends StatelessWidget {
 
         Positioned(
           top: 95,
-          left: 130,
-          child: SizedBox(
-            width: 100,
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: '100',
-                    style: GoogleFonts.urbanist(
-                      fontSize: 10,
-                      fontWeight: AppFontWeight.semiBold,
-                      color: AppColors.secondary,
-                    ),
+          left: 14 + 110 + 14,
+          child: Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: attend,
+                  style: GoogleFonts.urbanist(
+                    fontSize: 11,
+                    fontWeight: AppFontWeight.semiBold,
+                    color: AppColors.secondary,
                   ),
+                ),
 
-                  TextSpan(
-                    text: ' attending',
-                    style: GoogleFonts.urbanist(
-                      fontSize: 10,
-                      fontWeight: AppFontWeight.medium,
-                      color: AppColors.tertiary,
-                    ),
+                TextSpan(
+                  text: ' attending',
+                  style: GoogleFonts.urbanist(
+                    fontSize: 11,
+                    fontWeight: AppFontWeight.medium,
+                    color: AppColors.tertiary,
                   ),
-                ]
-              )
-            ),
-          )
+                ),
+              ]
+            )
+          ),
         ),
 
         Positioned(
@@ -140,7 +142,7 @@ class ChallengeItem extends StatelessWidget {
               child: Text(
                 'Join now',
                 style: GoogleFonts.urbanist(
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: AppFontWeight.semiBold,
                   color: AppColors.surface,
                 ),

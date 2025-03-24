@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
@@ -19,6 +20,7 @@ class _OpeningScreenState extends State<OpeningScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
@@ -41,25 +43,28 @@ class _OpeningScreenState extends State<OpeningScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    double phoneWidth = getPhoneWidth(context);
+    double phoneHeight = getPhoneHeight(context);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          SizedBox(height: 120),
+          SizedBox(height: phoneHeight/6),
           // Waste Sorting Image
           Center(
             child: RotationTransition(
               turns: _controller,
               child: Image.asset(
                 "lib/assets/images/opening.png",
-                height: 380,
+                width: phoneWidth - 10,
               ),
             ),
           ),
 
           // Welcome Text
           SizedBox(
-            width: 330,
+            width: phoneWidth - 60,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -74,35 +79,33 @@ class _OpeningScreenState extends State<OpeningScreen> with SingleTickerProvider
                 Text(
                   "Welcome back!",
                   style: GoogleFonts.urbanist(
-                      fontSize: 36,
-                      fontWeight: AppFontWeight.semiBold,
-                      color: AppColors.secondary
+                    fontSize: 36,
+                    fontWeight: AppFontWeight.semiBold,
+                    color: AppColors.secondary
                   ),
                 ),
               ],
             ),
           ),
 
-          SizedBox(height: 60),
+          SizedBox(height: phoneHeight/12),
 
           // "Getting Started" Button
-          GestureDetector(
-            onTap: _navigateToLogin,
-            child: Container(
-              width: 330,
-              height: 55,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(30),
+          ElevatedButton(
+            onPressed: _navigateToLogin,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
               ),
-              alignment: Alignment.center,
-              child: Text(
-                "Getting started",
-                style: GoogleFonts.urbanist(
-                  color: AppColors.surface,
-                  fontSize: 18,
-                  fontWeight: AppFontWeight.semiBold
-                ),
+              fixedSize: Size(phoneWidth - 60, 55),
+            ),
+            child: Text(
+              "Getting started",
+              style: GoogleFonts.urbanist(
+                color: AppColors.surface,
+                fontSize: 18,
+                fontWeight: AppFontWeight.semiBold
               ),
             ),
           ),

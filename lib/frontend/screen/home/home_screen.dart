@@ -6,6 +6,7 @@ import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
 import '../../utils/phone_size.dart';
+import '../../utils/route_transition.dart';
 import '../../widget/category_box.dart';
 import '../../widget/challenge_item.dart';
 import '../../widget/text_row.dart';
@@ -20,23 +21,24 @@ class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   int _currentIndex = 0;
 
-  final List<String> images = [
-    "lib/assets/images/goodtoknow.png",
-    "lib/assets/images/goodtoknow.png",
-    "lib/assets/images/goodtoknow.png",
+  final List<Map<String, String>> goodToKnowList = [
+    {
+      "image": "lib/assets/images/good_to_know.png",
+      "title": "Smart Solutions for Waste Sorting",
+      "date": "January 12, 2022"
+    },
+    {
+      "image": "lib/assets/images/good_to_know2.png",
+      "title": "Why Recycling Matters?",
+      "date": "February 05, 2022"
+    },
+    {
+      "image": "lib/assets/images/good_to_know3.png",
+      "title": "Eco-Friendly Waste Disposal Tips",
+      "date": "March 18, 2022"
+    }
   ];
 
-  final List<String> titles = [
-    'Smart Solutions for Waste Sorting',
-    'Why Recycling Matters?',
-    'Eco-Friendly Waste Disposal Tips',
-  ];
-
-  final List<String> dates = [
-    'January 12, 2022',
-    'February 05, 2022',
-    'March 18, 2022',
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -57,100 +59,115 @@ class _HomeScreenState extends State<HomeScreen> {
                 scrollDirection: Axis.vertical,
                 child: Column(
                   children: [
-                    Stack(
-                      children: [
-                        Container(
-                          width: phoneWidth - 40,
-                          height: 170,
-                          decoration: ShapeDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment(-1, -1),
-                              end: Alignment(1, 1),
-                              colors: [Color(0xFF2C6E49), Color(0xFF5F8E6E)],
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Stack(
+                        children: [
+                          Container(
+                            width: phoneWidth - 40,
+                            height: 170,
+                            decoration: ShapeDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment(-1, -1),
+                                end: Alignment(1, 1),
+                                colors: [Color(0xFF2C6E49), Color(0xFF5F8E6E)],
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                            shape: RoundedRectangleBorder(
+                          ),
+
+                          Positioned(
+                            bottom: -7,
+                            right: -10,
+                            child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Align(
-                            alignment: Alignment.bottomRight,
-                            child: Image.asset("lib/assets/images/sethomemade.png", height: phoneWidth - 40 - 180),
-                          )
-                        ),
-                        Positioned(
-                          top: 25,
-                          left: 22,
-                          child: SizedBox(
-                            width: 135,
-                            height: 40,
-                            child: Text(
-                              'Have you sorted waste today?',
-                              style: GoogleFonts.urbanist(
-                                color: AppColors.surface,
-                                fontSize: 17,
-                                fontWeight: AppFontWeight.bold,
-                                height: 0.9,
+                              child: Image.asset(
+                                "lib/assets/images/img_home.png",
+                                height: 170,
+                                fit: BoxFit.cover,
                               ),
-                              textAlign: TextAlign.start,
                             ),
                           ),
-                        ),
-                        Positioned(
-                          top: 70,
-                          left: 22,
-                          child: SizedBox(
-                            width: 130,
-                            height: 40,
-                            child: Text(
-                              'Upload your evidence \nto get bonus point.',
-                              style: GoogleFonts.urbanist(
-                                color: AppColors.surface,
-                                fontSize: 12,
-                                fontWeight: AppFontWeight.regular,
-                                height: 1.2,
-                              ),
-                              textAlign: TextAlign.start,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 22,
-                          left: 22,
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => UploadScreen(imagePath: ""),
+
+                          Positioned(
+                            top: 25,
+                            left: 20,
+                            child: SizedBox(
+                              width: 135,
+                              height: 40,
+                              child: Text(
+                                'Have you sorted waste today?',
+                                style: GoogleFonts.urbanist(
+                                  color: AppColors.surface,
+                                  fontSize: phoneWidth * 0.5 * 0.1,
+                                  fontWeight: AppFontWeight.bold,
+                                  height: 0.9,
                                 ),
-                              );
-                            },
-                            child: Container(
-                              width: 60,
-                              height: 28,
-                              padding: const EdgeInsets.all(5),
-                              decoration: ShapeDecoration(
-                                color: AppColors.surface,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
+                                textAlign: TextAlign.start,
                               ),
-                              child: Center(
-                                child: Text(
-                                  'Upload',
-                                  style: GoogleFonts.urbanist(
-                                    color: AppColors.primary,
-                                    fontSize: 11,
-                                    fontWeight: AppFontWeight.semiBold,
+                            ),
+                          ),
+
+                          Positioned(
+                            top: 70,
+                            left: 20,
+                            child: SizedBox(
+                              width: (phoneWidth - 40)/3,
+                              child: Text(
+                                'Upload your evidence \nto get bonus point.',
+                                style: GoogleFonts.urbanist(
+                                  color: AppColors.surface,
+                                  fontSize: phoneWidth * 0.3 * 0.1,
+                                  fontWeight: AppFontWeight.regular,
+                                  height: 1.2,
+                                ),
+                                textAlign: TextAlign.start,
+                              ),
+                            ),
+                          ),
+
+                          Positioned(
+                            bottom: 20,
+                            left: 20,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  moveUpRoute(
+                                    UploadScreen(imagePath: ""),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                width: 60,
+                                height: 28,
+                                padding: const EdgeInsets.all(5),
+                                decoration: ShapeDecoration(
+                                  color: AppColors.surface,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Upload',
+                                    style: GoogleFonts.urbanist(
+                                      color: AppColors.primary,
+                                      fontSize: 11,
+                                      fontWeight: AppFontWeight.semiBold,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          )
-                        ),
-                      ],
+                            )
+                          ),
+                        ],
+                      ),
                     ),
+
                     SizedBox(height: 20),
+
                     Padding(
                       padding: EdgeInsets.only(left: 20),
                       child: Align(
@@ -166,7 +183,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       )
                     ),
+
                     SizedBox(height: 10),
+
                     Padding(
                       padding: EdgeInsets.only(left: 20, right: 20),
                       child: Row(
@@ -179,12 +198,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
+
                     SizedBox(height: 20),
+
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: TextRow(text: 'Good to know'),
                     ),
+
                     SizedBox(height: 10),
+
                     SizedBox(
                       height: 160,
                       width: phoneWidth - 40,
@@ -197,6 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           });
                         },
                         itemBuilder: (context, index) {
+                          var item = goodToKnowList[index];
                           return Column(
                             children: [
                               Container(
@@ -204,8 +228,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 height: 100,
                                 decoration: ShapeDecoration(
                                   image: DecorationImage(
-                                    image: AssetImage(images[index]),
-                                    fit: BoxFit.fill,
+                                    image: AssetImage(item['image']!),
+                                    fit: BoxFit.fitWidth,
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.only(
@@ -215,6 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                               ),
+
                               Container(
                                 padding: EdgeInsets.only(left: 15, top: 5, bottom: 12),
                                 width: phoneWidth - 40,
@@ -241,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      titles[index],
+                                      item['title']!,
                                       style: GoogleFonts.urbanist(
                                         color: AppColors.secondary,
                                         fontSize: 16,
@@ -249,7 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                                     Text(
-                                      dates[index],
+                                      item['date']!,
                                       style: GoogleFonts.urbanist(
                                         color: AppColors.tertiary,
                                         fontSize: 12,
@@ -298,6 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         image: 'lib/assets/images/zero_waste_challenge.png',
                         title: 'Zero Waste Challenge',
                         info: 'Reduce your waste for a whole week! Track your trash, use reusable items, and share your progress with #ZeroWasteWeek.',
+                        attend: '345',
                       ),
                     ),
 
@@ -309,6 +335,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         image: 'lib/assets/images/trash_to_treasure_challenge.png',
                         title: 'Trash to Treasure Challenge',
                         info: 'Turn waste into something useful! Up cycle old materials into creative DIY products and share with #TrashToTreasure.',
+                        attend: '243',
+                      ),
+                    ),
+
+                    SizedBox(height: 35),
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: ChallengeItem(
+                        image: 'lib/assets/images/waste_sorting_challenge.png',
+                        title: 'Waste Sorting Challenge',
+                        info: 'Test your skills! Correctly classify waste and promote a cleaner planet.',
+                        attend: '476',
                       ),
                     ),
 

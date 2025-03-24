@@ -23,7 +23,7 @@ class _WasteItemState extends State<WasteItem> {
 
   void _moveImage() {
     setState(() {
-      _imagePosition = _imagePosition == 0 ? 85 : 0;
+      _imagePosition = _imagePosition == 0 ? 75 : 0;
     });
 
     setState(() {
@@ -79,11 +79,12 @@ class _WasteItemState extends State<WasteItem> {
                   ),
                   Positioned(
                     bottom: 35,
-                    right: -20,
+                    right: -15,
                     child: Image.asset(
                       widget.imagePath,
-                      width: 150,
-                      height: 150,
+                      width: 145,
+                      height: 145,
+                      // fit: BoxFit.contain,
                     ),
                   ),
                 ],

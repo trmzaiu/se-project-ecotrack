@@ -1,15 +1,13 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:wastesortapp/frontend/screen/test_screen.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wastesortapp/theme/fonts.dart';
 
 import '../../utils/route_transition.dart';
 import '../../widget/bar_title.dart';
@@ -198,8 +196,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (totalTrees > 0) ...[
-                  Image.asset(
-                      'lib/assets/images/state4.png', width: 100, height: 100),
+                  Image.asset('lib/assets/images/state4.png', width: getPhoneWidth(context)/3.5),
                   SizedBox(height: 10),
                   Text(
                       "Congratulations! You have grown $totalTrees ${totalTrees >
@@ -208,8 +205,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                   ),
                 ] else
                   ...[
-                    Image.asset('lib/assets/images/state$state.png', width: 100,
-                        height: 100),
+                    Image.asset('lib/assets/images/state$state.png', width: getPhoneWidth(context)/3.5),
                     SizedBox(height: 10),
                     Text("You are at level $state",
                         style: GoogleFonts.urbanist(color: AppColors.secondary)),
@@ -237,7 +233,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                 elevation: WidgetStateProperty.all(1),
                 fixedSize: WidgetStateProperty.all(Size(100, 40)),
                 textStyle: WidgetStateProperty.all(
-                    GoogleFonts.urbanist(fontSize: 13, fontWeight: FontWeight.normal)),
+                    GoogleFonts.urbanist(fontSize: 13, fontWeight: AppFontWeight.semiBold)),
               ),
               child: (totalTrees == 0) ? Text("Continue") : Text("Donate"),
             ),
@@ -249,6 +245,9 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
 
   @override
   Widget build(BuildContext  context) {
+    double phoneHeight= getPhoneHeight(context);
+    double phoneWidth = getPhoneWidth(context);
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: Stack(
@@ -257,8 +256,8 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
             top: -65,
             left: -80,
             child: SizedBox(
-              height: 400,
-              width: 400,
+              height: phoneWidth*1.05,
+              width:phoneWidth*1.05,
               child: CustomPaint(
                 painter: BlobPainter(),
               ),
@@ -345,8 +344,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Image.asset(
-                                  'lib/assets/images/tree.png', width: 25),
+                              Image.asset('lib/assets/images/tree.png', width: 25),
                               const SizedBox(width: 5),
                               TweenAnimationBuilder(
                                 tween: Tween<double>(begin: _trees.toDouble(), end: _trees.toDouble()),
@@ -364,8 +362,8 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                       ],
                     ),
                     SizedBox(
-                      height: 300,
-                      width: 300,
+                      height: phoneWidth - 80,
+                      width: phoneWidth - 80,
                       child: CustomPaint(
                         painter: GradientProgressPainter(progress: _progress),
                         child: Column(
@@ -391,7 +389,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                     ),
                     SizedBox(
                       width: 200,
-                      height: 80,
+                      height: phoneWidth/5,
                       child: Column(
                         children: [
                           Row(

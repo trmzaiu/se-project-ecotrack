@@ -27,17 +27,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     super.initState();
     _scrollController = ScrollController();
 
-    // Lắng nghe sự kiện cuộn
     _scrollController.addListener(() {
       if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
         print('Scrolling Down');
-        // Đặt lại giá trị khi cuộn xuống
         if (_isScrollingUpNotifier.value != false) {
           _isScrollingUpNotifier.value = false;
         }
       } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
         print('Scrolling Up');
-        // Đặt giá trị true khi cuộn lên
         if (_isScrollingUpNotifier.value != true) {
           _isScrollingUpNotifier.value = true;
         }
@@ -47,9 +44,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   @override
   void dispose() {
-    _scrollController.dispose();  // Dispose the controller
-    _isCurrentUserVisibleNotifier.dispose(); // Dispose the notifier
-    _isScrollingUpNotifier.dispose(); // Dispose the scrolling direction notifier
+    _scrollController.dispose();
+    _isCurrentUserVisibleNotifier.dispose();
+    _isScrollingUpNotifier.dispose();
     super.dispose();
   }
 

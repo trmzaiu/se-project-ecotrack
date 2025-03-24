@@ -16,7 +16,12 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+
+  bool showLogo = false;
+  bool showEco = false;
+  bool showTrack = false;
+  double trackOffsetX = 3;
 
   @override
   void initState() {
@@ -24,32 +29,64 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 1),
-    )..forward();
-
-    _fadeAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeIn,
+      duration: Duration(milliseconds: 1000),
     );
 
-    // Check login status and navigate accordingly
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutExpo,
+      ),
+    );
+
+    _startAnimationSequence();
+  }
+
+  Future<void> _startAnimationSequence() async {
+    await Future.delayed(Duration(milliseconds: 1000));
+
+    if (mounted) {
+      setState(() {
+        showLogo = true;
+      });
+    }
+
+    _controller.forward();
+
+    await Future.delayed(Duration(milliseconds: 1000));
+
+    if (mounted) {
+      setState(() {
+        showEco = true;
+      });
+    }
+
+    await Future.delayed(Duration(milliseconds: 500));
+
+    if (mounted) {
+      setState(() {
+        showTrack = true;
+        trackOffsetX = 0;
+      });
+    }
+
     _checkLoginStatus();
   }
 
   Future<void> _checkLoginStatus() async {
-    await Future.delayed(Duration(seconds: 3)); // Show splash for 3 seconds
+    await Future.delayed(Duration(seconds: 1));
 
-    User? user = FirebaseAuth.instance.currentUser; // Check if user is logged in
+    User? user = FirebaseAuth.instance.currentUser;
     if (mounted) {
       if (user != null) {
         Navigator.of(context).pushReplacement(
-          fadeRoute(
-            MainScreen(userId: user.uid,),
+          moveUpRoute(
+            MainScreen(userId: user.uid),
           ),
         );
       } else {
         Navigator.of(context).pushReplacement(
-          fadeRoute(
+          moveUpRoute(
             OpeningScreen(),
           ),
         );
@@ -68,80 +105,126 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     debugPrint('SplashScreen built');
 
     return Scaffold(
-      backgroundColor: Color(0xFFF7EEE7),
+      backgroundColor: AppColors.background,
       body: Center(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset(
-                'lib/assets/images/logo.png',
-                height: 200,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedOpacity(
+              duration: Duration(milliseconds: 500),
+              opacity: showLogo ? 1.0 : 0.0,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: Image.asset(
+                  'lib/assets/images/logo.png',
+                  height: 200,
+                ),
               ),
-              SizedBox(height: 10),
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Text(
-                    'EcoTrack',
-                    style: GoogleFonts.aDLaMDisplay(
-                      fontSize: 40,
-                      fontWeight: AppFontWeight.bold,
-                      letterSpacing: 2,
-                      shadows: [
-                        Shadow(
-                          offset: Offset(0, 2),
-                          blurRadius: 4,
-                          color: Color(0xFF7C3F3E).withOpacity(0.60),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Chữ nền (mờ)
-                  Text(
-                    'EcoTrack',
-                    style: GoogleFonts.aDLaMDisplay(
-                      fontSize: 40,
-                      fontWeight: AppFontWeight.bold,
-                      letterSpacing: 2,
-                      foreground: Paint()
-                        ..style = PaintingStyle.stroke
-                        ..strokeWidth = 2
-                        ..color = AppColors.background,
-                    ),
-                  ),
+            ),
 
-                  // Chữ chính (nổi bật)
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'Eco',
-                          style: GoogleFonts.aDLaMDisplay(
-                            color: Color(0xFF2C6E49),
-                            fontSize: 40,
-                            fontWeight: AppFontWeight.bold,
-                            letterSpacing: 2,
-                          ),
+            SizedBox(height: 10),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedScale(
+                  duration: Duration(milliseconds: 500),
+                  scale: showEco ? 1.0 : 0.0,
+                  child: Stack(
+                    children: [
+                      Text(
+                        'Eco',
+                        style: GoogleFonts.aDLaMDisplay(
+                          fontSize: 40,
+                          fontWeight: AppFontWeight.bold,
+                          letterSpacing: 2,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(0, 2),
+                              blurRadius: 4,
+                              color: AppColors.secondary.withOpacity(0.60),
+                            ),
+                          ],
                         ),
-                        TextSpan(
-                          text: 'Track',
-                          style: GoogleFonts.aDLaMDisplay(
-                            color: Color(0xFF7C3F3E),
-                            fontSize: 40,
-                            fontWeight: AppFontWeight.bold,
-                            letterSpacing: 2,
-                          ),
+                      ),
+
+                      Text(
+                        'Eco',
+                        style: GoogleFonts.aDLaMDisplay(
+                          fontSize: 40,
+                          fontWeight: AppFontWeight.bold,
+                          letterSpacing: 2,
+                          foreground: Paint()
+                            ..style = PaintingStyle.stroke
+                            ..strokeWidth = 2
+                            ..color = AppColors.background,
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              )
-            ],
-          ),
-        ),
+                      ),
+
+                      Text(
+                        'Eco',
+                        style: GoogleFonts.aDLaMDisplay(
+                          fontSize: 40,
+                          fontWeight: AppFontWeight.bold,
+                          letterSpacing: 2,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  )
+                ),
+
+                AnimatedSlide(
+                  duration: Duration(milliseconds: 600),
+                  offset: Offset(trackOffsetX, 0),
+                  curve: Curves.easeOutExpo,
+                  child: Stack(
+                    children: [
+                      Text(
+                        'Track',
+                        style: GoogleFonts.aDLaMDisplay(
+                          fontSize: 40,
+                          fontWeight: AppFontWeight.bold,
+                          letterSpacing: 2,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(0, 2),
+                              blurRadius: 4,
+                              color: AppColors.secondary.withOpacity(0.60),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Text(
+                        'Track',
+                        style: GoogleFonts.aDLaMDisplay(
+                          fontSize: 40,
+                          fontWeight: AppFontWeight.bold,
+                          letterSpacing: 2,
+                          foreground: Paint()
+                            ..style = PaintingStyle.stroke
+                            ..strokeWidth = 2
+                            ..color = AppColors.background,
+                        ),
+                      ),
+
+                      Text(
+                        'Track',
+                        style: GoogleFonts.aDLaMDisplay(
+                          fontSize: 40,
+                          fontWeight: AppFontWeight.bold,
+                          letterSpacing: 2,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                    ],
+                  )
+                ),
+              ],
+            ),
+          ],
+        )
       ),
     );
   }

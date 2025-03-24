@@ -29,22 +29,22 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
     {
       "title": "Recyclable Waste",
       "description": "Recyclable waste consists of materials that can be processed and turned \ninto new products.",
-      "image": "lib/assets/images/recycle_bin_recyclable_waste.png",
+      "image": "lib/assets/images/waste_recycle.png",
     },
     {
       "title": "Organic Waste",
       "description": "Organic waste consists of biodegradable materials that decompose \nnaturally, turning into \ncompost or biogas.",
-      "image": "lib/assets/images/organic_bin_organic_waste.png",
+      "image": "lib/assets/images/waste_organic.png",
     },
     {
       "title": "Hazardous Waste",
       "description": "Hazardous waste holds \nmaterials that harm \nhealth and environment \ndue to toxicity, flammability, \nor contamination.",
-      "image": "lib/assets/images/hazardous_bin_hazardous_waste.png",
+      "image": "lib/assets/images/waste_hazardous.png",
     },
     {
       "title": "General Waste",
       "description": "General waste includes items that cannot be recycled, composted, or \nclassified as hazardous, \noften ending up in \nlandfills.",
-      "image": "lib/assets/images/general_bin_general_waste.png",
+      "image": "lib/assets/images/waste_general.png",
     },
   ];
 
@@ -52,28 +52,28 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
     // Slide 0: Recyclable Waste
     {
       'slide': 0,
-      'imagePath': 'lib/assets/images/recycle_bin_plastic.png',
+      'imagePath': 'lib/assets/images/recycle_plastic.png',
       'title': 'Plastic',
       'svgColor': AppColors.board1,
       'detail': 'Bottles, containers, jugs, clean plastic bags.',
     },
     {
       'slide': 0,
-      'imagePath': 'lib/assets/images/recycle_bin_paper.png',
+      'imagePath': 'lib/assets/images/recycle_paper.png',
       'title': 'Paper',
       'svgColor': AppColors.board4,
       'detail': 'Newspapers, magazines, cardboard, office paper.',
     },
     {
       'slide': 0,
-      'imagePath': 'lib/assets/images/recycle_bin_glass.png',
+      'imagePath': 'lib/assets/images/recycle_glass.png',
       'title': 'Glass',
       'svgColor': AppColors.board2,
       'detail': 'Bottles, jars (clear, green, brown).',
     },
     {
       'slide': 0,
-      'imagePath': 'lib/assets/images/recycle_bin_metal.png',
+      'imagePath': 'lib/assets/images/recycle_metal.png',
       'title': 'Metal',
       'svgColor': AppColors.board3,
       'detail': 'Aluminum cans, tin cans, foil (clean), metal lids.',
@@ -82,28 +82,28 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
     // Slide 1: Organic Waste
     {
       'slide': 1,
-      'imagePath': 'lib/assets/images/organic_bin_scrap.png',
+      'imagePath': 'lib/assets/images/organic_scrap.png',
       'title': 'Scrap',
       'svgColor': AppColors.board2,
       'detail': 'Fruit peel, eggshell, vegetable leftover.',
     },
     {
       'slide': 1,
-      'imagePath': 'lib/assets/images/organic_bin_residue.png',
+      'imagePath': 'lib/assets/images/organic_residue.png',
       'title': 'Residue',
       'svgColor': AppColors.board1,
       'detail': 'Coffee grounds, tea bags, nutshells.',
     },
     {
       'slide': 1,
-      'imagePath': 'lib/assets/images/organic_bin_manure.png',
+      'imagePath': 'lib/assets/images/organic_manure.png',
       'title': 'Manure',
       'svgColor': AppColors.board3,
       'detail': 'Animal dung, compostable pet waste.',
     },
     {
       'slide': 1,
-      'imagePath': 'lib/assets/images/organic_bin_clipping.png',
+      'imagePath': 'lib/assets/images/organic_clipping.png',
       'title': 'Clipping',
       'svgColor': AppColors.board4,
       'detail': 'Grass, leaves, small branches.',
@@ -112,28 +112,28 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
     // Slide 2: Hazardous Waste
     {
       'slide': 2,
-      'imagePath': 'lib/assets/images/hazardous_bin_medical.png',
+      'imagePath': 'lib/assets/images/hazardous_medical.png',
       'title': 'Medical',
       'svgColor': AppColors.board4,
       'detail': 'Expired medicine, needles, syringes.',
     },
     {
       'slide': 2,
-      'imagePath': 'lib/assets/images/hazardous_bin_electronic.png',
+      'imagePath': 'lib/assets/images/hazardous_electronic.png',
       'title': 'Electronic',
       'svgColor': AppColors.board3,
       'detail': 'Old phones, batteries, laptops, cables.',
     },
     {
       'slide': 2,
-      'imagePath': 'lib/assets/images/hazardous_bin_chemical.png',
+      'imagePath': 'lib/assets/images/hazardous_chemical.png',
       'title': 'Chemical',
       'svgColor': AppColors.board2,
       'detail': 'Paint, pesticides, motor oil, cleaning agents.',
     },
     {
       'slide': 2,
-      'imagePath': 'lib/assets/images/hazardous_bin_industrial.png',
+      'imagePath': 'lib/assets/images/hazardous_industry.png',
       'title': 'Industrial',
       'svgColor': AppColors.board1,
       'detail': 'Heavy metals, solvents, asbestos.',
@@ -142,28 +142,28 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
     // Slide 3: General Waste
     {
       'slide': 3,
-      'imagePath': 'lib/assets/images/general_bin_sanitary.png',
+      'imagePath': 'lib/assets/images/general_hygiene.png',
       'title': 'Hygiene',
       'svgColor': AppColors.board3,
       'detail': 'Diapers, tissues, sanitary pads.',
     },
     {
       'slide': 3,
-      'imagePath': 'lib/assets/images/general_bin_packaging.png',
+      'imagePath': 'lib/assets/images/general_packaging.png',
       'title': 'Packaging',
       'svgColor': AppColors.board2,
       'detail': 'Chip bags, styrofoam, food wrappers.',
     },
     {
       'slide': 3,
-      'imagePath': 'lib/assets/images/general_bin_oversized.png',
+      'imagePath': 'lib/assets/images/general_oversize.png',
       'title': 'Oversize',
       'svgColor': AppColors.board1,
       'detail': 'Broken furniture, mattresses, large plastics.',
     },
     {
       'slide': 3,
-      'imagePath': 'lib/assets/images/general_bin_fabric.png',
+      'imagePath': 'lib/assets/images/general_fabric.png',
       'title': 'Fabric',
       'svgColor': AppColors.board4,
       'detail': 'Old clothes, worn-out shoes, rags.',
@@ -579,35 +579,33 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                         Positioned(
                           left: 30,
                           top: 130,
-                          child: GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: Container(
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              shape: const CircleBorder(),
+                              padding: EdgeInsets.zero,
+                              shadowColor: const Color(0x3F000000),
+                              elevation: 10,
+                            ),
+                            child: SizedBox(
                               width: 55,
                               height: 55,
-                              decoration: ShapeDecoration(
-                                color: AppColors.primary,
-                                shape: OvalBorder(),
-                                shadows: [
-                                  BoxShadow(
-                                    color: Color(0x3F000000),
-                                    blurRadius: 10,
-                                    offset: Offset(0, 0),
-                                    spreadRadius: 0,
-                                  ),
-                                ],
-                              ),
                               child: Center(
                                 child: SvgPicture.asset(
-                                  'lib/assets/icons/ic_backward.svg', width: 24, height: 24,
+                                  'lib/assets/icons/ic_backward.svg',
+                                  width: 24,
+                                  height: 24,
                                 ),
                               ),
                             ),
-                          )
+                          ),
                         ),
 
+
                         Positioned(
-                          right: -25,
-                          top: -30,
+                          right: -18,
+                          top: -40,
                           child: Image.asset(
                             waste['image'],
                             width: 250,
