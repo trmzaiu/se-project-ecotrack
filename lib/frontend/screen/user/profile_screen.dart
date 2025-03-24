@@ -34,10 +34,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> loadUserData() async {
-    final fetchedUser = await getCurrentUser(widget.userId);
-    setState(() {
-      user = fetchedUser;
-    });
+    // Create an instance of UserService and call the method
+    final fetchedUser = await UserService().getCurrentUser(widget.userId);
+    if (fetchedUser != null) {
+      setState(() {
+        user = fetchedUser;
+      });
+    }
   }
 
   Future<void> _signOut(BuildContext context) async {
