@@ -10,34 +10,41 @@ import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import 'package:wastesortapp/frontend/widget/bar_title.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
+import '../../service/user_service.dart';
 
 import '../../service/auth_service.dart';
 import '../evidence/evidence_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   final String userId;
 
-  ProfileScreen({Key? key, required this.userId}) : super(key: key);
+  const ProfileScreen({Key? key, required this.userId}) : super(key: key);
 
-  final Map<String, dynamic> user = {
-    'photoUrl': 'lib/assets/images/user_image.png',
-    'name': 'Gwen Stacy',
-    'email': 'gwenstacy@example.com',
-    'water': '56',
-    'tree': '4',
-    'evidence': '14'
-  };
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
 
-  final List<Map<String, dynamic>> evidence = [
-    {'time': '20'},
-    {'time': '40'},
-    {'time': '50'},
-    {'time': '60'},
-  ];
+class _ProfileScreenState extends State<ProfileScreen> {
+  Map<String, dynamic>? user;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+
+  Future<void> loadUserData() async {
+    // Create an instance of UserService and call the method
+    final fetchedUser = await UserService().getCurrentUser(widget.userId);
+    if (fetchedUser != null) {
+      setState(() {
+        user = fetchedUser;
+      });
+    }
+  }
 
   Future<void> _signOut(BuildContext context) async {
     await AuthenticationService(FirebaseAuth.instance).signOut();
-
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -49,6 +56,16 @@ class ProfileScreen extends StatelessWidget {
     double phoneWidth = getPhoneWidth(context);
     print("Height: ${getPhoneHeight(context)}");
     print("Width: ${getPhoneWidth(context)}");
+
+    // If user data is not loaded yet, show a loading spinner
+    if (user == null) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -65,7 +82,7 @@ class ProfileScreen extends StatelessWidget {
             decoration: ShapeDecoration(
               color: Color(0xE0E0E0FF),
               image: DecorationImage(
-                image: AssetImage(user['photoUrl']),
+                image: AssetImage(user!['photoUrl']),
                 fit: BoxFit.cover,
               ),
               shape: OvalBorder(
@@ -80,7 +97,7 @@ class ProfileScreen extends StatelessWidget {
           SizedBox(height: 5),
 
           Text(
-            user['name'],
+            user!['name'],
             style: GoogleFonts.urbanist(
               color: AppColors.secondary,
               fontSize: 24,
@@ -89,7 +106,7 @@ class ProfileScreen extends StatelessWidget {
           ),
 
           Text(
-            user['email'],
+            user!['email'],
             style: GoogleFonts.urbanist(
               color: AppColors.tertiary,
               fontSize: 16,
@@ -150,70 +167,18 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
 
-                  SizedBox(height: 10),
-
-                  Align(
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _statistic('Drops', user['water']),
-                        _statistic('Trees', user['tree']),
-                        _statistic('Evidences', user['evidence']),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: 25),
-
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'History',
-                          style: GoogleFonts.urbanist(
-                            color: AppColors.secondary,
-                            fontSize: 20,
-                            fontWeight: AppFontWeight.semiBold,
-                          ),
-                        ),
-
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              moveLeftRoute(
-                                EvidenceScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            'See more',
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.tertiary,
-                              fontSize: 13,
-                              fontWeight: AppFontWeight.regular,
-                            ),
-                          ),
-                        )
-                      ]
-                    ),
-                  ),
-
-                  SizedBox(height: 10),
-
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _history(context, 'lib/assets/images/recycle.png', 'Recyclable \nWaste', evidence[0]['time']),
-                        _history(context, 'lib/assets/images/organic.png', 'Organic \nWaste', evidence[1]['time'])
-                      ],
-                    ),
-                  ),
+          // Statistics Section
+          Align(
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _statistic('Drops', user!['water']),
+                _statistic('Trees', user!['tree']),
+                _statistic('Evidences', user!['evidence']),
+              ],
+            ),
+          ),
 
                   SizedBox(height: phoneWidth - phoneWidth*0.82 - 60),
 
@@ -259,8 +224,6 @@ class ProfileScreen extends StatelessWidget {
         ],
       )
     );
-    
-    
   }
 
   Widget _statistic(String title, String number) {
