@@ -19,10 +19,8 @@ class UserService {
         var data = doc.data() as Map<String, dynamic>;
         usersData[doc.id] = {
           'userId': doc.id,
-          'name': data['name'] ?? 'Unknown',
-          'image': data['photoUrl']?.isNotEmpty == true
-              ? data['photoUrl']
-              : 'lib/assets/images/avatar_default.png',
+          'name': data['name'] ?? doc.id.substring(0, 10),
+          'image': data['photoUrl'] ?? '',
           'trees': 0
         };
       }

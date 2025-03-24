@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -60,9 +61,29 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error loading leaderboard'));
+            return Center(
+              child: Text(
+                'Error loading leaderboard',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.urbanist(
+                  color: AppColors.secondary,
+                  fontSize: 16,
+                  fontWeight: AppFontWeight.medium,
+                ),
+              )
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No users found'));
+            return Center(
+              child: Text(
+                'No users found',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.urbanist(
+                  color: AppColors.secondary,
+                  fontSize: 16,
+                  fontWeight: AppFontWeight.medium,
+                ),
+              )
+            );
           }
 
           final users = snapshot.data!;
@@ -85,7 +106,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   child: AnimatedContainer(
                     padding: EdgeInsets.symmetric(vertical: 16),
                     duration: Duration(milliseconds: 200),
-                    height: (1 - _topContainer * 2).clamp(0.0, 1.0) * (getPhoneHeight(context) / 3),
+                    height: (1 - _topContainer * 2).clamp(0.0, 1.0) * (getPhoneHeight(context) / 3.5),
                     width: getPhoneWidth(context),
                     child: FittedBox(
                       child: Row(
@@ -205,10 +226,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 border: Border.all(color: isCurrentUser ? AppColors.secondary : AppColors.surface, width: 3),
               ),
               child: CircleAvatar(
-                backgroundImage: AssetImage(user['image']),
+                backgroundImage: user['image'] != '' ? CachedNetworkImageProvider(user['image']) : AssetImage('lib/assets/images/avatar_default.png'),
                 radius: avatarSize / 2,
               ),
             ),
+
             Positioned(
               bottom: -10,
               child: Container(
@@ -239,6 +261,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           ],
         ),
         SizedBox(height: 18),
+
         SizedBox(
           width: 100,
           child: Text(
@@ -306,12 +329,16 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               ),
             ),
           ),
+
           SizedBox(width: 10),
+
           CircleAvatar(
-            backgroundImage: AssetImage(user['image']),
+            backgroundImage: user['image'] != '' ? CachedNetworkImageProvider(user['image']) : AssetImage('lib/assets/images/avatar_default.png'),
             radius: 20,
           ),
+
           SizedBox(width: 10),
+
           Expanded(
             child: Text(
               user['name'],

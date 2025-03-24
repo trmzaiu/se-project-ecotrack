@@ -167,10 +167,10 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(
-              moveUpRoute(
-                UploadScreen(),
-                settings: RouteSettings(name: "UploadScreen"),
-              )
+            moveUpRoute(
+              UploadScreen(),
+              settings: RouteSettings(name: "UploadScreen"),
+            )
           );
         },
         backgroundColor: AppColors.primary,
