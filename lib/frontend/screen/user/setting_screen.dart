@@ -35,21 +35,6 @@ class _SettingScreenState extends State<SettingScreen> {
   Country? selectedCountry;
   List<File> selectedImages = [];
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _dateController.text = user['dob'];
-  //   selectedCountry = Country.tryParse(user['country']);
-  // }
-
-  // final Map<String, dynamic> user = {
-  //   'photoUrl': 'lib/assets/images/user_image.png',
-  //   'name': 'Gwen Stacy',
-  //   'email': 'gwenstacy@example.com',
-  //   'dob': '20/09/2024',
-  //   'country': 'Vietnam',
-  // };
-
   Future<void> _pickImage(source) async {
     try {
       final pickedFile = await ImagePicker().pickImage(source: source);
@@ -462,10 +447,6 @@ class _SettingScreenState extends State<SettingScreen> {
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return Center(child: CircularProgressIndicator());
-                          }
-
-                          if (!snapshot.hasData) {
-                            return Center(child: Text("No user data available"));
                           }
 
                           final user = snapshot.data ?? {

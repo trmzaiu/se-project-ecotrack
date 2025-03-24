@@ -54,6 +54,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           FutureBuilder<Map<String, dynamic>>(
             future: UserService().getCurrentUser(userId),
             builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+
               final user = snapshot.data ?? {
                 'photoUrl': '',
                 'name': userId.substring(0, 10),
@@ -67,7 +71,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     height: 125,
                     decoration: ShapeDecoration(
                         image: DecorationImage(
-                          image: user['photoUrl'] == '' ? CachedNetworkImageProvider(user['photoUrl']) : AssetImage('lib/assets/images/avatar_default.png'),
+                          image: user['photoUrl'] != '' ? CachedNetworkImageProvider(user['photoUrl']) : AssetImage('lib/assets/images/avatar_default.png'),
                           fit: BoxFit.cover,
                         ),
                         shape: OvalBorder(
