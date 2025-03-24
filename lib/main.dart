@@ -177,8 +177,8 @@ class _MainScreenState extends State<MainScreen> {
                                   children: [
                                     HomeScreen(),
                                     GuideScreen(),
-                                    VirtualTreeScreen(userId: widget.userId),
-                                    ProfileScreen(userId: widget.userId),
+                                    VirtualTreeScreen(),
+                                    ProfileScreen(),
                                   ],
                                 ),
                               ),
@@ -337,9 +337,8 @@ class TopHalfShadowPainter extends CustomPainter {
       ..color = Colors.black12
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, 10);
 
-    // Adjust the center position by offsetting it by (85 + 8 - 65) which equals 28
-    double offsetX = 28;  // Adjusted X position
-    double offsetY = size.height / 2; // Y remains centered vertically
+    double offsetX = 28;
+    double offsetY = size.height / 2;
 
     canvas.drawArc(
       Rect.fromCircle(center: Offset(offsetX, offsetY), radius: size.width / 2),

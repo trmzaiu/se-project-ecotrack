@@ -47,24 +47,26 @@ class UserService {
   }
 
   Future<Map<String, dynamic>> getCurrentUser(String userId) async {
-    final userDoc = await _db.collection('users')
-        .doc(userId)
-        .get();
+    final snapshot = await _db.collection('users').doc(userId).get();
 
-    if (!userDoc.exists) {
+    if (!snapshot.exists) {
       return {
-        'photoUrl': 'lib/assets/images/avatar_default.png',
+        'photoUrl': '',
         'name': userId.substring(0, 10),
         'email': '',
+        'dob': DateTime.now().toString(),
+        'country': ''
       };
     }
 
-    final data = userDoc.data() ?? {};
+    final data = snapshot.data() ?? {};
 
     return {
-      'photoUrl': data['photoUrl'] ?? 'lib/assets/images/avatar_default.png',
+      'photoUrl': data['photoUrl'] ?? '',
       'name': data['name'] ?? userId.substring(0, 10),
       'email': data['email'] ?? '',
+      'dob': data['dob'] ?? DateTime.now().toString(),
+      'country': data['country'] ?? ''
     };
   }
 }

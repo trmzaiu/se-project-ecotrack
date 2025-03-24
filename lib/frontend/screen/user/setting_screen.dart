@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,6 +12,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import '../../../theme/fonts.dart';
+import '../../service/user_service.dart';
 import '../../utils/phone_size.dart';
 import '../../widget/bar_title.dart';
 import '../../widget/input_dialog.dart';
@@ -26,23 +29,26 @@ class _SettingScreenState extends State<SettingScreen> {
   final TextEditingController passwordConfirmController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
 
+  final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
+  Map<String, dynamic>? user;
+
   Country? selectedCountry;
   List<File> selectedImages = [];
 
-  @override
-  void initState() {
-    super.initState();
-    _dateController.text = user['dob'];
-    selectedCountry = Country.tryParse(user['country']);
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _dateController.text = user['dob'];
+  //   selectedCountry = Country.tryParse(user['country']);
+  // }
 
-  final Map<String, dynamic> user = {
-    'photoUrl': 'lib/assets/images/user_image.png',
-    'name': 'Gwen Stacy',
-    'email': 'gwenstacy@example.com',
-    'dob': '20/09/2024',
-    'country': 'Vietnam',
-  };
+  // final Map<String, dynamic> user = {
+  //   'photoUrl': 'lib/assets/images/user_image.png',
+  //   'name': 'Gwen Stacy',
+  //   'email': 'gwenstacy@example.com',
+  //   'dob': '20/09/2024',
+  //   'country': 'Vietnam',
+  // };
 
   Future<void> _pickImage(source) async {
     try {
@@ -451,15 +457,45 @@ class _SettingScreenState extends State<SettingScreen> {
                     children: [
                       SizedBox(height: 30),
 
-                      _avatarTile(),
+                      FutureBuilder<Map<String, dynamic>>(
+                        future: UserService().getCurrentUser(userId),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          }
 
-                      _informationTile('Name', user['name'], () => _showDialog(context, 'name', nameController, user['name'])),
-                      _informationTile('Email', user['email'], () => _showDialog(context, 'email', emailController, user['email'])),
-                      _informationTile('Password', '••••••••••••', () => _showDialogPassword(context)),
+                          if (!snapshot.hasData) {
+                            return Center(child: Text("No user data available"));
+                          }
 
-                      _dobTile(),
+                          final user = snapshot.data ?? {
+                            'photoUrl': '',
+                            'name': userId.substring(0, 10),
+                            'email': '',
+                            'dob': '',
+                            'country': ''
+                          };
 
-                      _countryTile(),
+                          if (user['dob'] != null && user['dob'].isNotEmpty) {
+                            DateTime parsedDate = DateTime.parse(user['dob']);
+                            _dateController.text = DateFormat('dd/MM/yyyy').format(parsedDate);
+                          } else {
+                            _dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+                          }
+                          selectedCountry = Country.tryParse(user['country']);
+
+                          return Column(
+                            children: [
+                              _avatarTile(user['photoUrl']),
+                              _informationTile('Name', user['name'], () => _showDialog(context, 'name', nameController, user['name'])),
+                              _informationTile('Email', user['email'], () => _showDialog(context, 'email', emailController, user['email'])),
+                              _informationTile('Password', '••••••••••••', () => _showDialogPassword(context)),
+                              _dobTile(),
+                              _countryTile(),
+                            ],
+                          );
+                        },
+                      ),
 
                       SizedBox(height: 30),
                     ],
@@ -473,7 +509,7 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
-  Widget _avatarTile() {
+  Widget _avatarTile(String photoUrl) {
     return Column(
       children: [
         Center(
@@ -490,11 +526,20 @@ class _SettingScreenState extends State<SettingScreen> {
                   ),
                 ),
                 child: ClipOval(
-                  child: Image.asset(
-                    user['photoUrl'],
-                    fit: BoxFit.cover,
+                  child: photoUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                    imageUrl: photoUrl,
                     width: 170,
                     height: 170,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => CircularProgressIndicator(),
+                    errorWidget: (context, url, error) => Image.asset('lib/assets/images/avatar_default.png'),
+                  )
+                      : Image.asset(
+                    'lib/assets/images/avatar_default.png',
+                    width: 170,
+                    height: 170,
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
@@ -623,48 +668,48 @@ class _SettingScreenState extends State<SettingScreen> {
         Material(
           color: Colors.transparent,
           child: InkWell(
-              highlightColor: AppColors.secondary.withOpacity(0.3),
-              splashColor: Colors.transparent,
-              borderRadius: BorderRadius.circular(6),
-              child: SizedBox(
-                  width: getPhoneWidth(context) - 60,
-                  height: 50,
-                  child: Container(
-                    width: getPhoneWidth(context) - 60,
-                    height: 50,
-                    padding: EdgeInsets.only(left: 15, right: 5),
-                    decoration: ShapeDecoration(
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                          width: 1,
-                          color: AppColors.tertiary,
-                        ),
+            highlightColor: AppColors.secondary.withOpacity(0.3),
+            splashColor: Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+            child: SizedBox(
+              width: getPhoneWidth(context) - 60,
+              height: 50,
+              child: Container(
+                width: getPhoneWidth(context) - 60,
+                height: 50,
+                padding: EdgeInsets.only(left: 15, right: 5),
+                decoration: ShapeDecoration(
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      width: 1,
+                      color: AppColors.tertiary,
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                child: TextFormField(
+                  controller: _dateController,
+                  readOnly: true,
+                  style: GoogleFonts.urbanist(
+                      fontSize: 15,
+                      color: AppColors.tertiary,
+                      fontWeight: AppFontWeight.medium
+                  ),
+                  decoration: InputDecoration(
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.calendar_today, color: AppColors.tertiary),
+                      onPressed: () => showDatePicker(context),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 0),
+                    border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6),
-                      ),
+                        borderSide: BorderSide.none
                     ),
-                    child: TextFormField(
-                      controller: _dateController,
-                      readOnly: true,
-                      style: GoogleFonts.urbanist(
-                          fontSize: 15,
-                          color: AppColors.tertiary,
-                          fontWeight: AppFontWeight.medium
-                      ),
-                      decoration: InputDecoration(
-                        suffixIcon: IconButton(
-                          icon: Icon(Icons.calendar_today, color: AppColors.tertiary),
-                          onPressed: () => showDatePicker(context),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 0),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                            borderSide: BorderSide.none
-                        ),
-                      ),
-                      onTap: () => showDatePicker(context),
-                    ),
-                  )
+                  ),
+                  onTap: () => showDatePicker(context),
+                ),
               )
+            )
           ),
         ),
       ],
@@ -697,57 +742,57 @@ class _SettingScreenState extends State<SettingScreen> {
         Material(
           color: Colors.transparent,
           child: InkWell(
-              highlightColor: AppColors.secondary.withOpacity(0.3),
-              splashColor: Colors.transparent,
-              borderRadius: BorderRadius.circular(6),
-              onTap: () => showCountryPickerDialog(context),
-              child: SizedBox(
-                  width: getPhoneWidth(context) - 60,
-                  height: 50,
-                  child: Container(
-                    width: getPhoneWidth(context) - 60,
-                    height: 50,
-                    padding: EdgeInsets.only(left: 15, right: 15),
-                    decoration: ShapeDecoration(
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                          width: 1,
-                          color: AppColors.tertiary,
-                        ),
-                        borderRadius: BorderRadius.circular(6),
+            highlightColor: AppColors.secondary.withOpacity(0.3),
+            splashColor: Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+            onTap: () => showCountryPickerDialog(context),
+            child: SizedBox(
+              width: getPhoneWidth(context) - 60,
+              height: 50,
+              child: Container(
+                width: getPhoneWidth(context) - 60,
+                height: 50,
+                padding: EdgeInsets.only(left: 15, right: 15),
+                decoration: ShapeDecoration(
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      width: 1,
+                      color: AppColors.tertiary,
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    if (selectedCountry != null) ...[
+                      Text(
+                        selectedCountry!.flagEmoji,
+                        style: TextStyle(fontSize: 20),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        if (selectedCountry != null) ...[
-                          Text(
-                            selectedCountry!.flagEmoji,
-                            style: TextStyle(fontSize: 20),
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            selectedCountry!.name,
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.tertiary,
-                              fontSize: 15,
-                              fontWeight: AppFontWeight.medium,
-                            ),
-                          ),
-                        ] else
-                          Text(
-                            "Select Country",
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.tertiary,
-                              fontSize: 15,
-                              fontWeight: AppFontWeight.medium,
-                            ),
-                          ),
-                        Spacer(),
-                        Icon(Icons.arrow_drop_down, color: AppColors.tertiary),
-                      ],
-                    ),
-                  )
+                      SizedBox(width: 10),
+                      Text(
+                        selectedCountry!.name,
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.tertiary,
+                          fontSize: 15,
+                          fontWeight: AppFontWeight.medium,
+                        ),
+                      ),
+                    ] else
+                      Text(
+                        "Select Country",
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.tertiary,
+                          fontSize: 15,
+                          fontWeight: AppFontWeight.medium,
+                        ),
+                      ),
+                    Spacer(),
+                    Icon(Icons.arrow_drop_down, color: AppColors.tertiary),
+                  ],
+                ),
               )
+            )
           ),
         ),
       ],

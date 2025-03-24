@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,41 +14,25 @@ import 'package:wastesortapp/theme/fonts.dart';
 import '../../service/user_service.dart';
 
 import '../../service/auth_service.dart';
+import '../../service/evidence_service.dart';
+import '../../service/tree_service.dart';
 import '../evidence/evidence_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final String userId;
-
-  const ProfileScreen({Key? key, required this.userId}) : super(key: key);
-
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
   Map<String, dynamic>? user;
-
-  @override
-  void initState() {
-    super.initState();
-    loadUserData();
-  }
-
-  Future<void> loadUserData() async {
-    // Create an instance of UserService and call the method
-    final fetchedUser = await UserService().getCurrentUser(widget.userId);
-    if (fetchedUser != null) {
-      setState(() {
-        user = fetchedUser;
-      });
-    }
-  }
 
   Future<void> _signOut(BuildContext context) async {
     await AuthenticationService().signOut();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
+    Navigator.of(context).pushReplacement(
+      moveLeftRoute(
+        LoginScreen(),
+      ),
     );
   }
 
@@ -57,61 +42,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
     print("Height: ${getPhoneHeight(context)}");
     print("Width: ${getPhoneWidth(context)}");
 
-    // If user data is not loaded yet, show a loading spinner
-    if (user == null) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          BarTitle(title: "Profile", textColor: AppColors.secondary, showNotification: true,),
+          BarTitle(title: "Profile", textColor: AppColors.secondary, showNotification: true),
 
           SizedBox(height: 25),
 
-          Container(
-            width: 125,
-            height: 125,
-            decoration: ShapeDecoration(
-              color: Color(0xE0E0E0FF),
-              image: DecorationImage(
-                image: AssetImage(user!['photoUrl']),
-                fit: BoxFit.cover,
-              ),
-              shape: OvalBorder(
-                side: BorderSide(
-                  width: 5,
-                  color: AppColors.tertiary.withOpacity(0.8),
-                )
-              )
-            ),
-          ),
+          FutureBuilder<Map<String, dynamic>>(
+            future: UserService().getCurrentUser(userId),
+            builder: (context, snapshot) {
+              final user = snapshot.data ?? {
+                'photoUrl': '',
+                'name': userId.substring(0, 10),
+                'email': '',
+              };
 
-          SizedBox(height: 5),
+              return Column(
+                children: [
+                  Container(
+                    width: 125,
+                    height: 125,
+                    decoration: ShapeDecoration(
+                        image: DecorationImage(
+                          image: user['photoUrl'] == '' ? CachedNetworkImageProvider(user['photoUrl']) : AssetImage('lib/assets/images/avatar_default.png'),
+                          fit: BoxFit.cover,
+                        ),
+                        shape: OvalBorder(
+                            side: BorderSide(
+                              width: 5,
+                              color: AppColors.tertiary.withOpacity(0.8),
+                            )
+                        )
+                    ),
+                  ),
 
-          Text(
-            user!['name'],
-            style: GoogleFonts.urbanist(
-              color: AppColors.secondary,
-              fontSize: 24,
-              fontWeight: AppFontWeight.bold,
-            ),
-          ),
+                  SizedBox(height: 5),
 
-          Text(
-            user!['email'],
-            style: GoogleFonts.urbanist(
-              color: AppColors.tertiary,
-              fontSize: 16,
-              fontWeight: AppFontWeight.regular,
-            ),
+                  Text(
+                    user['name'],
+                    style: GoogleFonts.urbanist(
+                      color: AppColors.secondary,
+                      fontSize: 24,
+                      fontWeight: AppFontWeight.bold,
+                    ),
+                  ),
+
+                  Text(
+                    user['email'],
+                    style: GoogleFonts.urbanist(
+                      color: AppColors.tertiary,
+                      fontSize: 16,
+                      fontWeight: AppFontWeight.regular,
+                    ),
+                  ),
+                ]
+              );
+            }
           ),
 
           SizedBox(height: 30),
@@ -174,9 +163,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _statistic('Drops', user!['water']),
-                        _statistic('Trees', user!['tree']),
-                        _statistic('Evidences', user!['evidence']),
+                        StreamBuilder<Map<String, int>>(
+                          stream: TreeService().getUserDropsAndTrees(userId),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return _statistic('Drops', '0');
+                            }
+
+                            Map<String, int> data = snapshot.data ?? {};
+                            int drops = data['drops'] ?? 0;
+
+                            return _statistic('Drops', drops.toString());
+                          },
+                        ),
+
+                        StreamBuilder<Map<String, int>>(
+                          stream: TreeService().getUserDropsAndTrees(userId),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return _statistic('Trees', '0');
+                            }
+
+                            Map<String, int> data = snapshot.data ?? {};
+                            int trees = data['trees'] ?? 0;
+
+                            return _statistic('Trees', trees.toString());
+                          },
+                        ),
+
+                        StreamBuilder<int>(
+                          stream: EvidenceService(context).getTotalEvidences(userId),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return _statistic('Evidences', '0');
+                            }
+
+                            int totalAccepted = snapshot.data ?? 0;
+
+                            return _statistic('Evidences', totalAccepted.toString());
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -221,28 +247,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   SizedBox(height: 10),
 
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _history(context, 'lib/assets/images/recycle.png', 'Recyclable \nWaste', '0'),
-                        _history(context, 'lib/assets/images/organic.png', 'Organic \nWaste', '0'),
-                      ],
-                    ),
-                  ),
+                  StreamBuilder<Map<String, int>>(
+                    stream: EvidenceService(context).getTotalEachAcceptedCategory(userId),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      }
+                      Map<String, int> categoryCounts = snapshot.data ?? {
+                        'Recyclable': 0,
+                        'Organic': 0,
+                        'Hazardous': 0,
+                        'General': 0,
+                      };
 
-                  SizedBox(height: phoneWidth - phoneWidth*0.82 - 60),
+                      return Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 30),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                _history(
+                                  context,
+                                  'lib/assets/images/recycle.png',
+                                  'Recyclable \nWaste',
+                                  categoryCounts['Recyclable']?.toString() ?? '0',
+                                ),
+                                _history(
+                                  context,
+                                  'lib/assets/images/organic.png',
+                                  'Organic \nWaste',
+                                  categoryCounts['Organic']?.toString() ?? '0',
+                                ),
+                              ],
+                            ),
+                          ),
 
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _history(context, 'lib/assets/images/hazard.png', 'Hazardous \nWaste', '0'),
-                        _history(context, 'lib/assets/images/general.png', 'General \nWaste', '0')
-                      ],
-                    ),
+                          SizedBox(height: phoneWidth - phoneWidth * 0.82 - 60),
+
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 30),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                _history(
+                                  context,
+                                  'lib/assets/images/hazard.png',
+                                  'Hazardous \nWaste',
+                                  categoryCounts['Hazardous']?.toString() ?? '0',
+                                ),
+                                _history(
+                                  context,
+                                  'lib/assets/images/general.png',
+                                  'General \nWaste',
+                                  categoryCounts['General']?.toString() ?? '0',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
 
                   SizedBox(height: 30),
@@ -369,7 +434,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
 
           Text(
-            'Times',
+            time == '1' ? 'Time' : 'Times',
             style: GoogleFonts.urbanist(
               color: AppColors.tertiary,
               fontSize: getPhoneWidth(context) * 0.4 * 0.09,

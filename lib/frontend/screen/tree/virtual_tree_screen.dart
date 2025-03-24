@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:flutter_svg/svg.dart';
@@ -15,9 +16,8 @@ import 'leaderboard_screen.dart';
 
 
 class VirtualTreeScreen extends StatefulWidget {
-  final String userId;
 
-  const VirtualTreeScreen({super.key, required this.userId});
+  const VirtualTreeScreen({super.key});
 
   @override
   _VirtualTreeScreenState createState() => _VirtualTreeScreenState();
@@ -26,6 +26,7 @@ class VirtualTreeScreen extends StatefulWidget {
 class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTickerProviderStateMixin {
   static const Duration ANIMATION_DURATION = Duration(milliseconds: 1000);
   final TreeService _treeService = TreeService();
+  final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
   late AnimationController _controller;
   int neededDrops = 0;
   int grownTrees = 0;
@@ -61,7 +62,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
   }
 
   void _loadTreeData() {
-    _treeService.getTreeProgress(widget.userId).listen((snapshot) {
+    _treeService.getTreeProgress(userId).listen((snapshot) {
       if (snapshot.exists) {
         var data = snapshot.data() as Map<String, dynamic>;
         setState(() {
@@ -146,33 +147,33 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
             _levelOfTree = 0;
             grownTrees++;
           }
-          _treeService.updateLevelOfTree(widget.userId, _levelOfTree);
+          _treeService.updateLevelOfTree(userId, _levelOfTree);
         }
         _progress = newProgress;
         animateProgress(newProgress, () {});
         _drops = 0;
-        _treeService.updateProgress(widget.userId, newProgress);
-        _treeService.updateWater(widget.userId, 0);
+        _treeService.updateProgress(userId, newProgress);
+        _treeService.updateWater(userId, 0);
         leftDrops = getLeftDrops(_levelOfTree, _progress);
         waterTree();
       } else if (_drops > currentNeededDrops) {
         _drops -= currentNeededDrops;
-        _treeService.updateWater(widget.userId, _drops);
+        _treeService.updateWater(userId, _drops);
         if (_progress <= 1.0) {
           animateProgress(1.0, () async {
             setState(() {
               _progress = 0;
               print("Before: value = $_levelOfTree");
               _levelOfTree ++;
-              _treeService.updateProgress(widget.userId, _progress);
-              _treeService.updateLevelOfTree(widget.userId, _levelOfTree);
+              _treeService.updateProgress(userId, _progress);
+              _treeService.updateLevelOfTree(userId, _levelOfTree);
             });
 
             print("After: value = $_levelOfTree");
 
             if (_levelOfTree >= _state.length) {
               _levelOfTree = 0;
-              _treeService.updateLevelOfTree(widget.userId, 0);
+              _treeService.updateLevelOfTree(userId, 0);
               grownTrees++;
             }
 
@@ -217,7 +218,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
               onPressed: () {
                 setState(() {
                   _trees += totalTrees;
-                  _treeService.updateTree(widget.userId, _trees);
+                  _treeService.updateTree(userId, _trees);
                 });
                 Navigator.of(context).pop();
               },

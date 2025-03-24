@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../../database/model/tree.dart';
+
 class TreeService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
@@ -35,10 +37,10 @@ class TreeService {
         .update({'progress': currentProgress});
   }
 
-  Future<void> updateWater(String userId, int water) async{
+  Future<void> updateWater(String userId, int drops) async{
     await _db.collection('trees')
         .doc(userId)
-        .update({'drops': water});
+        .update({'drops': drops});
   }
 
   Future<void> updateLevelOfTree(String userId, int level) async{
@@ -55,7 +57,6 @@ class TreeService {
 
   Future<void> increaseDrops(String userId, int increment) async {
     try {
-
       var treesRef = await _db.collection('trees')
           .where('userId', isEqualTo: userId)
           .limit(1)
@@ -76,6 +77,22 @@ class TreeService {
     } catch (e) {
       debugPrint("❌ Error updating drops: $e");
     }
+  }
+
+  Stream<Map<String, int>> getUserDropsAndTrees(String userId) {
+    return _db.collection('trees')
+        .doc(userId)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.exists && snapshot.data() != null) {
+        var data = snapshot.data() as Map<String, dynamic>;
+        return {
+          'drops': data['drops'] ?? 0,
+          'trees': data['trees'] ?? 0,
+        };
+      }
+      return {'drops': 0, 'trees': 0};
+    });
   }
 
 }

@@ -173,4 +173,32 @@ class EvidenceService{
       throw Exception("Failed to download image");
     }
   }
+
+  Stream<Map<String, int>> getTotalEachAcceptedCategory(String userId) {
+    return _db.collection('evidences')
+        .where('userId', isEqualTo: userId)
+        .where('status', isEqualTo: 'Accepted')
+        .snapshots() // Lắng nghe thay đổi real-time
+        .map((querySnapshot) {
+      Map<String, int> categoryCount = {};
+
+      for (var doc in querySnapshot.docs) {
+        var data = doc.data() as Map<String, dynamic>;
+        String category = data['category'];
+
+        categoryCount[category] = (categoryCount[category] ?? 0) + 1;
+      }
+
+      return categoryCount;
+    });
+  }
+
+  Stream<int> getTotalEvidences(String userId) {
+    return _db.collection('evidences')
+        .where('userId', isEqualTo: userId)
+        .where('status', isEqualTo: 'Accepted')
+        .snapshots()
+        .map((querySnapshot) => querySnapshot.size);
+  }
+
 }
