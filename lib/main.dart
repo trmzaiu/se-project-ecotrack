@@ -15,6 +15,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:wastesortapp/database/firebase_options.dart';
 import 'package:wastesortapp/frontend/screen/user/profile_screen.dart';
 
+import 'frontend/service/user_provider.dart';
 import 'frontend/utils/phone_size.dart';
 import 'package:provider/provider.dart';
 import 'package:wastesortapp/frontend/service/internet_checker_provider.dart';
@@ -32,12 +33,20 @@ void main() async{
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(
-      MyApp()
-  //   ChangeNotifierProvider(
-  //     create: (context) => InternetCheckerProvider(),
-  //     child: MyApp(),
-  //   ),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
+      child: MyApp(),
+    ),
   );
+  // runApp(
+  //     MyApp()
+  // //   ChangeNotifierProvider(
+  // //     create: (context) => InternetCheckerProvider(),
+  // //     child: MyApp(),
+  // //   ),
+  // );
 }
 
 class MyApp extends StatelessWidget {

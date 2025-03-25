@@ -112,7 +112,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
 
     animation.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        Future.delayed(Duration(milliseconds: 100), () {
+        Future.delayed(Duration(milliseconds: 500), () {
           if (_progress >= 1.0) {
             onComplete();
           }
@@ -125,7 +125,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
 
   void waterTree() {
     if (_drops <= 0) {
-      Future.delayed(Duration(milliseconds: 0), () {
+      Future.delayed(Duration(milliseconds: 1000), () {
         if (grownTrees > 0) {
           showTreeDialog(grownTrees, 0);
           grownTrees = 0;
@@ -134,56 +134,57 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
         }
       });
       return;
-    } else {
-      int totalNeededDrops = _state[_levelOfTree][1];
-      int currentNeededDrops = (totalNeededDrops * (1.0 - _progress)).round();
+    }
+    int totalNeededDrops = _state[_levelOfTree][1];
+    int currentNeededDrops = (totalNeededDrops * (1.0 - _progress)).round();
 
-      if (_drops <= currentNeededDrops) {
-        double newProgress = _progress + (_drops / totalNeededDrops);
-        if (newProgress == 1){
-          newProgress = 0;
-          _levelOfTree++;
+    if (_drops <= currentNeededDrops) {
+      double newProgress = _progress + (_drops / totalNeededDrops);
+      print(newProgress);
+      if (newProgress >= 1) {
+        newProgress = 0.0;
+        _levelOfTree++;
+
+        if (_levelOfTree >= _state.length) {
+          _levelOfTree = 0;
+          grownTrees++;
+        }
+        _treeService.updateLevelOfTree(userId, _levelOfTree);
+      }
+      _progress = newProgress;
+      animateProgress(newProgress, () {});
+      _drops = 0;
+      _treeService.updateProgress(userId, _progress);
+      _treeService.updateWater(userId, _drops);
+      leftDrops = getLeftDrops(_levelOfTree, _progress);
+      waterTree();
+    } else if (_drops > currentNeededDrops) {
+      _drops -= currentNeededDrops;
+      _treeService.updateWater(userId, _drops);
+      if (_progress <= 1.0) {
+        animateProgress(1.0, () async {
+          setState(() {
+            _progress = 0;
+            print("Before: value = $_levelOfTree");
+            _levelOfTree ++;
+            _treeService.updateProgress(userId, _progress);
+            _treeService.updateLevelOfTree(userId, _levelOfTree);
+          });
+
+          print("After: value = $_levelOfTree");
+
           if (_levelOfTree >= _state.length) {
             _levelOfTree = 0;
+            _treeService.updateLevelOfTree(userId, 0);
             grownTrees++;
           }
-          _treeService.updateLevelOfTree(userId, _levelOfTree);
-        }
-        _progress = newProgress;
-        animateProgress(newProgress, () {});
-        _drops = 0;
-        _treeService.updateProgress(userId, newProgress);
-        _treeService.updateWater(userId, 0);
-        leftDrops = getLeftDrops(_levelOfTree, _progress);
-        waterTree();
-      } else if (_drops > currentNeededDrops) {
-        _drops -= currentNeededDrops;
-        _treeService.updateWater(userId, _drops);
-        if (_progress <= 1.0) {
-          animateProgress(1.0, () async {
-            setState(() {
-              _progress = 0;
-              print("Before: value = $_levelOfTree");
-              _levelOfTree ++;
-              _treeService.updateProgress(userId, _progress);
-              _treeService.updateLevelOfTree(userId, _levelOfTree);
-            });
 
-            print("After: value = $_levelOfTree");
-
-            if (_levelOfTree >= _state.length) {
-              _levelOfTree = 0;
-              _treeService.updateLevelOfTree(userId, 0);
-              grownTrees++;
-            }
-
-            setState(() {
-              leftDrops = getLeftDrops(_levelOfTree, _progress);
-            });
-
-            waterTree();
+          setState(() {
+            leftDrops = getLeftDrops(_levelOfTree, _progress);
           });
-        }
+
+          waterTree();
+        });
       }
     }
   }

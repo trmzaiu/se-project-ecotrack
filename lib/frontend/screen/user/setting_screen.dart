@@ -8,10 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import '../../../theme/fonts.dart';
+import '../../service/user_provider.dart';
 import '../../service/user_service.dart';
 import '../../utils/phone_size.dart';
 import '../../widget/bar_title.dart';
@@ -29,11 +31,23 @@ class _SettingScreenState extends State<SettingScreen> {
   final TextEditingController passwordConfirmController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
 
-  final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
+  String? userId;
   Map<String, dynamic>? user;
 
   Country? selectedCountry;
   List<File> selectedImages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          userId = Provider.of<UserProvider>(context, listen: false).userId;
+        });
+      }
+    });
+  }
 
   Future<void> _pickImage(source) async {
     try {
@@ -147,6 +161,7 @@ class _SettingScreenState extends State<SettingScreen> {
                                 thumbColor: MaterialStateProperty.all(AppColors.board2),
                                 thickness: MaterialStateProperty.all(2),
                               ),
+                                isOverButton: true
                             ),
                             items: List.generate(12, (index) {
                               bool isDisabled = selectedYear == DateTime.now().year && (index + 1) > DateTime.now().month;
@@ -232,6 +247,7 @@ class _SettingScreenState extends State<SettingScreen> {
                                 thumbColor: MaterialStateProperty.all(AppColors.board2),
                                 thickness: MaterialStateProperty.all(2),
                               ),
+                              isOverButton: true
                             ),
                             menuItemStyleData: MenuItemStyleData(
                               height: 30,
@@ -422,6 +438,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    userId = Provider.of<UserProvider>(context).userId;
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -443,7 +460,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       SizedBox(height: 30),
 
                       FutureBuilder<Map<String, dynamic>>(
-                        future: UserService().getCurrentUser(userId),
+                        future: UserService().getCurrentUser(userId!),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return Center(child: CircularProgressIndicator());
@@ -451,7 +468,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
                           final user = snapshot.data ?? {
                             'photoUrl': '',
-                            'name': userId.substring(0, 10),
+                            'name': userId!.substring(0, 10),
                             'email': '',
                             'dob': '',
                             'country': ''

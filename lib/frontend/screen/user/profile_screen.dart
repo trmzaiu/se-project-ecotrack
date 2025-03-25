@@ -4,8 +4,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 import 'package:wastesortapp/frontend/screen/user/setting_screen.dart';
+import 'package:wastesortapp/frontend/service/user_provider.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import 'package:wastesortapp/frontend/widget/bar_title.dart';
@@ -13,7 +15,6 @@ import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 import '../../service/user_service.dart';
 
-import '../../service/auth_service.dart';
 import '../../service/evidence_service.dart';
 import '../../service/tree_service.dart';
 import '../evidence/evidence_screen.dart';
@@ -24,11 +25,23 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
+  String? userId;
   Map<String, dynamic>? user;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          userId = Provider.of<UserProvider>(context, listen: false).userId;
+        });
+      }
+    });
+  }
+
   Future<void> _signOut(BuildContext context) async {
-    await AuthenticationService().signOut();
+    await UserProvider().signOut();
     Navigator.of(context).pushReplacement(
       moveLeftRoute(
         LoginScreen(),
@@ -38,6 +51,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    userId = Provider.of<UserProvider>(context).userId;
     double phoneWidth = getPhoneWidth(context);
     print("Height: ${getPhoneHeight(context)}");
     print("Width: ${getPhoneWidth(context)}");
@@ -52,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SizedBox(height: 25),
 
           FutureBuilder<Map<String, dynamic>>(
-            future: UserService().getCurrentUser(userId),
+            future: UserService().getCurrentUser(userId!),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
@@ -60,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               final user = snapshot.data ?? {
                 'photoUrl': '',
-                'name': userId.substring(0, 10),
+                'name': userId!.substring(0, 10),
                 'email': '',
               };
 
@@ -70,16 +84,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: 125,
                     height: 125,
                     decoration: ShapeDecoration(
-                        image: DecorationImage(
-                          image: user['photoUrl'] != '' ? CachedNetworkImageProvider(user['photoUrl']) : AssetImage('lib/assets/images/avatar_default.png'),
-                          fit: BoxFit.cover,
-                        ),
-                        shape: OvalBorder(
-                            side: BorderSide(
-                              width: 5,
-                              color: AppColors.tertiary.withOpacity(0.8),
-                            )
+                      image: DecorationImage(
+                        image: user['photoUrl'] != '' ? CachedNetworkImageProvider(user['photoUrl']) : AssetImage('lib/assets/images/avatar_default.png'),
+                        fit: BoxFit.cover,
+                      ),
+                      shape: OvalBorder(
+                        side: BorderSide(
+                          width: 5,
+                          color: AppColors.tertiary.withOpacity(0.8),
                         )
+                      )
                     ),
                   ),
 
@@ -168,7 +182,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         StreamBuilder<Map<String, int>>(
-                          stream: TreeService().getUserDropsAndTrees(userId),
+                          stream: TreeService().getUserDropsAndTrees(userId!),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               return _statistic('Drops', '0');
@@ -182,7 +196,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
 
                         StreamBuilder<Map<String, int>>(
-                          stream: TreeService().getUserDropsAndTrees(userId),
+                          stream: TreeService().getUserDropsAndTrees(userId!),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               return _statistic('Trees', '0');
@@ -196,7 +210,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
 
                         StreamBuilder<int>(
-                          stream: EvidenceService(context).getTotalEvidences(userId),
+                          stream: EvidenceService(context).getTotalEvidences(userId!),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               return _statistic('Evidences', '0');
@@ -252,7 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(height: 10),
 
                   StreamBuilder<Map<String, int>>(
-                    stream: EvidenceService(context).getTotalEachAcceptedCategory(userId),
+                    stream: EvidenceService(context).getTotalEachAcceptedCategory(userId!),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return CircularProgressIndicator();

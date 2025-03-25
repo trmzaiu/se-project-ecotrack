@@ -3,11 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:wastesortapp/frontend/service/user_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
+import '../../service/user_provider.dart';
 import '../../widget/bar_title.dart';
 
 class LeaderboardScreen extends StatefulWidget {
@@ -17,15 +19,22 @@ class LeaderboardScreen extends StatefulWidget {
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
   final UserService _userService = UserService();
-  final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
   final ValueNotifier<bool> _isCurrentUserVisibleNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _isScrollingUpNotifier = ValueNotifier<bool>(false);
   late ScrollController _scrollController;
   final double _topContainer = 0;
+  String? currentUserId;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          currentUserId = Provider.of<UserProvider>(context, listen: false).userId;
+        });
+      }
+    });
     _scrollController = ScrollController();
 
     _scrollController.addListener(() {
@@ -53,6 +62,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    currentUserId = Provider.of<UserProvider>(context).userId;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: StreamBuilder<List<Map<String, dynamic>>>(
