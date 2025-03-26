@@ -7,6 +7,7 @@ import 'package:wastesortapp/theme/colors.dart';
 
 import '../../theme/fonts.dart';
 import '../screen/guide/guide_detail_screen.dart';
+import '../utils/route_transition.dart';
 
 class CategoryBox extends StatelessWidget {
   final String image;
@@ -21,9 +22,10 @@ class CategoryBox extends StatelessWidget {
     
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => GuideDetailScreen(slide: slide)),
+        Navigator.of(context).push(
+          moveUpRoute(
+              GuideDetailScreen(slide: slide)
+          ),
         );
       },
       child: Container(

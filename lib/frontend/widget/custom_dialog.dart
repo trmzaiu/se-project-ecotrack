@@ -28,7 +28,7 @@ class CustomDialog extends StatelessWidget {
       backgroundColor: AppColors.background,
       contentPadding: EdgeInsets.fromLTRB(20, phoneWidth/7, 20, 0),
       content: SizedBox(
-        height: phoneHeight/2.5 - 40,
+        height: phoneHeight/2.7,
         width: phoneWidth - 60,
         child: Column(
           children: [

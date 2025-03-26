@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               gradient: LinearGradient(
                                 begin: Alignment(-1, -1),
                                 end: Alignment(1, 1),
-                                colors: [Color(0xFF2C6E49), Color(0xFF5F8E6E)],
+                                colors: [Color(0xFF2C6E49), Color(0xFF56725F)],
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               onTap: () {
                                 Navigator.of(context).push(
                                   moveUpRoute(
-                                    UploadScreen(imagePath: ""),
+                                    UploadScreen(),
                                   ),
                                 );
                               },

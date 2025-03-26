@@ -15,10 +15,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:wastesortapp/database/firebase_options.dart';
 import 'package:wastesortapp/frontend/screen/user/profile_screen.dart';
 
-import 'frontend/service/user_provider.dart';
 import 'frontend/utils/phone_size.dart';
-import 'package:provider/provider.dart';
-import 'package:wastesortapp/frontend/service/internet_checker_provider.dart';
 
 void main() async{
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(

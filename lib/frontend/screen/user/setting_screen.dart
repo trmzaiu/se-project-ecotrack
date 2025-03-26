@@ -8,12 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import '../../../theme/fonts.dart';
-import '../../service/user_provider.dart';
 import '../../service/user_service.dart';
 import '../../utils/phone_size.dart';
 import '../../widget/bar_title.dart';

@@ -30,6 +30,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
   late AnimationController _controller;
   int neededDrops = 0;
   int grownTrees = 0;
+  bool _dialogShown = false;
 
   int leftDrops = 0;
   int _drops = 0;
@@ -75,7 +76,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
       }
     });
   }
-  
+
   int getLeftDrops(int state, double currentProgress) {
     int totalDrops = 0;
     List<int> reductions = [5, 15, 30, 50];
@@ -91,14 +92,13 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
   }
 
   void animateProgress(double newProgress, VoidCallback onComplete) {
-    if (_drops <= 0) return;
+    if (_drops <= 0 || _controller.isAnimating) return;
 
-    if (_controller.isAnimating) return;
-
+    double startProgress = _progress;
     _controller.reset();
 
     final animation = Tween<double>(
-      begin: _progress,
+      begin: startProgress,
       end: newProgress,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
@@ -125,66 +125,84 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
 
   void waterTree() {
     if (_drops <= 0) {
-      Future.delayed(Duration(milliseconds: 1000), () {
+      if (_dialogShown) return;
+
+      _dialogShown = true;
+
+      print("Tree: $grownTrees");
+      Future.delayed(Duration(seconds: 2), () {
         if (grownTrees > 0) {
           showTreeDialog(grownTrees, 0);
-          grownTrees = 0;
         } else {
-          // showTreeDialog(0, _levelOfTree + 1);
+          showTreeDialog(0, _levelOfTree + 1);
         }
       });
       return;
-    }
-    int totalNeededDrops = _state[_levelOfTree][1];
-    int currentNeededDrops = (totalNeededDrops * (1.0 - _progress)).round();
+    } else {
+      int totalNeededDrops = _state[_levelOfTree][1];
+      int currentNeededDrops = (totalNeededDrops * (1.0 - _progress)).round();
 
-    if (_drops <= currentNeededDrops) {
-      double newProgress = _progress + (_drops / totalNeededDrops);
-      print(newProgress);
-      if (newProgress >= 1) {
-        newProgress = 0.0;
-        _levelOfTree++;
+      if (_drops <= currentNeededDrops) {
+        double newProgress = _progress + (_drops / totalNeededDrops);
+        if (newProgress >= 0.99) {
+          animateProgress(1.0, () {
+            _levelOfTree++;
 
-        if (_levelOfTree >= _state.length) {
-          _levelOfTree = 0;
-          grownTrees++;
-        }
-        _treeService.updateLevelOfTree(userId, _levelOfTree);
-      }
-      _progress = newProgress;
-      animateProgress(newProgress, () {});
-      _drops = 0;
-      _treeService.updateProgress(userId, _progress);
-      _treeService.updateWater(userId, _drops);
-      leftDrops = getLeftDrops(_levelOfTree, _progress);
-      waterTree();
-    } else if (_drops > currentNeededDrops) {
-      _drops -= currentNeededDrops;
-      _treeService.updateWater(userId, _drops);
-      if (_progress <= 1.0) {
-        animateProgress(1.0, () async {
-          setState(() {
+            if (_levelOfTree >= _state.length) {
+              _levelOfTree = 0;
+              grownTrees++;
+            }
+            print("Tree: $grownTrees");
+
             _progress = 0;
-            print("Before: value = $_levelOfTree");
-            _levelOfTree ++;
+
+            _treeService.updateLevelOfTree(userId, _levelOfTree == 4 ? 0 : _levelOfTree);
             _treeService.updateProgress(userId, _progress);
-            _treeService.updateLevelOfTree(userId, _levelOfTree);
+            leftDrops = getLeftDrops(_levelOfTree, _progress);
+            print('Progress:  $_progress and newProgress: $newProgress');
           });
-
-          print("After: value = $_levelOfTree");
-
-          if (_levelOfTree >= _state.length) {
-            _levelOfTree = 0;
-            _treeService.updateLevelOfTree(userId, 0);
-            grownTrees++;
-          }
-
+        } else if (newProgress < 0.99) {
+          print('newProgress: $newProgress');
+          animateProgress(newProgress, () {});
           setState(() {
+            _progress = newProgress;
             leftDrops = getLeftDrops(_levelOfTree, _progress);
           });
+          _treeService.updateProgress(userId, _progress);
+          print('Progress:  $_progress and newProgress: $newProgress');
+        }
+        _drops = 0;
+        _treeService.updateWater(userId, _drops);
+        waterTree();
+      } else if (_drops > currentNeededDrops) {
+        _drops -= currentNeededDrops;
+        _treeService.updateWater(userId, _drops);
 
-          waterTree();
-        });
+        if (_progress <= 1.0) {
+          animateProgress(1.0, () async {
+            setState(() {
+              _progress = 0;
+              print("Before: value = $_levelOfTree");
+              _levelOfTree ++;
+              _treeService.updateProgress(userId, _progress);
+              _treeService.updateLevelOfTree(userId, _levelOfTree);
+            });
+
+            print("After: value = $_levelOfTree");
+
+            if (_levelOfTree >= _state.length) {
+              _levelOfTree = 0;
+              grownTrees++;
+              _treeService.updateLevelOfTree(userId, 0);
+            }
+
+            setState(() {
+              leftDrops = getLeftDrops(_levelOfTree, _progress);
+            });
+
+            waterTree();
+          });
+        }
       }
     }
   }
@@ -220,6 +238,8 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                 setState(() {
                   _trees += totalTrees;
                   _treeService.updateTree(userId, _trees);
+                  grownTrees = 0;
+                  _dialogShown = false;
                 });
                 Navigator.of(context).pop();
               },

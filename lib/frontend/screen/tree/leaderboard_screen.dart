@@ -3,13 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:wastesortapp/frontend/service/user_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
-import '../../service/user_provider.dart';
 import '../../widget/bar_title.dart';
 
 class LeaderboardScreen extends StatefulWidget {
@@ -42,6 +40,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         if (_isScrollingUpNotifier.value != true) {
           _isScrollingUpNotifier.value = true;
         }
+      }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final users = await _userService.leaderboardStream().first;
+      final currentUserIndex = users.indexWhere((user) => user['userId'] == currentUserId);
+
+      if (currentUserIndex != -1 && currentUserIndex < 10) {
+        _isCurrentUserVisibleNotifier.value = true;
       }
     });
   }
