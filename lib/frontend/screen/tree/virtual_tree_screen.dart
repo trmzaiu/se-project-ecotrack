@@ -239,8 +239,8 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                   _trees += totalTrees;
                   _treeService.updateTree(userId, _trees);
                   grownTrees = 0;
-                  _dialogShown = false;
                 });
+                _dialogShown = false;
                 Navigator.of(context).pop();
               },
               style: ButtonStyle(
