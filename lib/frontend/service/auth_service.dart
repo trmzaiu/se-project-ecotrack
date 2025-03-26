@@ -113,6 +113,18 @@ class AuthenticationService {
     }
   }
 
+  Future<void> signOut() async {
+    try {
+      await Future.wait([
+        _firebaseAuth.signOut(),
+        _googleSignIn.signOut(),
+        _facebookAuth.logOut(),
+      ]);
+    } catch (e) {
+      throw Exception("Sign-out failed. Please try again.");
+    }
+  }
+
   // Save user information to Firebase
   Future<void> saveUserInformation({
     required String userId,

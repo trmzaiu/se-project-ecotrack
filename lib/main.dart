@@ -33,12 +33,7 @@ void main() async{
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-      ],
-      child: MyApp(),
-    ),
+    MyApp()
   );
   // runApp(
   //     MyApp()

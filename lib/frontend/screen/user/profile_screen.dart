@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 import 'package:wastesortapp/frontend/screen/user/setting_screen.dart';
-import 'package:wastesortapp/frontend/service/user_provider.dart';
+import 'package:wastesortapp/frontend/service/auth_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import 'package:wastesortapp/frontend/widget/bar_title.dart';
@@ -25,23 +25,16 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String? userId;
+  final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
   Map<String, dynamic>? user;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          userId = Provider.of<UserProvider>(context, listen: false).userId;
-        });
-      }
-    });
   }
 
   Future<void> _signOut(BuildContext context) async {
-    await UserProvider().signOut();
+    await AuthenticationService().signOut();
     Navigator.of(context).pushReplacement(
       moveLeftRoute(
         LoginScreen(),
@@ -51,7 +44,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    userId = Provider.of<UserProvider>(context).userId;
     double phoneWidth = getPhoneWidth(context);
     print("Height: ${getPhoneHeight(context)}");
     print("Width: ${getPhoneWidth(context)}");

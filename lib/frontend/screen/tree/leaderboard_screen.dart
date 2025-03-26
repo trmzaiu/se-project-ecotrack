@@ -23,18 +23,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   final ValueNotifier<bool> _isScrollingUpNotifier = ValueNotifier<bool>(false);
   late ScrollController _scrollController;
   final double _topContainer = 0;
-  String? currentUserId;
+  final String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? "";
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          currentUserId = Provider.of<UserProvider>(context, listen: false).userId;
-        });
-      }
-    });
+
     _scrollController = ScrollController();
 
     _scrollController.addListener(() {
@@ -62,7 +56,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    currentUserId = Provider.of<UserProvider>(context).userId;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: StreamBuilder<List<Map<String, dynamic>>>(

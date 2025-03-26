@@ -31,7 +31,7 @@ class _SettingScreenState extends State<SettingScreen> {
   final TextEditingController passwordConfirmController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
 
-  String? userId;
+  final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
   Map<String, dynamic>? user;
 
   Country? selectedCountry;
@@ -40,13 +40,6 @@ class _SettingScreenState extends State<SettingScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          userId = Provider.of<UserProvider>(context, listen: false).userId;
-        });
-      }
-    });
   }
 
   Future<void> _pickImage(source) async {
@@ -438,7 +431,6 @@ class _SettingScreenState extends State<SettingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    userId = Provider.of<UserProvider>(context).userId;
     return Scaffold(
       body: Container(
         width: double.infinity,
