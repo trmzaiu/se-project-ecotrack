@@ -306,10 +306,6 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                               LeaderboardScreen(),
                             ),
                           );
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(builder: (context) => TestScreen()),
-                          // );
                         },
                         icon: SvgPicture.asset(
                           'lib/assets/icons/ic_leaderboard.svg',
@@ -317,14 +313,14 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                           height: 24,
                         ),
                         style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(AppColors.surface),
-                          shape: MaterialStateProperty.all(
+                          backgroundColor: WidgetStateProperty.all(AppColors.surface),
+                          shape: WidgetStateProperty.all(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          shadowColor: MaterialStateProperty.all(Color(0x33333333)),
-                          elevation: MaterialStateProperty.all(2),
+                          shadowColor: WidgetStateProperty.all(Color(0x33333333)),
+                          elevation: WidgetStateProperty.all(2),
                         ),
                       ),
                     ),
@@ -373,9 +369,9 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                                 duration: Duration(milliseconds: 500),
                                 builder: (_, double value, __) {
                                   return Text('${value.round()}',
-                                      style: GoogleFonts.urbanist(fontSize: 30,
-                                          fontWeight: FontWeight.normal,
-                                          color: AppColors.secondary));
+                                    style: GoogleFonts.urbanist(fontSize: 30,
+                                      fontWeight: FontWeight.normal,
+                                      color: AppColors.secondary));
                                 },
                               ),
                             ],

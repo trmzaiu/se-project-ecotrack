@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -67,9 +68,8 @@ class MyApp extends StatelessWidget {
 }
 
 class MainScreen extends StatefulWidget {
-  final String userId;
 
-  const MainScreen({Key? key, required this.userId}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
   _MainScreenState createState() => _MainScreenState();
@@ -305,8 +305,15 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildNavItem(String iconPath, String label, int index) {
-    return GestureDetector(
-      onTap: () => _onItemTapped(index),
+    return ElevatedButton(
+      onPressed: () => _onItemTapped(index),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        padding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+        overlayColor: Colors.transparent,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -314,7 +321,10 @@ class _MainScreenState extends State<MainScreen> {
             iconPath,
             width: 25,
             height: 25,
-            colorFilter: ColorFilter.mode(_currentIndex == index ? AppColors.primary : AppColors.accent, BlendMode.srcIn),
+            colorFilter: ColorFilter.mode(
+              _currentIndex == index ? AppColors.primary : AppColors.accent,
+              BlendMode.srcIn,
+            ),
           ),
           SizedBox(height: 4),
           Text(
@@ -326,7 +336,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
         ],
-      )
+      ),
     );
   }
 }

@@ -74,23 +74,17 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   Future<void> _checkLoginStatus() async {
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(Duration(seconds: 0));
 
     User? user = FirebaseAuth.instance.currentUser;
     if (mounted) {
-      if (user != null) {
+      Future.microtask(() {
         Navigator.of(context).pushReplacement(
           moveUpRoute(
-            MainScreen(userId: user.uid),
+            user != null ? MainScreen() : OpeningScreen(),
           ),
         );
-      } else {
-        Navigator.of(context).pushReplacement(
-          moveUpRoute(
-            OpeningScreen(),
-          ),
-        );
-      }
+      });
     }
   }
 

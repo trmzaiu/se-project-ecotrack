@@ -26,7 +26,7 @@ class CustomDialog extends StatelessWidget {
 
     return AlertDialog(
       backgroundColor: AppColors.background,
-      contentPadding: EdgeInsets.fromLTRB(20, phoneWidth/7, 20, 0),
+      contentPadding: EdgeInsets.fromLTRB(phoneWidth * 0.05, phoneWidth/7, phoneWidth * 0.05, 0),
       content: SizedBox(
         height: phoneHeight/2.7,
         width: phoneWidth - 60,
@@ -34,10 +34,10 @@ class CustomDialog extends StatelessWidget {
           children: [
             SvgPicture.asset(
               status ? "lib/assets/icons/ic_green.svg" : "lib/assets/icons/ic_red.svg",
-              width: phoneWidth/2,
-              height: phoneWidth/2,
+              width: phoneHeight/4,
+              height: phoneHeight/4,
             ),
-            SizedBox(height: 30),
+            SizedBox(height: phoneHeight * 0.03),
             Text(
               status ? "Success!" : "Oops!",
               style: GoogleFonts.urbanist(
@@ -60,14 +60,14 @@ class CustomDialog extends StatelessWidget {
         ),
       ),
       actionsAlignment: MainAxisAlignment.center,
-      actionsPadding: EdgeInsets.only(top: 0, left: 15, right: 15, bottom: 50),
+      actionsPadding: EdgeInsets.only(top: 0, left: 15, right: 15, bottom: phoneHeight * 0.05),
       actionsOverflowDirection: VerticalDirection.up,
       actions: [
         TextButton(
           onPressed: onPressed ?? () => Navigator.of(context).pop(),
           child: Container(
             width: phoneWidth/3,
-            height: 40,
+            height: phoneWidth * 0.1,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: status ? AppColors.primary : AppColors.secondary,

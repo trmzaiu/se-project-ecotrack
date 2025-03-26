@@ -58,7 +58,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SizedBox(height: 25),
 
           FutureBuilder<Map<String, dynamic>>(
-            future: UserService().getCurrentUser(userId!),
+            future: UserService().getCurrentUser(userId),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
@@ -66,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               final user = snapshot.data ?? {
                 'photoUrl': '',
-                'name': userId!.substring(0, 10),
+                'name': userId.substring(0, 10),
                 'email': '',
               };
 
@@ -115,29 +115,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           SizedBox(height: 30),
 
-          GestureDetector(
-            onTap: () {
+          ElevatedButton(
+            onPressed: () {
               Navigator.of(context).push(
                 moveLeftRoute(
                   SettingScreen(),
                 ),
               );
             },
-            child: Container(
-              width: 135,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              decoration: ShapeDecoration(
-                color: AppColors.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-              ),
-              child: Text(
-                'Edit Profile',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.urbanist(
-                  color: AppColors.surface,
-                  fontSize: 14,
-                  fontWeight: AppFontWeight.semiBold,
-                ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              padding: EdgeInsets.symmetric(horizontal: 35, vertical: 10),
+              elevation: 0,
+            ),
+            child: Text(
+              'Edit Profile',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.urbanist(
+                color: AppColors.surface,
+                fontSize: 14,
+                fontWeight: AppFontWeight.semiBold,
               ),
             ),
           ),
@@ -174,7 +172,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         StreamBuilder<Map<String, int>>(
-                          stream: TreeService().getUserDropsAndTrees(userId!),
+                          stream: TreeService().getUserDropsAndTrees(userId),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               return _statistic('Drops', '0');
@@ -188,7 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
 
                         StreamBuilder<Map<String, int>>(
-                          stream: TreeService().getUserDropsAndTrees(userId!),
+                          stream: TreeService().getUserDropsAndTrees(userId),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               return _statistic('Trees', '0');
@@ -202,7 +200,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
 
                         StreamBuilder<int>(
-                          stream: EvidenceService(context).getTotalEvidences(userId!),
+                          stream: EvidenceService(context).getTotalEvidences(userId),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               return _statistic('Evidences', '0');
@@ -258,7 +256,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(height: 10),
 
                   StreamBuilder<Map<String, int>>(
-                    stream: EvidenceService(context).getTotalEachAcceptedCategory(userId!),
+                    stream: EvidenceService(context).getTotalEachAcceptedCategory(userId),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return CircularProgressIndicator();
@@ -293,7 +291,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ),
 
-                          SizedBox(height: phoneWidth - phoneWidth * 0.82 - 60),
+                          SizedBox(height: phoneWidth - phoneWidth * 0.405 * 2 - 60),
 
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 30),
@@ -322,24 +320,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   SizedBox(height: 30),
 
-                  GestureDetector(
-                    onTap: () => _signOut(context),
-                    child: Container(
-                      width: phoneWidth - 60,
-                      padding: EdgeInsets.symmetric(vertical: 15),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary,
+                  ElevatedButton(
+                    onPressed: () => _signOut(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Log out',
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.surface,
-                          fontSize: 16,
-                          fontWeight: AppFontWeight.bold,
-                        ),
-                      )
+                      padding: EdgeInsets.symmetric(vertical: 15),
+                      minimumSize: Size(phoneWidth - 60, 0),
+                    ),
+                    child: Text(
+                      'Log out',
+                      style: GoogleFonts.urbanist(
+                        color: AppColors.surface,
+                        fontSize: 16,
+                        fontWeight: AppFontWeight.bold,
+                      ),
                     ),
                   ),
 
@@ -380,14 +377,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _history(BuildContext context, String image, String title, String time) {
+    double phoneWidth = getPhoneWidth(context);
+    double containerSize = phoneWidth * 0.405;
+    double paddingSize = phoneWidth * 0.04;
+
     return Container(
-      width: getPhoneWidth(context) * 0.41,
-      height: getPhoneWidth(context) * 0.41,
-      padding: EdgeInsets.all(15),
+      width: phoneWidth * 0.405,
+      height: phoneWidth * 0.405,
+      padding: EdgeInsets.all(paddingSize * 0.9),
       decoration: ShapeDecoration(
         color: Color(0x80EBDCD6),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(17),
+          borderRadius: BorderRadius.circular(15),
         ),
         shadows: [
           BoxShadow(
@@ -403,8 +404,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             children: [
               Container(
-                height: getPhoneWidth(context) * 0.4 * 0.23,
-                width: getPhoneWidth(context) * 0.4 * 0.23,
+                height: containerSize * 0.22,
+                width: containerSize * 0.22,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(6),
                 ),
@@ -417,29 +418,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
 
-              SizedBox(width: 10),
+              SizedBox(width: paddingSize * 0.5),
 
               Text(
                 title,
                 style: GoogleFonts.urbanist(
                   color: AppColors.secondary,
-                  fontSize: getPhoneWidth(context) * 0.4 * 0.095,
+                  fontSize: containerSize * 0.095,
                   fontWeight: AppFontWeight.regular,
-                  letterSpacing: 1,
+                  letterSpacing: 0.8,
                   height: 1.2
                 ),
               ),
             ],
           ),
 
-          SizedBox(height: 5),
+          SizedBox(height: paddingSize * 0.5),
 
-          Text(
-            time,
-            style: GoogleFonts.urbanist(
-              color: AppColors.secondary,
-              fontSize: getPhoneWidth(context) * 0.4 * 0.34,
-              fontWeight: AppFontWeight.medium,
+          Expanded(
+            child: Text(
+              time,
+              style: GoogleFonts.urbanist(
+                color: AppColors.secondary,
+                fontSize: containerSize * 0.34,
+                fontWeight: AppFontWeight.medium,
+              ),
             ),
           ),
 
@@ -447,7 +450,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             time == '1' ? 'Time' : 'Times',
             style: GoogleFonts.urbanist(
               color: AppColors.tertiary,
-              fontSize: getPhoneWidth(context) * 0.4 * 0.09,
+              fontSize: containerSize * 0.09,
               fontWeight: AppFontWeight.regular,
             ),
           ),

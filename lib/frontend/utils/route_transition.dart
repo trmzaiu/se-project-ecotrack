@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 Route moveLeftRoute(Widget page, {RouteSettings? settings}) {
   return PageRouteBuilder(
     settings: settings,
+    transitionDuration: const Duration(milliseconds: 500),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);
@@ -25,6 +26,7 @@ Route moveLeftRoute(Widget page, {RouteSettings? settings}) {
 Route moveUpRoute(Widget page, {RouteSettings? settings}) {
   return PageRouteBuilder(
     settings: settings,
+    transitionDuration: const Duration(milliseconds: 500),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(0.0, 1.0);
@@ -45,6 +47,7 @@ Route moveUpRoute(Widget page, {RouteSettings? settings}) {
 /// Move from Top to Bottom
 Route moveDownRoute(Widget page) {
   return PageRouteBuilder(
+    transitionDuration: const Duration(milliseconds: 500),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(0.0, -1.0);
@@ -65,6 +68,7 @@ Route moveDownRoute(Widget page) {
 /// Move from Left to Right
 Route moveRightRoute(Widget page) {
   return PageRouteBuilder(
+    transitionDuration: const Duration(milliseconds: 500),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(-1.0, 0.0);
@@ -85,6 +89,7 @@ Route moveRightRoute(Widget page) {
 /// Fade
 Route fadeRoute(Widget page) {
   return PageRouteBuilder(
+    transitionDuration: const Duration(milliseconds: 500),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       return FadeTransition(
@@ -98,6 +103,7 @@ Route fadeRoute(Widget page) {
 /// Scale
 Route scaleRoute(Widget page) {
   return PageRouteBuilder(
+    transitionDuration: const Duration(milliseconds: 500),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       return ScaleTransition(
@@ -111,6 +117,7 @@ Route scaleRoute(Widget page) {
 /// Rotate
 Route rotateRoute(Widget page) {
   return PageRouteBuilder(
+    transitionDuration: const Duration(milliseconds: 500),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       return RotationTransition(

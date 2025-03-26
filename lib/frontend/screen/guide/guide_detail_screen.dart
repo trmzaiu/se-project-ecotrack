@@ -577,33 +577,6 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                         Image.asset('lib/assets/images/background.png', width: phoneWidth - 40),
 
                         Positioned(
-                          left: 30,
-                          top: 130,
-                          child: ElevatedButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              shape: const CircleBorder(),
-                              padding: EdgeInsets.zero,
-                              shadowColor: const Color(0x3F000000),
-                              elevation: 10,
-                            ),
-                            child: SizedBox(
-                              width: 55,
-                              height: 55,
-                              child: Center(
-                                child: SvgPicture.asset(
-                                  'lib/assets/icons/ic_backward.svg',
-                                  width: 24,
-                                  height: 24,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-
-
-                        Positioned(
                           right: -18,
                           top: -40,
                           child: Image.asset(
@@ -614,20 +587,57 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                         ),
 
                         Positioned(
-                            left: 20,
-                            top: 20,
-                            child: SizedBox(
-                              width: 300,
-                              child: Text(
-                                waste['description'],
-                                style: GoogleFonts.urbanist(
-                                  color: AppColors.secondary,
-                                  fontSize: 13.5,
-                                  fontWeight: AppFontWeight.regular,
+                          left: 20,
+                          top: 20,
+                          child: SizedBox(
+                            width: 300,
+                            child: Text(
+                              waste['description'],
+                              style: GoogleFonts.urbanist(
+                                color: AppColors.secondary,
+                                fontSize: 13.5,
+                                fontWeight: AppFontWeight.regular,
+                              ),
+                            ),
+                          )
+                        ),
+
+                        Positioned(
+                          left: 30,
+                          top: 130,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => Navigator.pop(context),
+                              borderRadius: BorderRadius.circular(50),
+                              splashColor: AppColors.board2,
+                              highlightColor: AppColors.board2,
+                              child: Container(
+                                width: 55,
+                                height: 55,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0x3F000000),
+                                      blurRadius: 10,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: SvgPicture.asset(
+                                    'lib/assets/icons/ic_backward.svg',
+                                    width: 24,
+                                    height: 24,
+                                  ),
                                 ),
                               ),
-                            )
+                            ),
+                          ),
                         ),
+
                       ],
                     ),
 
@@ -636,16 +646,16 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                     Padding(
                       padding: EdgeInsets.only(left: 20),
                       child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Materials',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.secondary,
-                              fontSize: 20,
-                              fontWeight: AppFontWeight.semiBold,
-                            ),
-                          )
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Materials',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.urbanist(
+                            color: AppColors.secondary,
+                            fontSize: 20,
+                            fontWeight: AppFontWeight.semiBold,
+                          ),
+                        )
                       ),
                     ),
 

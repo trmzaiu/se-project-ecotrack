@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart';
 import 'package:wastesortapp/frontend/screen/auth/opening_screen.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
 import 'package:wastesortapp/frontend/service/auth_service.dart';
@@ -130,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
     void _navigateToMainScreen(BuildContext context, String userId) {
       Navigator.of(context).pushReplacement(
         moveUpRoute(
-          MainScreen(userId: userId),
+          MainScreen(),
         ),
       );
     }
@@ -177,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double phoneHeight= getPhoneHeight(context);
+    double phoneHeight = getPhoneHeight(context);
     double phoneWidth = getPhoneWidth(context);
 
     return Scaffold(
@@ -188,25 +189,25 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               children: [
                 Container(
-                  height: phoneWidth - 30,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary,
-                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-                  ),
-                  child: _isShowSheet ?
-                  Center(
-                    child: Image.asset(
-                      "lib/assets/images/trash.png", width: phoneWidth - 10,
+                    height: phoneHeight/2.5,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
                     ),
-                  ) :
-                  Center()
+                    child: _isShowSheet ?
+                    Center(
+                      child: Image.asset(
+                        "lib/assets/images/trash.png", width: phoneHeight/2.5 - 30,
+                      ),
+                    ) :
+                    Center()
                 ),
               ],
             ),
           ),
 
           Positioned(
-            top: phoneHeight/4.5,
+            top: phoneHeight <= 700 ? phoneHeight/8 : phoneHeight/4.5,
             right: 20,
             left: 20,
             child: Container(
@@ -229,9 +230,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     "Login",
                     style: GoogleFonts.urbanist(
-                      fontSize: 34,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.secondary
+                        fontSize: 34,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.secondary
                     ),
                   ),
                   SizedBox(height: 20),
@@ -320,7 +321,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Positioned(
             left: 0,
             right: 0,
-            top: phoneHeight - 55,
+            top: phoneHeight <= 700 ? phoneHeight - 35 : phoneHeight - 55,
             child: Center(
               child: Text.rich(
                 TextSpan(

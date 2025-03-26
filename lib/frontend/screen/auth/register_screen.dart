@@ -71,7 +71,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _navigateToMainScreen(BuildContext context, String userId) {
     Navigator.of(context).pushReplacement(
       moveUpRoute(
-        MainScreen(userId: userId),
+        MainScreen(),
       ),
     );
 
@@ -107,7 +107,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double phoneHeight= getPhoneHeight(context);
+    double phoneHeight = getPhoneHeight(context);
     double phoneWidth = getPhoneWidth(context);
 
     return Scaffold(
@@ -118,23 +118,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               children: [
                 Container(
-                  height: phoneWidth - 30,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary,
-                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-                  ),
-                  child: Center(
-                    child: Image.asset(
-                      "lib/assets/images/trash.png", width: 370,
+                    height: phoneHeight/2.5,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
                     ),
-                  )
+                    child: Center(
+                      child: Image.asset(
+                        "lib/assets/images/trash.png", width: phoneHeight/2.5 - 30,
+                      ),
+                    )
                 ),
               ],
             ),
           ),
 
           Positioned(
-            top: phoneHeight/4.5,
+            top: phoneHeight <= 700 ? phoneHeight/8 : phoneHeight/4.5,
             right: 20,
             left: 20,
             child: Container(
@@ -155,7 +155,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                   'Register',
+                    'Register',
                     style: GoogleFonts.urbanist(
                       fontSize: 34,
                       fontWeight: FontWeight.bold,
@@ -198,7 +198,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
 
           Positioned(
-            top: phoneHeight - 55,
+            top: phoneHeight <= 700 ? phoneHeight - 35 : phoneHeight - 55,
             left: 0,
             right: 0,
             child: Center(
@@ -206,18 +206,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: "Already have an account? ",
-                      style: GoogleFonts.urbanist(
-                        color: AppColors.primary,
-                        fontSize: 14,
-                      )
+                        text: "Already have an account? ",
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.primary,
+                          fontSize: 14,
+                        )
                     ),
                     TextSpan(
                       text: "Login",
                       style: GoogleFonts.urbanist(
-                        color: AppColors.secondary,
-                        fontSize: 15,
-                        fontWeight: AppFontWeight.bold
+                          color: AppColors.secondary,
+                          fontSize: 15,
+                          fontWeight: AppFontWeight.bold
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {

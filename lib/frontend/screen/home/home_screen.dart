@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/screen/evidence/upload_evidence_screen.dart';
@@ -5,6 +6,7 @@ import 'package:wastesortapp/frontend/widget/bar_noti_title.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
+import '../../service/user_service.dart';
 import '../../utils/phone_size.dart';
 import '../../utils/route_transition.dart';
 import '../../widget/category_box.dart';
@@ -17,6 +19,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
   final PageController _pageController = PageController();
   final ScrollController _scrollController = ScrollController();
   int _currentIndex = 0;
@@ -49,7 +52,21 @@ class _HomeScreenState extends State<HomeScreen> {
         color: AppColors.background,
         child: Column(
           children: [
-            BarNotiTitle(title_small: "Hello", title_big: "EcoTrack"),
+            FutureBuilder<Map<String, dynamic>>(
+              future: UserService().getCurrentUser(userId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return BarNotiTitle(title_small: "Hello", title_big: '');
+                }
+
+                final user = snapshot.data ?? {
+                  'photoUrl': '',
+                  'name': userId.substring(0, 10),
+                  'email': '',
+                };
+                return BarNotiTitle(title_small: "Hello", title_big: user['name']);
+              }
+            ),
 
             SizedBox(height: 25),
 
