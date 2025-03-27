@@ -76,7 +76,7 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
         children: [
           // Background Circle
           Positioned(
-            top: - phoneWidth*1.2,
+            bottom: phoneHeight <= 700 ? phoneHeight*0.55 : phoneHeight*0.51,
             left: phoneWidth / 2 - (phoneWidth*2.1)/2,
             child: Container(
               width: phoneWidth*2.1,
@@ -89,79 +89,80 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
           ),
 
           SizedBox(
-            width: phoneWidth,
-            height: phoneHeight - 85,
-            child: Column(
-              children: [
-                BarTitle(title: 'Guide', showNotification: true),
-                SizedBox(
-                  height: phoneHeight * 0.64,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentIndex = index % 4;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      return _buildWasteSlide(index % 4);
-                    },
-                  ),
-                ),
-
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        ElevatedButton(
-                          onPressed: () => _goToScreen(_currentIndex),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            fixedSize: Size(phoneWidth - 100, 45),
-                          ),
-                          child: Text(
-                            'Read More',
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.surface,
-                              fontSize: 14,
-                              fontWeight: AppFontWeight.medium,
-                            ),
-                          ),
-                        ),
-
-                        SizedBox(height: phoneWidth/8),
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(4, (index) {
-                            return AnimatedContainer(
-                              duration: Duration(milliseconds: 300),
-                              margin: EdgeInsets.symmetric(horizontal: 3),
-                              width: _currentIndex == index ? 10 : 5,
-                              height: 5,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: _currentIndex == index ? AppColors.secondary : Color(0xFFC4C4C4),
-                              ),
-                            );
-                          }),
-                        ),
-                      ],
+              width: phoneWidth,
+              height: phoneHeight - 85,
+              child: Column(
+                children: [
+                  BarTitle(title: 'Guide', showNotification: true),
+                  SizedBox(
+                    height: phoneHeight * 0.64,
+                    child: PageView.builder(
+                      controller: _pageController,
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentIndex = index % 4;
+                        });
+                      },
+                      itemBuilder: (context, index) {
+                        return _buildWasteSlide(context, index % 4);
+                      },
                     ),
+                  ),
+
+                  Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            ElevatedButton(
+                              onPressed: () => _goToScreen(_currentIndex),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                fixedSize: Size(phoneWidth - 100, 45),
+                              ),
+                              child: Text(
+                                'Read More',
+                                style: GoogleFonts.urbanist(
+                                  color: AppColors.surface,
+                                  fontSize: 14,
+                                  fontWeight: AppFontWeight.medium,
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: phoneWidth/8),
+
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(4, (index) {
+                                return AnimatedContainer(
+                                  duration: Duration(milliseconds: 300),
+                                  margin: EdgeInsets.symmetric(horizontal: 3),
+                                  width: _currentIndex == index ? 10 : 5,
+                                  height: 5,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: _currentIndex == index ? AppColors.secondary : Color(0xFFC4C4C4),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ],
+                        ),
+                      )
                   )
-                )
-              ],
-            )
+                ],
+              )
           ),
         ],
       ),
     );
   }
 
-  Widget _buildWasteSlide(int index) {
+  Widget _buildWasteSlide(BuildContext context, int index) {
+    double phoneHeight = getPhoneHeight(context);
 
     final List<String> titles = [
       "Recyclable Waste",
@@ -186,15 +187,15 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
 
     return Column(
       children: [
-        SizedBox(height: 40),
-        Image.asset(images[index], height: 320),
-        SizedBox(height: 30),
+        SizedBox(height: phoneHeight*0.045),
+        Image.asset(images[index], height: phoneHeight * 0.38),
+        SizedBox(height: phoneHeight*0.035),
         Text(
           titles[index],
           textAlign: TextAlign.center,
           style: GoogleFonts.urbanist(
             color: AppColors.secondary,
-            fontSize: 30,
+            fontSize: phoneHeight*0.036,
             fontWeight: AppFontWeight.semiBold,
             letterSpacing: 1.5,
           ),
@@ -207,7 +208,7 @@ class _GuideScreenState extends State<GuideScreen> with AutomaticKeepAliveClient
             textAlign: TextAlign.center,
             style: GoogleFonts.urbanist(
               color: AppColors.tertiary,
-              fontSize: 14,
+              fontSize: phoneHeight*0.018,
               fontWeight: AppFontWeight.regular,
               letterSpacing: 0.70,
             ),
