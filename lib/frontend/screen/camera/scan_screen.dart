@@ -123,6 +123,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
         buttonTitle: "Login",
         isDirect: true,
         onPressed: () {
+          Navigator.pop(context);
           Navigator.of(context).push(
             moveUpRoute(
               LoginScreen(),

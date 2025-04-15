@@ -114,11 +114,12 @@ class _MainScreenState extends State<MainScreen> {
     showDialog(
       context: context,
       builder: (context) => CustomDialog(
-        message: 'Please log in to continue.',
+        message: 'Please log in to upload evidence.',
         status: false,
         buttonTitle: "Login",
         isDirect: true,
         onPressed: () {
+          Navigator.pop(context);
           Navigator.of(context).push(
             moveUpRoute(
               LoginScreen(),

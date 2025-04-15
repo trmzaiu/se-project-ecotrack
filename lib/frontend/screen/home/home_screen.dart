@@ -11,7 +11,9 @@ import '../../utils/phone_size.dart';
 import '../../utils/route_transition.dart';
 import '../../widget/category_box.dart';
 import '../../widget/challenge_item.dart';
+import '../../widget/custom_dialog.dart';
 import '../../widget/text_row.dart';
+import '../auth/login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -42,6 +44,29 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   ];
 
+  bool _isUserLoggedIn() {
+    return FirebaseAuth.instance.currentUser != null;
+  }
+
+  void _showErrorDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        message: 'Please log in to upload evidence.',
+        status: false,
+        buttonTitle: "Login",
+        isDirect: true,
+        onPressed: () {
+          Navigator.pop(context);
+          Navigator.of(context).push(
+            moveUpRoute(
+              LoginScreen(),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,11 +177,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             left: 20,
                             child: GestureDetector(
                               onTap: () {
-                                Navigator.of(context).push(
-                                  moveUpRoute(
-                                    UploadScreen(),
-                                  ),
-                                );
+                                if (_isUserLoggedIn()) {
+                                  Navigator.of(context).push(
+                                    moveUpRoute(
+                                      UploadScreen(),
+                                    ),
+                                  );
+                                } else {
+                                  _showErrorDialog(context);
+                                }
                               },
                               child: Container(
                                 width: 60,
