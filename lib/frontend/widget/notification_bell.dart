@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,6 +6,8 @@ import 'package:wastesortapp/frontend/screen/user/notification_screen.dart';
 import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
+import '../screen/auth/login_screen.dart';
+import 'custom_dialog.dart';
 
 class NotificationBell extends StatelessWidget {
   final double size;
@@ -14,6 +17,29 @@ class NotificationBell extends StatelessWidget {
     this.size = 24
   }) : super(key: key);
 
+  bool _isUserLoggedIn() {
+    return FirebaseAuth.instance.currentUser != null;
+  }
+
+  void _showErrorDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        message: 'Please log in to continue.',
+        status: false,
+        buttonTitle: "Login",
+        isDirect: true,
+        onPressed: () {
+          Navigator.of(context).push(
+            moveUpRoute(
+              LoginScreen(),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -21,11 +47,15 @@ class NotificationBell extends StatelessWidget {
       children: [
         IconButton(
           onPressed: () {
-            Navigator.of(context).push(
-              moveLeftRoute(
-                NotificationScreen(),
-              ),
-            );
+            if (_isUserLoggedIn()) {
+              Navigator.of(context).push(
+                moveLeftRoute(
+                  NotificationScreen(),
+                ),
+              );
+            } else {
+              _showErrorDialog(context);
+            }
           },
           icon: SvgPicture.asset(
             'lib/assets/icons/ic_notification.svg',

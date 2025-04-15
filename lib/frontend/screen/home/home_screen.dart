@@ -58,13 +58,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return BarNotiTitle(title_small: "Hello", title_big: '');
                 }
-
+                final isLoggedIn = userId.isNotEmpty;
                 final user = snapshot.data ?? {
                   'photoUrl': '',
-                  'name': userId.substring(0, 10),
+                  'name': isLoggedIn
+                      ? (userId.length >= 10 ? userId.substring(0, 10) : userId)
+                      : 'Guest',
                   'email': '',
                 };
-                return BarNotiTitle(title_small: "Hello", title_big: user['name']);
+                return BarNotiTitle(title_small: "Hello", title_big: user['name'] ?? 'Guest');
               }
             ),
 

@@ -7,6 +7,7 @@ import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
+import 'frontend/screen/auth/login_screen.dart';
 import 'frontend/screen/camera/camera_screen.dart';
 import 'frontend/screen/guide/guide_screen.dart';
 import 'frontend/screen/home/home_screen.dart';
@@ -17,6 +18,7 @@ import 'package:wastesortapp/database/firebase_options.dart';
 import 'package:wastesortapp/frontend/screen/user/profile_screen.dart';
 
 import 'frontend/utils/phone_size.dart';
+import 'frontend/widget/custom_dialog.dart';
 
 void main() async{
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -89,6 +91,12 @@ class _MainScreenState extends State<MainScreen> {
   void _onItemTapped(int index) {
     if (index == _currentIndex) return;
 
+    if (index == 2 || index == 3) {
+      if (!_isUserLoggedIn()) {
+        _showErrorDialog(context);
+      }
+      return;
+    }
     _pageController.jumpToPage(
       index,
     );
@@ -98,14 +106,27 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  void _onSheetFullyOpened() {
-    Future.delayed(Duration(milliseconds: 200), () {
-      if (mounted) {
-        setState(() {
-          _isFullyOpened = true;
-        });
-      }
-    });
+  bool _isUserLoggedIn() {
+    return FirebaseAuth.instance.currentUser != null;
+  }
+
+  void _showErrorDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        message: 'Please log in to continue.',
+        status: false,
+        buttonTitle: "Login",
+        isDirect: true,
+        onPressed: () {
+          Navigator.of(context).push(
+            moveUpRoute(
+              LoginScreen(),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -134,6 +155,15 @@ class _MainScreenState extends State<MainScreen> {
             builder: (context, scrollController) {
               return NotificationListener<DraggableScrollableNotification>(
                 onNotification: (notification) {
+                  if (notification.extent >= 0.8 && !_isFullyOpened) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _sheetController.animateTo(
+                        maxChildSize,
+                        duration: Duration(milliseconds: 50),
+                        curve: Curves.easeInOut,
+                      );
+                    });
+                  }
                   if (notification.extent >= maxChildSize && !_isFullyOpened) {
                     setState(() {
                       _isFullyOpened = true;
