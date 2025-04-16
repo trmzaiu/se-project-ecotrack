@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:wastesortapp/frontend/service/user_service.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import '../../../theme/fonts.dart';
@@ -16,6 +17,7 @@ import '../../service/user_service.dart';
 import '../../utils/phone_size.dart';
 import '../../widget/bar_title.dart';
 import '../../widget/input_dialog.dart';
+import 'package:wastesortapp/frontend/service/user_service.dart';
 
 class SettingScreen extends StatefulWidget {
   @override
@@ -29,10 +31,14 @@ class _SettingScreenState extends State<SettingScreen> {
   final TextEditingController passwordConfirmController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
 
+
+
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
   Map<String, dynamic>? user;
 
   Country? selectedCountry;
+  DateTime? selectedDOB;
+
   List<File> selectedImages = [];
 
   @override
@@ -55,6 +61,33 @@ class _SettingScreenState extends State<SettingScreen> {
       );
     }
   }
+
+  Future<void> _updateEmail() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+
+      // Check if user exists and has verified their email
+      if (user != null) {
+        if (!user.emailVerified) {
+          await user.sendEmailVerification();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Please verify your current email before updating. Verification email sent.')),
+          );
+          return;
+        }
+
+        await user.updateEmail(emailController.text.trim());
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Email updated successfully.')),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update email: ${e.message}')),
+      );
+    }
+  }
+
 
   void showImageSelection() {
     showModalBottomSheet(
@@ -120,38 +153,38 @@ class _SettingScreenState extends State<SettingScreen> {
                             value: selectedMonth,
                             isExpanded: true,
                             customButton: Container(
-                              padding: EdgeInsets.only(left: 15),
-                              decoration: BoxDecoration(
-                                color: AppColors.background,
-                              ),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    DateFormat.MMMM().format(DateTime(0, selectedMonth)),
-                                    style: GoogleFonts.urbanist(
-                                      fontSize: 18,
-                                      fontWeight: AppFontWeight.medium,
-                                      color: AppColors.primary,
+                                padding: EdgeInsets.only(left: 15),
+                                decoration: BoxDecoration(
+                                  color: AppColors.background,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      DateFormat.MMMM().format(DateTime(0, selectedMonth)),
+                                      style: GoogleFonts.urbanist(
+                                        fontSize: 18,
+                                        fontWeight: AppFontWeight.medium,
+                                        color: AppColors.primary,
+                                      ),
                                     ),
-                                  ),
-                                  Icon(Icons.arrow_drop_down, color: AppColors.primary),
-                                ],
-                              )
+                                    Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                                  ],
+                                )
                             ),
                             iconStyleData: IconStyleData(
                               icon: SizedBox.shrink(),
                             ),
                             dropdownStyleData: DropdownStyleData(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: AppColors.surface,
-                              ),
-                              elevation: 0,
-                              maxHeight: 200,
-                              scrollbarTheme: ScrollbarThemeData(
-                                thumbColor: MaterialStateProperty.all(AppColors.board2),
-                                thickness: MaterialStateProperty.all(2),
-                              ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: AppColors.surface,
+                                ),
+                                elevation: 0,
+                                maxHeight: 200,
+                                scrollbarTheme: ScrollbarThemeData(
+                                  thumbColor: MaterialStateProperty.all(AppColors.board2),
+                                  thickness: MaterialStateProperty.all(2),
+                                ),
                                 isOverButton: true
                             ),
                             items: List.generate(12, (index) {
@@ -202,43 +235,43 @@ class _SettingScreenState extends State<SettingScreen> {
                             value: selectedYear,
                             isExpanded: true,
                             customButton: Container(
-                              padding: EdgeInsets.only(right: 10),
-                              decoration: BoxDecoration(
-                                color: AppColors.background,
-                              ),
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      selectedYear.toString(),
-                                      style: GoogleFonts.urbanist(
-                                        fontSize: 16,
-                                        fontWeight: AppFontWeight.medium,
-                                        color: AppColors.primary,
-                                      )
-                                    ),
-                                    Icon(Icons.arrow_drop_down, color: AppColors.primary),
-                                  ],
+                                padding: EdgeInsets.only(right: 10),
+                                decoration: BoxDecoration(
+                                  color: AppColors.background,
                                 ),
-                              )
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                          selectedYear.toString(),
+                                          style: GoogleFonts.urbanist(
+                                            fontSize: 16,
+                                            fontWeight: AppFontWeight.medium,
+                                            color: AppColors.primary,
+                                          )
+                                      ),
+                                      Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                                    ],
+                                  ),
+                                )
                             ),
                             iconStyleData: IconStyleData(
                               icon: SizedBox.shrink(),
                             ),
                             dropdownStyleData: DropdownStyleData(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: AppColors.surface,
-                              ),
-                              elevation: 0,
-                              maxHeight: 200,
-                              scrollbarTheme: ScrollbarThemeData(
-                                thumbColor: MaterialStateProperty.all(AppColors.board2),
-                                thickness: MaterialStateProperty.all(2),
-                              ),
-                              isOverButton: true
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: AppColors.surface,
+                                ),
+                                elevation: 0,
+                                maxHeight: 200,
+                                scrollbarTheme: ScrollbarThemeData(
+                                  thumbColor: MaterialStateProperty.all(AppColors.board2),
+                                  thickness: MaterialStateProperty.all(2),
+                                ),
+                                isOverButton: true
                             ),
                             menuItemStyleData: MenuItemStyleData(
                               height: 30,
@@ -335,10 +368,24 @@ class _SettingScreenState extends State<SettingScreen> {
                       selectedDayPredicate: (day) {
                         return isSameDay(selectedDate, day);
                       },
-                      onDaySelected: (selectedDay, focusedDay) {
-                        _dateController.text = DateFormat("dd/MM/yyyy").format(selectedDay);
+                      onDaySelected: (selectedDay, focusedDay) async {
+                        setState(() {
+                          selectedDOB = selectedDay;
+                          _dateController.text = DateFormat("dd/MM/yyyy").format(selectedDay);
+                        });
+
+                        // Save immediately
+                        if (userId.isNotEmpty && selectedDOB != null && selectedCountry != null) {
+                          await UserService().updateUserProfile(
+                            userId: userId,
+                            dob: selectedDOB!,
+                            country: selectedCountry!.countryCode,
+                          );
+                        }
+
                         Navigator.pop(context);
                       },
+
                       onPageChanged: (focusedDay) {
                         setState(() {
                           focusedDate = focusedDay;
@@ -388,44 +435,137 @@ class _SettingScreenState extends State<SettingScreen> {
           ),
         ),
       ),
-      onSelect: (Country country) {
+      onSelect: (Country country) async {
         setState(() {
           selectedCountry = country;
         });
+
+        // Save immediately
+        if (userId.isNotEmpty && selectedDOB != null && selectedCountry != null) {
+          await UserService().updateUserProfile(
+            userId: userId,
+            dob: selectedDOB!,
+            country: selectedCountry!.countryCode,
+          );
+        }
       },
+
     );
   }
 
+
+
   void _showDialog(BuildContext context, String information, TextEditingController controller, String hintText) {
+    controller.text = hintText; // Pre-fill with the current value
+
     showDialog(
       context: context,
       builder: (context) => InputDialog(
         information: information,
         controller: controller,
         hintText: hintText,
-        onPressed: () {
+        onPressed: () async {
+          if (controller.text.isNotEmpty) {
+            try {
+              if (information == 'name') {
+                await UserService().updateUserName(userId, controller.text);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Name updated successfully!')),
+                );
+              } else if (information == 'email') {
+                await UserService().updateUserEmail(userId, controller.text);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Email updated successfully!')),
+                );
+              }
+
+              setState(() {});
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to update $information: $e')),
+              );
+            }
+          }
           Navigator.pop(context);
         },
       ),
     );
   }
 
+  // void _saveChanges() async {
+  //   if (nameController.text.isEmpty) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Name cannot be empty!')),
+  //     );
+  //     return;
+  //   }
+  //
+  //   try {
+  //     await UserService().updateUserName(userId, nameController.text);
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Changes saved successfully!')),
+  //     );
+  //     setState(() {});
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Failed to save changes: $e')),
+  //     );
+  //   }
+  // }
+
   void _showDialogPassword(BuildContext context) {
+    passwordController.clear();
+    passwordConfirmController.clear();
+
     showDialog(
       context: context,
       builder: (context) => InputDialog(
         information: 'password',
         controller: passwordController,
-        hintText: 'Password',
+        hintText: 'Enter new password',
         isPass: true,
         controllerPass: passwordConfirmController,
-        onPressed: () {
-          // Function to save information 
-          Navigator.pop(context);
+        onPressed: () async {
+          final newPassword = passwordController.text.trim();
+          final confirmPassword = passwordConfirmController.text.trim();
+
+          if (newPassword.isEmpty || confirmPassword.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Please enter both fields")),
+            );
+            return;
+          }
+
+          if (newPassword != confirmPassword) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Passwords do not match")),
+            );
+            return;
+          }
+
+          try {
+            final currentUser = FirebaseAuth.instance.currentUser;
+            if (currentUser != null) {
+              await UserService().updateUserPassword(currentUser.uid, newPassword);
+              Navigator.pop(context); // Close dialog
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Password updated successfully")),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("User not logged in")),
+              );
+            }
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Failed to update password: $e")),
+            );
+          }
         },
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -438,6 +578,7 @@ class _SettingScreenState extends State<SettingScreen> {
             BarTitle(title: 'Edit Profile', showBackButton: true),
 
             SizedBox(height: 30),
+
 
             Expanded(
               child: Container(
@@ -465,12 +606,17 @@ class _SettingScreenState extends State<SettingScreen> {
                           };
 
                           if (user['dob'] != null && user['dob'].isNotEmpty) {
-                            DateTime parsedDate = DateTime.parse(user['dob']);
-                            _dateController.text = DateFormat('dd/MM/yyyy').format(parsedDate);
+                            selectedDOB = DateTime.tryParse(user['dob']);
+                            _dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
                           } else {
-                            _dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+                            selectedDOB = DateTime.now();
+                            _dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
                           }
-                          selectedCountry = Country.tryParse(user['country']);
+
+                          if (user['country'] != null && user['country'].isNotEmpty) {
+                            selectedCountry = Country.tryParse(user['country']);
+                          }
+
 
                           return Column(
                             children: [
@@ -480,8 +626,13 @@ class _SettingScreenState extends State<SettingScreen> {
                               _informationTile('Password', '••••••••••••', () => _showDialogPassword(context)),
                               _dobTile(),
                               _countryTile(),
+
+                              // 👇 Add Save Button here
+                              SizedBox(height: 20),
+
                             ],
                           );
+
                         },
                       ),
 
@@ -495,6 +646,30 @@ class _SettingScreenState extends State<SettingScreen> {
         ),
       ),
     );
+  }
+  void _saveProfileInfo() async {
+    if (selectedDOB == null || selectedCountry == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select both DOB and Country')),
+      );
+      return;
+    }
+
+    try {
+      await UserService().updateUserProfile(
+        userId: userId,
+        dob: selectedDOB!,
+        country: selectedCountry!.countryCode,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Profile updated successfully!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update profile: $e')),
+      );
+    }
   }
 
   Widget _avatarTile(String photoUrl) {
@@ -536,28 +711,28 @@ class _SettingScreenState extends State<SettingScreen> {
                 right: 5,
                 bottom: 0,
                 child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    // color: AppColors.surface,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.accent.withOpacity(0.5),
-                      width: 2,
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      // color: AppColors.surface,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.accent.withOpacity(0.5),
+                        width: 2,
+                      ),
                     ),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: () => showImageSelection(),
-                    style: ElevatedButton.styleFrom(
-                      shape: CircleBorder(),
-                      padding: EdgeInsets.zero,
-                      backgroundColor: AppColors.surface,
-                      elevation: 0,
-                      shadowColor: Colors.transparent,
-                      overlayColor: AppColors.primary
-                    ),
-                    child: Icon(Icons.camera_alt, color: AppColors.accent),
-                  )
+                    child: ElevatedButton(
+                      onPressed: () => showImageSelection(),
+                      style: ElevatedButton.styleFrom(
+                          shape: CircleBorder(),
+                          padding: EdgeInsets.zero,
+                          backgroundColor: AppColors.surface,
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          overlayColor: AppColors.primary
+                      ),
+                      child: Icon(Icons.camera_alt, color: AppColors.accent),
+                    )
                 ),
               )
             ],
@@ -656,48 +831,48 @@ class _SettingScreenState extends State<SettingScreen> {
         Material(
           color: Colors.transparent,
           child: InkWell(
-            highlightColor: AppColors.secondary.withOpacity(0.3),
-            splashColor: Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-            child: SizedBox(
-              width: getPhoneWidth(context) - 60,
-              height: 50,
-              child: Container(
-                width: getPhoneWidth(context) - 60,
-                height: 50,
-                padding: EdgeInsets.only(left: 15, right: 5),
-                decoration: ShapeDecoration(
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                      width: 1,
-                      color: AppColors.tertiary,
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                child: TextFormField(
-                  controller: _dateController,
-                  readOnly: true,
-                  style: GoogleFonts.urbanist(
-                      fontSize: 15,
-                      color: AppColors.tertiary,
-                      fontWeight: AppFontWeight.medium
-                  ),
-                  decoration: InputDecoration(
-                    suffixIcon: IconButton(
-                      icon: Icon(Icons.calendar_today, color: AppColors.tertiary),
-                      onPressed: () => showDatePicker(context),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 0),
-                    border: OutlineInputBorder(
+              highlightColor: AppColors.secondary.withOpacity(0.3),
+              splashColor: Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
+              child: SizedBox(
+                  width: getPhoneWidth(context) - 60,
+                  height: 50,
+                  child: Container(
+                    width: getPhoneWidth(context) - 60,
+                    height: 50,
+                    padding: EdgeInsets.only(left: 15, right: 5),
+                    decoration: ShapeDecoration(
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          width: 1,
+                          color: AppColors.tertiary,
+                        ),
                         borderRadius: BorderRadius.circular(6),
-                        borderSide: BorderSide.none
+                      ),
                     ),
-                  ),
-                  onTap: () => showDatePicker(context),
-                ),
+                    child: TextFormField(
+                      controller: _dateController,
+                      readOnly: true,
+                      style: GoogleFonts.urbanist(
+                          fontSize: 15,
+                          color: AppColors.tertiary,
+                          fontWeight: AppFontWeight.medium
+                      ),
+                      decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.calendar_today, color: AppColors.tertiary),
+                          onPressed: () => showDatePicker(context),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 0),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: BorderSide.none
+                        ),
+                      ),
+                      onTap: () => showDatePicker(context),
+                    ),
+                  )
               )
-            )
           ),
         ),
       ],
@@ -730,57 +905,57 @@ class _SettingScreenState extends State<SettingScreen> {
         Material(
           color: Colors.transparent,
           child: InkWell(
-            highlightColor: AppColors.secondary.withOpacity(0.3),
-            splashColor: Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-            onTap: () => showCountryPickerDialog(context),
-            child: SizedBox(
-              width: getPhoneWidth(context) - 60,
-              height: 50,
-              child: Container(
-                width: getPhoneWidth(context) - 60,
-                height: 50,
-                padding: EdgeInsets.only(left: 15, right: 15),
-                decoration: ShapeDecoration(
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                      width: 1,
-                      color: AppColors.tertiary,
+              highlightColor: AppColors.secondary.withOpacity(0.3),
+              splashColor: Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
+              onTap: () => showCountryPickerDialog(context),
+              child: SizedBox(
+                  width: getPhoneWidth(context) - 60,
+                  height: 50,
+                  child: Container(
+                    width: getPhoneWidth(context) - 60,
+                    height: 50,
+                    padding: EdgeInsets.only(left: 15, right: 15),
+                    decoration: ShapeDecoration(
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          width: 1,
+                          color: AppColors.tertiary,
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    if (selectedCountry != null) ...[
-                      Text(
-                        selectedCountry!.flagEmoji,
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      SizedBox(width: 10),
-                      Text(
-                        selectedCountry!.name,
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.tertiary,
-                          fontSize: 15,
-                          fontWeight: AppFontWeight.medium,
-                        ),
-                      ),
-                    ] else
-                      Text(
-                        "Select Country",
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.tertiary,
-                          fontSize: 15,
-                          fontWeight: AppFontWeight.medium,
-                        ),
-                      ),
-                    Spacer(),
-                    Icon(Icons.arrow_drop_down, color: AppColors.tertiary),
-                  ],
-                ),
+                    child: Row(
+                      children: [
+                        if (selectedCountry != null) ...[
+                          Text(
+                            selectedCountry!.flagEmoji,
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            selectedCountry!.name,
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.tertiary,
+                              fontSize: 15,
+                              fontWeight: AppFontWeight.medium,
+                            ),
+                          ),
+                        ] else
+                          Text(
+                            "Select Country",
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.tertiary,
+                              fontSize: 15,
+                              fontWeight: AppFontWeight.medium,
+                            ),
+                          ),
+                        Spacer(),
+                        Icon(Icons.arrow_drop_down, color: AppColors.tertiary),
+                      ],
+                    ),
+                  )
               )
-            )
           ),
         ),
       ],

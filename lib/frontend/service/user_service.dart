@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:rxdart/rxdart.dart'; // Import RxDart
+import 'package:rxdart/rxdart.dart';
 
 class UserService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   UserService();
 
+  // Stream for leaderboard
   Stream<List<Map<String, dynamic>>> leaderboardStream() {
     Stream<QuerySnapshot> usersStream = _db.collection('users').snapshots();
     Stream<QuerySnapshot> treesStream = _db.collection('trees').snapshots();
@@ -44,6 +45,7 @@ class UserService {
     });
   }
 
+  // Get current user data
   Future<Map<String, dynamic>> getCurrentUser(String userId) async {
     final snapshot = await _db.collection('users').doc(userId).get();
 
@@ -66,5 +68,58 @@ class UserService {
       'dob': data['dob'] ?? DateTime.now().toString(),
       'country': data['country'] ?? ''
     };
+  }
+
+  // Update user name
+  Future<void> updateUserName(String userId, String newName) async {
+    try {
+      await _db.collection('users').doc(userId).update({'name': newName});
+    } catch (e) {
+      throw Exception('Failed to update name: $e');
+    }
+  }
+
+  // Update user email
+  Future<void> updateUserEmail(String userId, String newEmail) async {
+    try {
+      // Update email in Firebase Authentication
+      await FirebaseAuth.instance.currentUser?.updateEmail(newEmail);
+
+      // Update email in Firestore
+      await _db.collection('users').doc(userId).update({'email': newEmail});
+    } catch (e) {
+      throw Exception('Failed to update email: $e');
+    }
+  }
+
+  // Update user password
+  Future<void> updateUserPassword(String userId, String newPassword) async {
+    try {
+      // Update password in Firebase Authentication
+      await FirebaseAuth.instance.currentUser?.updatePassword(newPassword);
+    } catch (e) {
+      throw Exception('Failed to update password: $e');
+    }
+  }
+
+
+  Future<void> updateUserProfile({
+    required String userId,
+    required DateTime dob,
+    required String country,
+  }) async {
+    String dobString = dob.toIso8601String();
+
+    try {
+      await _db.collection('users').doc(userId).update({
+        'dob': dobString,
+        'country': country,
+      });
+
+      print("User profile updated: DOB = $dobString, Country = $country");
+    } catch (e) {
+      print("Failed to update user profile: $e");
+      throw Exception('Failed to update profile');
+    }
   }
 }
