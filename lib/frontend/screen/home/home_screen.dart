@@ -6,6 +6,7 @@ import 'package:wastesortapp/frontend/widget/bar_noti_title.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
+import '../../challenge/challenges_screen.dart';
 import '../../service/user_service.dart';
 import '../../utils/phone_size.dart';
 import '../../utils/route_transition.dart';
@@ -145,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 'Have you sorted waste today?',
                                 style: GoogleFonts.urbanist(
                                   color: AppColors.surface,
-                                  fontSize: phoneWidth * 0.5 * 0.1,
+                                  fontSize: phoneWidth * 0.43 * 0.1,
                                   fontWeight: AppFontWeight.bold,
                                   height: 0.9,
                                 ),
@@ -360,7 +361,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: TextRow(text: 'Challenges'),
+                      child: TextRow(
+                        text: 'Challenges',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            moveUpRoute(
+                              ChallengesScreen(),
+                            ),
+                          );
+                        },
+                      ),
                     ),
 
                     SizedBox(height: 30),

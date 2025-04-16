@@ -6,8 +6,9 @@ import '../../theme/fonts.dart';
 
 class TextRow extends StatelessWidget {
   final String text;
+  final VoidCallback? onTap;
 
-  const TextRow({required this.text, Key? key}) : super(key: key);
+  const TextRow({required this.text, this.onTap, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,14 +23,17 @@ class TextRow extends StatelessWidget {
             fontWeight: AppFontWeight.bold,
           ),
         ),
-        Text(
-          "See all",
-          style: GoogleFonts.urbanist(
-            color: AppColors.tertiary,
-            fontSize: 12,
-            fontWeight: AppFontWeight.regular,
+        GestureDetector(
+          onTap: onTap,
+          child: Text(
+            "See all",
+            style: GoogleFonts.urbanist(
+              color: AppColors.tertiary,
+              fontSize: 12,
+              fontWeight: AppFontWeight.regular,
+            ),
           ),
-        ),
+        )
       ],
     );
   }

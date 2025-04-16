@@ -103,17 +103,6 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
     await completer.future;
   }
 
-  // void _handleTap() {
-  //   final validCategories = {"Recyclable", "Organic", "Hazardous", "General"};
-  //
-  //   if (validCategories.contains(_scanResult)) {
-  //     Navigator.of(context).push(moveLeftRoute(UploadScreen(
-  //       imagePath: widget.imagePath,
-  //       category: _scanResult!,
-  //     )));
-  //   }
-  // }
-
   void _showErrorDialog(BuildContext context) {
     showDialog(
       context: context,

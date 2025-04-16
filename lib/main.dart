@@ -94,8 +94,8 @@ class _MainScreenState extends State<MainScreen> {
     if (index == 2 || index == 3) {
       if (!_isUserLoggedIn()) {
         _showErrorDialog(context);
+        return;
       }
-      return;
     }
     _pageController.jumpToPage(
       index,
