@@ -142,6 +142,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
       int totalNeededDrops = _state[_levelOfTree][1];
       int currentNeededDrops = (totalNeededDrops * (1.0 - _progress)).round();
 
+
       if (_drops <= currentNeededDrops) {
         double newProgress = _progress + (_drops / totalNeededDrops);
         if (newProgress >= 0.99) {

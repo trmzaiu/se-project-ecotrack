@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:wastesortapp/frontend/service/notification_service.dart';
 
 import '../../database/model/tree.dart';
 
 class TreeService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final _notiService = NotificationService();
 
   Future<void> createTree(String userId) async {
     final treeDocRef = _db.collection('trees').doc(userId);
@@ -37,11 +41,18 @@ class TreeService {
         .update({'progress': currentProgress});
   }
 
-  Future<void> updateWater(String userId, int drops) async{
-    await _db.collection('trees')
-        .doc(userId)
-        .update({'drops': drops});
+
+  Future<void> updateWater(String userId, int drops) async {
+    try {
+      // Update drops value in Firestore
+      await _db.collection('trees').doc(userId).update({'drops': drops});
+      print('Drops updated successfully: $drops');
+    } catch (e) {
+      print('Error in updateWater function: $e');
+    }
   }
+
+
 
   Future<void> updateLevelOfTree(String userId, int level) async{
     await _db.collection('trees')
@@ -70,6 +81,14 @@ class TreeService {
             .doc(treeId)
             .update({'drops': FieldValue.increment(increment)});
 
+        Future.delayed(Duration(seconds: 2));
+
+        var currentDrops = treesRef.docs.first.data()?['drops'] ?? 0;
+        int newDrops = currentDrops + increment;
+        if (newDrops >= 100){
+          await _notiService.createNotification(status: 'water', point : 0);
+        }
+
         debugPrint("✅ Drops incremented by $increment for treeId: $treeId");
       } else {
         debugPrint("🚨 No tree found for userId: $userId");
@@ -94,5 +113,6 @@ class TreeService {
       return {'drops': 0, 'trees': 0};
     });
   }
+
 
 }

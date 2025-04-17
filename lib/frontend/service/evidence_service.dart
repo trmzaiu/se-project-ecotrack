@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:wastesortapp/frontend/service/notification_service.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
@@ -25,6 +26,7 @@ class EvidenceService{
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TreeService _treeService = TreeService();
+  final _notiService = NotificationService();
 
   EvidenceService(this.context);
 
@@ -155,7 +157,11 @@ class EvidenceService{
         debugPrint("📝 Fetching treeId for user: ${evidence.userId}, ${evidence.point}");
 
         await _treeService.increaseDrops(evidence.userId, evidence.point);
+        Future.delayed(Duration(seconds: 2), () async {
+          await _notiService.createNotification(status: 'point', point: evidence.point);
+        });
       }
+
     } catch (e) {
       debugPrint("Error verifying evidence: $e");
     }
