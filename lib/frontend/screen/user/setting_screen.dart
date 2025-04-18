@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:wastesortapp/frontend/service/user_service.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import '../../../theme/fonts.dart';
@@ -16,6 +17,7 @@ import '../../service/user_service.dart';
 import '../../utils/phone_size.dart';
 import '../../widget/bar_title.dart';
 import '../../widget/input_dialog.dart';
+import 'package:wastesortapp/frontend/service/user_service.dart';
 
 class SettingScreen extends StatefulWidget {
   @override
@@ -26,19 +28,152 @@ class _SettingScreenState extends State<SettingScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController passwordConfirmController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController currentPasswordController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
 
+  bool _isReauthenticated = false;
+
+
+
+  final String currentEmail = FirebaseAuth.instance.currentUser?.email ?? "";
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
   Map<String, dynamic>? user;
 
   Country? selectedCountry;
+  DateTime? selectedDOB;
+
   List<File> selectedImages = [];
 
   @override
   void initState() {
     super.initState();
   }
+  @override
+
+
+  Future<void> _verifyIdentity(BuildContext context) async {
+    final email = FirebaseAuth.instance.currentUser?.email;
+    if (email == null) return;
+
+    final passwordInputController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Verify Identity'),
+        content: TextField(
+          controller: passwordInputController,
+          obscureText: true,
+          decoration: InputDecoration(labelText: 'Enter your password'),
+        ),
+        actions: [
+          TextButton(
+            child: Text('Cancel'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          TextButton(
+            child: Text('Verify'),
+            onPressed: () async {
+              try {
+                final user = FirebaseAuth.instance.currentUser;
+                final credential = EmailAuthProvider.credential(
+                  email: email,
+                  password: passwordInputController.text,
+                );
+                await user!.reauthenticateWithCredential(credential);
+
+                currentPasswordController.text = passwordInputController.text;
+                _isReauthenticated = true;
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Identity verified!')),
+                );
+              } catch (e) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Verification failed: $e')),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
+
+
+  Future<void> _updateEmail(String newEmail) async {
+    if (!_isReauthenticated) {
+      await _verifyIdentity(context);
+      if (!_isReauthenticated) return;
+    }
+
+    try {
+      await UserService().updateUserEmail(
+        currentPassword: currentPasswordController.text,
+        newEmail: newEmail,
+      );
+
+
+      await FirebaseAuth.instance.currentUser?.reload();
+
+      setState(() {
+
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Email updated successfully!')),
+      );
+    } catch (e) {
+      print(' Failed in _updateEmail: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update email: $e')),
+      );
+    }
+  }
+
+
+
+
+
+
+  void _updatePassword(String newPassword, String confirmPassword) async {
+    if (newPassword.isEmpty || confirmPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("All fields are required")),
+      );
+      return;
+    }
+
+    if (newPassword != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Passwords do not match")),
+      );
+      return;
+    }
+
+    try {
+      await UserService().updateUserPassword(newPassword);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Password updated successfully")),
+      );
+    } catch (e) {
+      print('Failed to update password: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update password: $e')),
+      );
+    }
+  }
+
+
+
+
+
+
 
   Future<void> _pickImage(source) async {
     try {
@@ -55,6 +190,10 @@ class _SettingScreenState extends State<SettingScreen> {
       );
     }
   }
+
+
+
+
 
   void showImageSelection() {
     showModalBottomSheet(
@@ -120,38 +259,38 @@ class _SettingScreenState extends State<SettingScreen> {
                             value: selectedMonth,
                             isExpanded: true,
                             customButton: Container(
-                              padding: EdgeInsets.only(left: 15),
-                              decoration: BoxDecoration(
-                                color: AppColors.background,
-                              ),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    DateFormat.MMMM().format(DateTime(0, selectedMonth)),
-                                    style: GoogleFonts.urbanist(
-                                      fontSize: 18,
-                                      fontWeight: AppFontWeight.medium,
-                                      color: AppColors.primary,
+                                padding: EdgeInsets.only(left: 15),
+                                decoration: BoxDecoration(
+                                  color: AppColors.background,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      DateFormat.MMMM().format(DateTime(0, selectedMonth)),
+                                      style: GoogleFonts.urbanist(
+                                        fontSize: 18,
+                                        fontWeight: AppFontWeight.medium,
+                                        color: AppColors.primary,
+                                      ),
                                     ),
-                                  ),
-                                  Icon(Icons.arrow_drop_down, color: AppColors.primary),
-                                ],
-                              )
+                                    Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                                  ],
+                                )
                             ),
                             iconStyleData: IconStyleData(
                               icon: SizedBox.shrink(),
                             ),
                             dropdownStyleData: DropdownStyleData(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: AppColors.surface,
-                              ),
-                              elevation: 0,
-                              maxHeight: 200,
-                              scrollbarTheme: ScrollbarThemeData(
-                                thumbColor: MaterialStateProperty.all(AppColors.board2),
-                                thickness: MaterialStateProperty.all(2),
-                              ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: AppColors.surface,
+                                ),
+                                elevation: 0,
+                                maxHeight: 200,
+                                scrollbarTheme: ScrollbarThemeData(
+                                  thumbColor: MaterialStateProperty.all(AppColors.board2),
+                                  thickness: MaterialStateProperty.all(2),
+                                ),
                                 isOverButton: true
                             ),
                             items: List.generate(12, (index) {
@@ -202,43 +341,43 @@ class _SettingScreenState extends State<SettingScreen> {
                             value: selectedYear,
                             isExpanded: true,
                             customButton: Container(
-                              padding: EdgeInsets.only(right: 10),
-                              decoration: BoxDecoration(
-                                color: AppColors.background,
-                              ),
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      selectedYear.toString(),
-                                      style: GoogleFonts.urbanist(
-                                        fontSize: 16,
-                                        fontWeight: AppFontWeight.medium,
-                                        color: AppColors.primary,
-                                      )
-                                    ),
-                                    Icon(Icons.arrow_drop_down, color: AppColors.primary),
-                                  ],
+                                padding: EdgeInsets.only(right: 10),
+                                decoration: BoxDecoration(
+                                  color: AppColors.background,
                                 ),
-                              )
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                          selectedYear.toString(),
+                                          style: GoogleFonts.urbanist(
+                                            fontSize: 16,
+                                            fontWeight: AppFontWeight.medium,
+                                            color: AppColors.primary,
+                                          )
+                                      ),
+                                      Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                                    ],
+                                  ),
+                                )
                             ),
                             iconStyleData: IconStyleData(
                               icon: SizedBox.shrink(),
                             ),
                             dropdownStyleData: DropdownStyleData(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: AppColors.surface,
-                              ),
-                              elevation: 0,
-                              maxHeight: 200,
-                              scrollbarTheme: ScrollbarThemeData(
-                                thumbColor: MaterialStateProperty.all(AppColors.board2),
-                                thickness: MaterialStateProperty.all(2),
-                              ),
-                              isOverButton: true
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: AppColors.surface,
+                                ),
+                                elevation: 0,
+                                maxHeight: 200,
+                                scrollbarTheme: ScrollbarThemeData(
+                                  thumbColor: MaterialStateProperty.all(AppColors.board2),
+                                  thickness: MaterialStateProperty.all(2),
+                                ),
+                                isOverButton: true
                             ),
                             menuItemStyleData: MenuItemStyleData(
                               height: 30,
@@ -336,9 +475,17 @@ class _SettingScreenState extends State<SettingScreen> {
                         return isSameDay(selectedDate, day);
                       },
                       onDaySelected: (selectedDay, focusedDay) {
-                        _dateController.text = DateFormat("dd/MM/yyyy").format(selectedDay);
+                        setState(() {
+                          selectedDOB = selectedDay;
+                          _dateController.text = DateFormat("dd/MM/yyyy").format(selectedDay);
+                        });
+
+                        _saveProfileInfo(); // Save after DOB is selected
                         Navigator.pop(context);
                       },
+
+
+
                       onPageChanged: (focusedDay) {
                         setState(() {
                           focusedDate = focusedDay;
@@ -392,40 +539,76 @@ class _SettingScreenState extends State<SettingScreen> {
         setState(() {
           selectedCountry = country;
         });
+
+        _saveProfileInfo(); // Save after Country is selected
       },
+
+
+
     );
   }
 
+
+
   void _showDialog(BuildContext context, String information, TextEditingController controller, String hintText) {
+    controller.text = hintText; // Pre-fill with the current value
+
     showDialog(
       context: context,
       builder: (context) => InputDialog(
         information: information,
         controller: controller,
         hintText: hintText,
-        onPressed: () {
+        onPressed: () async {
+          if (controller.text.isNotEmpty) {
+            try {
+              if (information == 'name') {
+                await UserService().updateUserName(userId, controller.text);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Name updated successfully!')),
+                );
+              } else if (information == 'email') {
+                _updateEmail(controller.text);
+              }
+
+              setState(() {});
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to update $information: $e')),
+              );
+            }
+          }
           Navigator.pop(context);
         },
       ),
     );
   }
 
+
+
   void _showDialogPassword(BuildContext context) {
+    passwordController.clear();
+    confirmPasswordController.clear();
+
     showDialog(
       context: context,
       builder: (context) => InputDialog(
         information: 'password',
         controller: passwordController,
-        hintText: 'Password',
+        hintText: 'Enter new password',
         isPass: true,
-        controllerPass: passwordConfirmController,
-        onPressed: () {
-          // Function to save information 
-          Navigator.pop(context);
+        controllerPass: confirmPasswordController,
+        onPressed: () async {
+          final newPassword = passwordController.text.trim();
+          final confirmPassword = confirmPasswordController.text.trim();
+
+          _updatePassword(newPassword, confirmPassword);
+          Navigator.pop(context); // Close dialog
         },
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -450,7 +633,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       SizedBox(height: 30),
 
                       FutureBuilder<Map<String, dynamic>>(
-                        future: UserService().getCurrentUser(userId!),
+                        future: UserService().getCurrentUser(userId),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return Center(child: CircularProgressIndicator());
@@ -458,19 +641,23 @@ class _SettingScreenState extends State<SettingScreen> {
 
                           final user = snapshot.data ?? {
                             'photoUrl': '',
-                            'name': userId!.substring(0, 10),
+                            'name': userId.substring(0, 10),
                             'email': '',
                             'dob': '',
                             'country': ''
                           };
 
                           if (user['dob'] != null && user['dob'].isNotEmpty) {
-                            DateTime parsedDate = DateTime.parse(user['dob']);
-                            _dateController.text = DateFormat('dd/MM/yyyy').format(parsedDate);
+                            selectedDOB = DateTime.tryParse(user['dob']);
+                            _dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
                           } else {
-                            _dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+                            selectedDOB = DateTime.now();
+                            _dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
                           }
-                          selectedCountry = Country.tryParse(user['country']);
+
+                          if (user['country'] != null && user['country'].isNotEmpty) {
+                            selectedCountry = Country.tryParse(user['country']);
+                          }
 
                           return Column(
                             children: [
@@ -480,6 +667,8 @@ class _SettingScreenState extends State<SettingScreen> {
                               _informationTile('Password', '••••••••••••', () => _showDialogPassword(context)),
                               _dobTile(),
                               _countryTile(),
+
+                              SizedBox(height: 20),
                             ],
                           );
                         },
@@ -495,7 +684,30 @@ class _SettingScreenState extends State<SettingScreen> {
         ),
       ),
     );
+
   }
+  void _saveProfileInfo() async {
+    if (selectedDOB == null || selectedCountry == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select both DOB and Country')),
+      );
+      return;
+    }
+
+    try {
+      await UserService().updateUserDob(userId: userId, dob: selectedDOB!);
+      await UserService().updateUserCountry(userId: userId, country: selectedCountry!.name);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Profile updated successfully!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update profile: $e')),
+      );
+    }
+  }
+
 
   Widget _avatarTile(String photoUrl) {
     return Column(
@@ -536,28 +748,28 @@ class _SettingScreenState extends State<SettingScreen> {
                 right: 5,
                 bottom: 0,
                 child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    // color: AppColors.surface,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.accent.withOpacity(0.5),
-                      width: 2,
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      // color: AppColors.surface,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.accent.withOpacity(0.5),
+                        width: 2,
+                      ),
                     ),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: () => showImageSelection(),
-                    style: ElevatedButton.styleFrom(
-                      shape: CircleBorder(),
-                      padding: EdgeInsets.zero,
-                      backgroundColor: AppColors.surface,
-                      elevation: 0,
-                      shadowColor: Colors.transparent,
-                      overlayColor: AppColors.primary
-                    ),
-                    child: Icon(Icons.camera_alt, color: AppColors.accent),
-                  )
+                    child: ElevatedButton(
+                      onPressed: () => showImageSelection(),
+                      style: ElevatedButton.styleFrom(
+                          shape: CircleBorder(),
+                          padding: EdgeInsets.zero,
+                          backgroundColor: AppColors.surface,
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          overlayColor: AppColors.primary
+                      ),
+                      child: Icon(Icons.camera_alt, color: AppColors.accent),
+                    )
                 ),
               )
             ],
@@ -656,48 +868,48 @@ class _SettingScreenState extends State<SettingScreen> {
         Material(
           color: Colors.transparent,
           child: InkWell(
-            highlightColor: AppColors.secondary.withOpacity(0.3),
-            splashColor: Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-            child: SizedBox(
-              width: getPhoneWidth(context) - 60,
-              height: 50,
-              child: Container(
-                width: getPhoneWidth(context) - 60,
-                height: 50,
-                padding: EdgeInsets.only(left: 15, right: 5),
-                decoration: ShapeDecoration(
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                      width: 1,
-                      color: AppColors.tertiary,
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                child: TextFormField(
-                  controller: _dateController,
-                  readOnly: true,
-                  style: GoogleFonts.urbanist(
-                      fontSize: 15,
-                      color: AppColors.tertiary,
-                      fontWeight: AppFontWeight.medium
-                  ),
-                  decoration: InputDecoration(
-                    suffixIcon: IconButton(
-                      icon: Icon(Icons.calendar_today, color: AppColors.tertiary),
-                      onPressed: () => showDatePicker(context),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 0),
-                    border: OutlineInputBorder(
+              highlightColor: AppColors.secondary.withOpacity(0.3),
+              splashColor: Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
+              child: SizedBox(
+                  width: getPhoneWidth(context) - 60,
+                  height: 50,
+                  child: Container(
+                    width: getPhoneWidth(context) - 60,
+                    height: 50,
+                    padding: EdgeInsets.only(left: 15, right: 5),
+                    decoration: ShapeDecoration(
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          width: 1,
+                          color: AppColors.tertiary,
+                        ),
                         borderRadius: BorderRadius.circular(6),
-                        borderSide: BorderSide.none
+                      ),
                     ),
-                  ),
-                  onTap: () => showDatePicker(context),
-                ),
+                    child: TextFormField(
+                      controller: _dateController,
+                      readOnly: true,
+                      style: GoogleFonts.urbanist(
+                          fontSize: 15,
+                          color: AppColors.tertiary,
+                          fontWeight: AppFontWeight.medium
+                      ),
+                      decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.calendar_today, color: AppColors.tertiary),
+                          onPressed: () => showDatePicker(context),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 0),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: BorderSide.none
+                        ),
+                      ),
+                      onTap: () => showDatePicker(context),
+                    ),
+                  )
               )
-            )
           ),
         ),
       ],
@@ -730,57 +942,57 @@ class _SettingScreenState extends State<SettingScreen> {
         Material(
           color: Colors.transparent,
           child: InkWell(
-            highlightColor: AppColors.secondary.withOpacity(0.3),
-            splashColor: Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-            onTap: () => showCountryPickerDialog(context),
-            child: SizedBox(
-              width: getPhoneWidth(context) - 60,
-              height: 50,
-              child: Container(
-                width: getPhoneWidth(context) - 60,
-                height: 50,
-                padding: EdgeInsets.only(left: 15, right: 15),
-                decoration: ShapeDecoration(
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                      width: 1,
-                      color: AppColors.tertiary,
+              highlightColor: AppColors.secondary.withOpacity(0.3),
+              splashColor: Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
+              onTap: () => showCountryPickerDialog(context),
+              child: SizedBox(
+                  width: getPhoneWidth(context) - 60,
+                  height: 50,
+                  child: Container(
+                    width: getPhoneWidth(context) - 60,
+                    height: 50,
+                    padding: EdgeInsets.only(left: 15, right: 15),
+                    decoration: ShapeDecoration(
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          width: 1,
+                          color: AppColors.tertiary,
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    if (selectedCountry != null) ...[
-                      Text(
-                        selectedCountry!.flagEmoji,
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      SizedBox(width: 10),
-                      Text(
-                        selectedCountry!.name,
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.tertiary,
-                          fontSize: 15,
-                          fontWeight: AppFontWeight.medium,
-                        ),
-                      ),
-                    ] else
-                      Text(
-                        "Select Country",
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.tertiary,
-                          fontSize: 15,
-                          fontWeight: AppFontWeight.medium,
-                        ),
-                      ),
-                    Spacer(),
-                    Icon(Icons.arrow_drop_down, color: AppColors.tertiary),
-                  ],
-                ),
+                    child: Row(
+                      children: [
+                        if (selectedCountry != null) ...[
+                          Text(
+                            selectedCountry!.flagEmoji,
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            selectedCountry!.name,
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.tertiary,
+                              fontSize: 15,
+                              fontWeight: AppFontWeight.medium,
+                            ),
+                          ),
+                        ] else
+                          Text(
+                            "Select Country",
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.tertiary,
+                              fontSize: 15,
+                              fontWeight: AppFontWeight.medium,
+                            ),
+                          ),
+                        Spacer(),
+                        Icon(Icons.arrow_drop_down, color: AppColors.tertiary),
+                      ],
+                    ),
+                  )
               )
-            )
           ),
         ),
       ],

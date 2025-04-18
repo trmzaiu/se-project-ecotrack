@@ -6,12 +6,15 @@ import 'package:wastesortapp/frontend/widget/bar_noti_title.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
+// import '../../challenge/challenges_screen.dart';
 import '../../service/user_service.dart';
 import '../../utils/phone_size.dart';
 import '../../utils/route_transition.dart';
 import '../../widget/category_box.dart';
 import '../../widget/challenge_item.dart';
+import '../../widget/custom_dialog.dart';
 import '../../widget/text_row.dart';
+import '../auth/login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -42,6 +45,29 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   ];
 
+  bool _isUserLoggedIn() {
+    return FirebaseAuth.instance.currentUser != null;
+  }
+
+  void _showErrorDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        message: 'Please log in to upload evidence.',
+        status: false,
+        buttonTitle: "Login",
+        isDirect: true,
+        onPressed: () {
+          Navigator.pop(context);
+          Navigator.of(context).push(
+            moveUpRoute(
+              LoginScreen(),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,13 +84,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return BarNotiTitle(title_small: "Hello", title_big: '');
                 }
-
+                final isLoggedIn = userId.isNotEmpty;
                 final user = snapshot.data ?? {
                   'photoUrl': '',
-                  'name': userId.substring(0, 10),
+                  'name': isLoggedIn
+                      ? (userId.length >= 10 ? userId.substring(0, 10) : userId)
+                      : 'Guest',
                   'email': '',
                 };
-                return BarNotiTitle(title_small: "Hello", title_big: user['name']);
+                return BarNotiTitle(title_small: "Hello", title_big: user['name'] ?? 'Guest');
               }
             ),
 
@@ -118,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 'Have you sorted waste today?',
                                 style: GoogleFonts.urbanist(
                                   color: AppColors.surface,
-                                  fontSize: phoneWidth * 0.5 * 0.1,
+                                  fontSize: phoneWidth * 0.43 * 0.1,
                                   fontWeight: AppFontWeight.bold,
                                   height: 0.9,
                                 ),
@@ -150,11 +178,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             left: 20,
                             child: GestureDetector(
                               onTap: () {
-                                Navigator.of(context).push(
-                                  moveUpRoute(
-                                    UploadScreen(),
-                                  ),
-                                );
+                                if (_isUserLoggedIn()) {
+                                  Navigator.of(context).push(
+                                    moveUpRoute(
+                                      UploadScreen(),
+                                    ),
+                                  );
+                                } else {
+                                  _showErrorDialog(context);
+                                }
                               },
                               child: Container(
                                 width: 60,
@@ -329,7 +361,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: TextRow(text: 'Challenges'),
+                      child: TextRow(
+                        text: 'Challenges',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            moveUpRoute(
+                              ChallengesScreen(),
+                            ),
+                          );
+                        },
+                      ),
                     ),
 
                     SizedBox(height: 30),

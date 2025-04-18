@@ -10,6 +10,9 @@ class CustomDialog extends StatelessWidget {
   final bool status;
   final String buttonTitle;
   final VoidCallback? onPressed;
+  final bool? isDirect;
+  final String? buttonTitle2;
+  final VoidCallback? onPressed2;
 
   const CustomDialog({
     super.key,
@@ -17,6 +20,9 @@ class CustomDialog extends StatelessWidget {
     required this.status,
     required this.buttonTitle,
     this.onPressed,
+    this.isDirect,
+    this.buttonTitle2,
+    this.onPressed2
   });
 
   @override
@@ -63,25 +69,54 @@ class CustomDialog extends StatelessWidget {
       actionsPadding: EdgeInsets.only(top: 0, left: 15, right: 15, bottom: phoneHeight * 0.05),
       actionsOverflowDirection: VerticalDirection.up,
       actions: [
-        TextButton(
-          onPressed: onPressed ?? () => Navigator.of(context).pop(),
-          child: Container(
-            width: phoneWidth/3,
-            height: phoneWidth * 0.1,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: status ? AppColors.primary : AppColors.secondary,
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Text(
-              buttonTitle,
-              style: GoogleFonts.urbanist(
-                fontSize: 14,
-                color: AppColors.surface,
-                fontWeight: AppFontWeight.semiBold,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (isDirect == true)
+              Expanded(
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Container(
+                    height: phoneWidth * 0.1,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.tertiary,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Text(
+                      "Cancel",
+                      style: GoogleFonts.urbanist(
+                        fontSize: 14,
+                        color: AppColors.surface,
+                        fontWeight: AppFontWeight.semiBold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+            Expanded(
+              child: TextButton(
+                onPressed: onPressed ?? () => Navigator.of(context).pop(),
+                child: Container(
+                  height: phoneWidth * 0.1,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: status ? AppColors.primary : AppColors.secondary,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Text(
+                    buttonTitle,
+                    style: GoogleFonts.urbanist(
+                      fontSize: 14,
+                      color: AppColors.surface,
+                      fontWeight: AppFontWeight.semiBold,
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ],
     );

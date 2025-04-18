@@ -64,93 +64,100 @@ class ChallengeItem extends StatelessWidget {
         ),
 
         Positioned(
-          top: 15,
+          top: 14,
           left: 14 + 110 + 14,
-          child: Text(
-            title,
-            style: GoogleFonts.urbanist(
-              fontSize: phoneWidth * 0.4 * 0.1,
-              fontWeight: AppFontWeight.semiBold,
-              color: AppColors.secondary,
-            ),
-            textAlign: TextAlign.left,
-          ),
-        ),
-
-        Positioned(
-          top: 40,
-          left: 14 + 110 + 14,
+          right: 14,
           child: SizedBox(
-            width: phoneWidth - 40 - 14 - 110 - 14 - 14,
-            child: Text(
-              info,
-              style: GoogleFonts.urbanist(
-                fontSize: 11,
-                fontWeight: AppFontWeight.medium,
-                color: AppColors.tertiary,
-                letterSpacing: 0,
-                height: 1.2
-              ),
-              textAlign: TextAlign.left,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.urbanist(
+                    fontSize: phoneWidth * 0.4 * 0.1,
+                    fontWeight: AppFontWeight.semiBold,
+                    color: AppColors.secondary,
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+
+                SizedBox(height: 5),
+
+                Text(
+                  info,
+                  style: GoogleFonts.urbanist(
+                    fontSize: 11,
+                    fontWeight: AppFontWeight.medium,
+                    color: AppColors.tertiary,
+                    letterSpacing: 0,
+                    height: 1.2
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+              ],
             ),
           )
         ),
 
         Positioned(
-          top: 95,
           left: 14 + 110 + 14,
-          child: Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: attend,
-                  style: GoogleFonts.urbanist(
-                    fontSize: 11,
-                    fontWeight: AppFontWeight.semiBold,
-                    color: AppColors.secondary,
-                  ),
-                ),
-
-                TextSpan(
-                  text: ' attending',
-                  style: GoogleFonts.urbanist(
-                    fontSize: 11,
-                    fontWeight: AppFontWeight.medium,
-                    color: AppColors.tertiary,
-                  ),
-                ),
-              ]
-            )
-          ),
-        ),
-
-        Positioned(
-          right: 15,
           bottom: 14,
-          child: Container(
-            width: 70,
-            height: 25,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(10),
-                bottomLeft: Radius.circular(10),
-                bottomRight: Radius.circular(10),
-              ),
-            ),
-            child: Center(
-              child: Text(
-                'Join now',
-                style: GoogleFonts.urbanist(
-                  fontSize: 11,
-                  fontWeight: AppFontWeight.semiBold,
-                  color: AppColors.surface,
+          child: SizedBox(
+            width: phoneWidth - 40 - 14*3 - 110,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: attend,
+                        style: GoogleFonts.urbanist(
+                          fontSize: 11,
+                          fontWeight: AppFontWeight.semiBold,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+
+                      TextSpan(
+                        text: ' attending',
+                        style: GoogleFonts.urbanist(
+                          fontSize: 11,
+                          fontWeight: AppFontWeight.medium,
+                          color: AppColors.tertiary,
+                        ),
+                      ),
+                    ]
+                  )
                 ),
-                textAlign: TextAlign.center,
-              ),
+
+                Container(
+                  width: 70,
+                  height: 25,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(10),
+                      bottomLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Join now',
+                      style: GoogleFonts.urbanist(
+                        fontSize: 11,
+                        fontWeight: AppFontWeight.semiBold,
+                        color: AppColors.surface,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ),
+          )
+        )
       ],
     );
   }

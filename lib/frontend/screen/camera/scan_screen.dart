@@ -1,14 +1,17 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 
 import '../../../ScanAI/processImage.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
 import '../../utils/route_transition.dart';
+import '../../widget/custom_dialog.dart';
 import '../../widget/scan_animation.dart';
 import '../evidence/upload_evidence_screen.dart';
 
@@ -48,6 +51,10 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
   void dispose() {
     controller.dispose();
     super.dispose();
+  }
+
+  bool _isUserLoggedIn() {
+    return FirebaseAuth.instance.currentUser != null;
   }
 
   void _scanImage() async {
@@ -96,16 +103,25 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
     await completer.future;
   }
 
-  // void _handleTap() {
-  //   final validCategories = {"Recyclable", "Organic", "Hazardous", "General"};
-  //
-  //   if (validCategories.contains(_scanResult)) {
-  //     Navigator.of(context).push(moveLeftRoute(UploadScreen(
-  //       imagePath: widget.imagePath,
-  //       category: _scanResult!,
-  //     )));
-  //   }
-  // }
+  void _showErrorDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        message: 'Please log in to upload evidence.',
+        status: false,
+        buttonTitle: "Login",
+        isDirect: true,
+        onPressed: () {
+          Navigator.pop(context);
+          Navigator.of(context).push(
+            moveUpRoute(
+              LoginScreen(),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -250,14 +266,19 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                     top: 19,
                     child: GestureDetector(
                       onTap: isValidCategory
-                        ? () => Navigator.of(context).pushAndRemoveUntil(
+                          ? () {
+                        if (_isUserLoggedIn()) {
+                          Navigator.of(context).pushAndRemoveUntil(
                             moveLeftRoute(
                               UploadScreen(imagePath: widget.imagePath, category: _scanResult!),
                               settings: RouteSettings(name: "UploadScreen"),
                             ),
-                              (route) => route.settings.name != "ScanScreen" || route.isFirst,
-                          )
-                        : null,
+                                (route) => route.settings.name != "ScanScreen" || route.isFirst,
+                          );
+                        } else {
+                          _showErrorDialog(context);
+                        }
+                      } : null,
                       child: Container(
                         width: 45,
                         height: 45,
@@ -280,7 +301,7 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
 
           if (!_isScanning && !_scanCompleted)
             Padding(
-              padding: EdgeInsets.only(bottom: (phoneHeight - (phoneWidth*(16/9)) - (statusHeight + 2.5) - 80)),
+              padding: EdgeInsets.only(bottom: (phoneHeight - (phoneWidth*(16/9)) - (statusHeight + 2.5) - 85)),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -308,17 +329,21 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 25),
                   Align(
                     alignment: Alignment.center,
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.of(context).pushReplacement(
-                          moveLeftRoute(
-                            UploadScreen(imagePath: widget.imagePath),
-                            settings: RouteSettings(name: "UploadScreen"),
-                          )
-                        );
+                        if (_isUserLoggedIn()) {
+                          Navigator.of(context).pushReplacement(
+                            moveLeftRoute(
+                              UploadScreen(imagePath: widget.imagePath),
+                              settings: RouteSettings(name: "UploadScreen"),
+                            ),
+                          );
+                        } else {
+                          _showErrorDialog(context);
+                        }
                       },
                       child: Text(
                         "Upload Evidence",

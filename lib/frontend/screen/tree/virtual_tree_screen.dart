@@ -106,7 +106,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
       if (_progress != animation.value) {
         setState(() {
           _progress = animation.value;
-        });
+        }); 
       }
     });
 
@@ -157,7 +157,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
 
             _progress = 0;
 
-            _treeService.updateLevelOfTree(userId, _levelOfTree == 4 ? 0 : _levelOfTree);
+            _treeService.updateLevelOfTree(userId, _levelOfTree >= 3 ? 0 : _levelOfTree);
             _treeService.updateProgress(userId, _progress);
             leftDrops = getLeftDrops(_levelOfTree, _progress);
             print('Progress:  $_progress and newProgress: $newProgress');

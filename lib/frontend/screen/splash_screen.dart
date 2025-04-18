@@ -70,23 +70,28 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       });
     }
 
-    _checkLoginStatus();
+    await Future.delayed(Duration(seconds: 2));
+    Navigator.of(context).pushReplacement(
+      moveUpRoute(
+        MainScreen(),
+      ),
+    );
   }
 
-  Future<void> _checkLoginStatus() async {
-    await Future.delayed(Duration(seconds: 0));
-
-    User? user = FirebaseAuth.instance.currentUser;
-    if (mounted) {
-      Future.microtask(() {
-        Navigator.of(context).pushReplacement(
-          moveUpRoute(
-            user != null ? MainScreen() : OpeningScreen(),
-          ),
-        );
-      });
-    }
-  }
+  // Future<void> _checkLoginStatus() async {
+  //   await Future.delayed(Duration(seconds: 0));
+  //
+  //   User? user = FirebaseAuth.instance.currentUser;
+  //   if (mounted) {
+  //     Future.microtask(() {
+  //       Navigator.of(context).pushReplacement(
+  //         moveUpRoute(
+  //           user != null ? MainScreen() : OpeningScreen(),
+  //         ),
+  //       );
+  //     });
+  //   }
+  // }
 
   @override
   void dispose() {

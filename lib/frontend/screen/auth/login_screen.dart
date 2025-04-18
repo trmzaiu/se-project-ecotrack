@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        _navigateToMainScreen(context, user.uid);
+        _navigateToMainScreen(context);
       }
     } on FirebaseAuthException catch (e) {
       _showErrorDialog(context, "Incorrect email or password");
@@ -71,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        _navigateToMainScreen(context, user.uid);
+        _navigateToMainScreen(context);
       } else {
         _showErrorDialog(context, "Google Sign-In failed.");
       }
@@ -90,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        _navigateToMainScreen(context, user.uid);
+        _navigateToMainScreen(context);
       } else {
         _showErrorDialog(context, "Facebook Sign-In failed.");
       }
@@ -101,34 +101,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> resetPassword(BuildContext context) async {
-    setState(() => _isLoading = true);
-
-    try {
-      final email = emailResetController.text.trim();
-      print("Email: $email");
-
-      if (email.isEmpty) {
-        throw "Please enter your email address.";
-      }
-
-      if (!_isValidEmail(email)) {
-        throw "The email address you entered is not in a valid format. Please check and try again.";
-      }
-
-      await _authService.sendPasswordResetEmail(email);
-
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showErrorDialog(context, "Password Reset Error");
-    }
-  }
-
   bool _isValidEmail(String email) {
     return RegExp(r"^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
   }
 
-    void _navigateToMainScreen(BuildContext context, String userId) {
+    void _navigateToMainScreen(BuildContext context) {
       Navigator.of(context).pushReplacement(
         moveUpRoute(
           MainScreen(),
@@ -147,15 +124,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void handleForgotPassword(String email) {
-    if (email.isEmpty) {
-      _showErrorDialog(context, "Empty Email");
-      return;
-    }
-
-    resetPassword(context);
-  }
-
   void _toggleSheet(BuildContext context) {
     setState(() {
       _isShowSheet = false;
@@ -166,8 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => ForgotPasswordSheet(
-        onResetPassword: handleForgotPassword,
-        emailController: emailResetController,
+        onNext: () => Navigator.pop(context),
       ),
     ).whenComplete(() {
       setState(() {
