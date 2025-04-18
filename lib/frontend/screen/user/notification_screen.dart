@@ -236,7 +236,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 ),
               ),
               onTap: () {
-                // Implement deletion logic here
+                _notiService.deleteAllNotifications();
                 Navigator.pop(context);
               },
             ),
