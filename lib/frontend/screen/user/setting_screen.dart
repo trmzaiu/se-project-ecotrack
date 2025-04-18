@@ -28,11 +28,15 @@ class _SettingScreenState extends State<SettingScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController passwordConfirmController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController currentPasswordController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
 
+  bool _isReauthenticated = false;
 
 
+
+  final String currentEmail = FirebaseAuth.instance.currentUser?.email ?? "";
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
   Map<String, dynamic>? user;
 
@@ -45,6 +49,131 @@ class _SettingScreenState extends State<SettingScreen> {
   void initState() {
     super.initState();
   }
+  @override
+
+
+  Future<void> _verifyIdentity(BuildContext context) async {
+    final email = FirebaseAuth.instance.currentUser?.email;
+    if (email == null) return;
+
+    final passwordInputController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Verify Identity'),
+        content: TextField(
+          controller: passwordInputController,
+          obscureText: true,
+          decoration: InputDecoration(labelText: 'Enter your password'),
+        ),
+        actions: [
+          TextButton(
+            child: Text('Cancel'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          TextButton(
+            child: Text('Verify'),
+            onPressed: () async {
+              try {
+                final user = FirebaseAuth.instance.currentUser;
+                final credential = EmailAuthProvider.credential(
+                  email: email,
+                  password: passwordInputController.text,
+                );
+                await user!.reauthenticateWithCredential(credential);
+
+                currentPasswordController.text = passwordInputController.text;
+                _isReauthenticated = true;
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Identity verified!')),
+                );
+              } catch (e) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Verification failed: $e')),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
+
+
+  Future<void> _updateEmail(String newEmail) async {
+    if (!_isReauthenticated) {
+      await _verifyIdentity(context);
+      if (!_isReauthenticated) return;
+    }
+
+    try {
+      await UserService().updateUserEmail(
+        currentPassword: currentPasswordController.text,
+        newEmail: newEmail,
+      );
+
+
+      await FirebaseAuth.instance.currentUser?.reload();
+
+      setState(() {
+
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Email updated successfully!')),
+      );
+    } catch (e) {
+      print(' Failed in _updateEmail: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update email: $e')),
+      );
+    }
+  }
+
+
+
+
+
+
+  void _updatePassword(String newPassword, String confirmPassword) async {
+    if (newPassword.isEmpty || confirmPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("All fields are required")),
+      );
+      return;
+    }
+
+    if (newPassword != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Passwords do not match")),
+      );
+      return;
+    }
+
+    try {
+      await UserService().updateUserPassword(newPassword);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Password updated successfully")),
+      );
+    } catch (e) {
+      print('Failed to update password: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update password: $e')),
+      );
+    }
+  }
+
+
+
+
+
+
 
   Future<void> _pickImage(source) async {
     try {
@@ -62,31 +191,8 @@ class _SettingScreenState extends State<SettingScreen> {
     }
   }
 
-  Future<void> _updateEmail() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
 
-      // Check if user exists and has verified their email
-      if (user != null) {
-        if (!user.emailVerified) {
-          await user.sendEmailVerification();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Please verify your current email before updating. Verification email sent.')),
-          );
-          return;
-        }
 
-        await user.updateEmail(emailController.text.trim());
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Email updated successfully.')),
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update email: ${e.message}')),
-      );
-    }
-  }
 
 
   void showImageSelection() {
@@ -368,23 +474,17 @@ class _SettingScreenState extends State<SettingScreen> {
                       selectedDayPredicate: (day) {
                         return isSameDay(selectedDate, day);
                       },
-                      onDaySelected: (selectedDay, focusedDay) async {
+                      onDaySelected: (selectedDay, focusedDay) {
                         setState(() {
                           selectedDOB = selectedDay;
                           _dateController.text = DateFormat("dd/MM/yyyy").format(selectedDay);
                         });
 
-                        // Save immediately
-                        if (userId.isNotEmpty && selectedDOB != null && selectedCountry != null) {
-                          await UserService().updateUserProfile(
-                            userId: userId,
-                            dob: selectedDOB!,
-                            country: selectedCountry!.countryCode,
-                          );
-                        }
-
+                        _saveProfileInfo(); // Save after DOB is selected
                         Navigator.pop(context);
                       },
+
+
 
                       onPageChanged: (focusedDay) {
                         setState(() {
@@ -435,20 +535,15 @@ class _SettingScreenState extends State<SettingScreen> {
           ),
         ),
       ),
-      onSelect: (Country country) async {
+      onSelect: (Country country) {
         setState(() {
           selectedCountry = country;
         });
 
-        // Save immediately
-        if (userId.isNotEmpty && selectedDOB != null && selectedCountry != null) {
-          await UserService().updateUserProfile(
-            userId: userId,
-            dob: selectedDOB!,
-            country: selectedCountry!.countryCode,
-          );
-        }
+        _saveProfileInfo(); // Save after Country is selected
       },
+
+
 
     );
   }
@@ -473,10 +568,7 @@ class _SettingScreenState extends State<SettingScreen> {
                   SnackBar(content: Text('Name updated successfully!')),
                 );
               } else if (information == 'email') {
-                await UserService().updateUserEmail(userId, controller.text);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Email updated successfully!')),
-                );
+                _updateEmail(controller.text);
               }
 
               setState(() {});
@@ -492,30 +584,11 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
-  // void _saveChanges() async {
-  //   if (nameController.text.isEmpty) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Name cannot be empty!')),
-  //     );
-  //     return;
-  //   }
-  //
-  //   try {
-  //     await UserService().updateUserName(userId, nameController.text);
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Changes saved successfully!')),
-  //     );
-  //     setState(() {});
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Failed to save changes: $e')),
-  //     );
-  //   }
-  // }
+
 
   void _showDialogPassword(BuildContext context) {
     passwordController.clear();
-    passwordConfirmController.clear();
+    confirmPasswordController.clear();
 
     showDialog(
       context: context,
@@ -524,43 +597,13 @@ class _SettingScreenState extends State<SettingScreen> {
         controller: passwordController,
         hintText: 'Enter new password',
         isPass: true,
-        controllerPass: passwordConfirmController,
+        controllerPass: confirmPasswordController,
         onPressed: () async {
           final newPassword = passwordController.text.trim();
-          final confirmPassword = passwordConfirmController.text.trim();
+          final confirmPassword = confirmPasswordController.text.trim();
 
-          if (newPassword.isEmpty || confirmPassword.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Please enter both fields")),
-            );
-            return;
-          }
-
-          if (newPassword != confirmPassword) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Passwords do not match")),
-            );
-            return;
-          }
-
-          try {
-            final currentUser = FirebaseAuth.instance.currentUser;
-            if (currentUser != null) {
-              await UserService().updateUserPassword(currentUser.uid, newPassword);
-              Navigator.pop(context); // Close dialog
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Password updated successfully")),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("User not logged in")),
-              );
-            }
-          } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Failed to update password: $e")),
-            );
-          }
+          _updatePassword(newPassword, confirmPassword);
+          Navigator.pop(context); // Close dialog
         },
       ),
     );
@@ -579,7 +622,6 @@ class _SettingScreenState extends State<SettingScreen> {
 
             SizedBox(height: 30),
 
-
             Expanded(
               child: Container(
                 width: double.infinity,
@@ -591,7 +633,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       SizedBox(height: 30),
 
                       FutureBuilder<Map<String, dynamic>>(
-                        future: UserService().getCurrentUser(userId!),
+                        future: UserService().getCurrentUser(userId),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return Center(child: CircularProgressIndicator());
@@ -599,7 +641,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
                           final user = snapshot.data ?? {
                             'photoUrl': '',
-                            'name': userId!.substring(0, 10),
+                            'name': userId.substring(0, 10),
                             'email': '',
                             'dob': '',
                             'country': ''
@@ -617,7 +659,6 @@ class _SettingScreenState extends State<SettingScreen> {
                             selectedCountry = Country.tryParse(user['country']);
                           }
 
-
                           return Column(
                             children: [
                               _avatarTile(user['photoUrl']),
@@ -627,12 +668,9 @@ class _SettingScreenState extends State<SettingScreen> {
                               _dobTile(),
                               _countryTile(),
 
-                              // 👇 Add Save Button here
                               SizedBox(height: 20),
-
                             ],
                           );
-
                         },
                       ),
 
@@ -646,6 +684,7 @@ class _SettingScreenState extends State<SettingScreen> {
         ),
       ),
     );
+
   }
   void _saveProfileInfo() async {
     if (selectedDOB == null || selectedCountry == null) {
@@ -656,11 +695,8 @@ class _SettingScreenState extends State<SettingScreen> {
     }
 
     try {
-      await UserService().updateUserProfile(
-        userId: userId,
-        dob: selectedDOB!,
-        country: selectedCountry!.countryCode,
-      );
+      await UserService().updateUserDob(userId: userId, dob: selectedDOB!);
+      await UserService().updateUserCountry(userId: userId, country: selectedCountry!.name);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Profile updated successfully!')),
@@ -671,6 +707,7 @@ class _SettingScreenState extends State<SettingScreen> {
       );
     }
   }
+
 
   Widget _avatarTile(String photoUrl) {
     return Column(
