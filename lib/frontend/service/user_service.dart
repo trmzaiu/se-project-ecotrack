@@ -7,43 +7,6 @@ class UserService {
 
   UserService();
 
-  Future<void> reauthenticateUser(String email, String currentPassword) async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) throw Exception('No user is currently logged in.');
-
-      final credential = EmailAuthProvider.credential(
-        email: email,
-        password: currentPassword,
-      );
-
-      await user.reauthenticateWithCredential(credential);
-    } catch (e) {
-      if (e.toString().contains('wrong-password')) {
-        throw Exception('Incorrect password.');
-      } else if (e.toString().contains('invalid-credential')) {
-        throw Exception('Invalid credentials. Check email or password.');
-      } else if (e.toString().contains('user-not-found')) {
-        throw Exception('User not found.');
-      } else {
-        throw Exception('Failed to reauthenticate: $e');
-      }
-    }
-  }
-
-
-
-  Future<void> reauthenticate(String email, String password) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) throw Exception("User not logged in");
-
-    final credential = EmailAuthProvider.credential(email: email, password: password);
-    await user.reauthenticateWithCredential(credential);
-  }
-
-
-
-
   Future<void> updateUserEmail({
     required String currentPassword,
     required String newEmail,
@@ -83,9 +46,6 @@ class UserService {
     }
   }
 
-
-
-
   Future<void> updateUserPassword(String newPassword) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -94,8 +54,6 @@ class UserService {
 
     await user.updatePassword(newPassword);
   }
-
-
 
   Stream<List<Map<String, dynamic>>> leaderboardStream() {
     Stream<QuerySnapshot> usersStream = _db.collection('users').snapshots();
@@ -136,28 +94,28 @@ class UserService {
   }
 
   // Get current user data
-  Future<Map<String, dynamic>> getCurrentUser(String userId) async {
-    final snapshot = await _db.collection('users').doc(userId).get();
+  Stream<Map<String, dynamic>> getCurrentUser(String userId) {
+    return _db.collection('users').doc(userId).snapshots().map((snapshot) {
+      if (!snapshot.exists) {
+        return {
+          'photoUrl': '',
+          'name': userId.substring(0, 10),
+          'email': '',
+          'dob': DateTime.now().toString(),
+          'country': ''
+        };
+      }
 
-    if (!snapshot.exists) {
+      final data = snapshot.data() ?? {};
+
       return {
-        'photoUrl': '',
-        'name': userId.substring(0, 10),
-        'email': '',
-        'dob': DateTime.now().toString(),
-        'country': ''
+        'photoUrl': data['photoUrl'] ?? '',
+        'name': data['name'] ?? userId.substring(0, 10),
+        'email': data['email'] ?? '',
+        'dob': data['dob'] ?? DateTime.now().toString(),
+        'country': data['country'] ?? ''
       };
-    }
-
-    final data = snapshot.data() ?? {};
-
-    return {
-      'photoUrl': data['photoUrl'] ?? '',
-      'name': data['name'] ?? userId.substring(0, 10),
-      'email': data['email'] ?? '',
-      'dob': data['dob'] ?? DateTime.now().toString(),
-      'country': data['country'] ?? ''
-    };
+    });
   }
 
   // Update user name

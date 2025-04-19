@@ -78,8 +78,8 @@ class _HomeScreenState extends State<HomeScreen> {
         color: AppColors.background,
         child: Column(
           children: [
-            FutureBuilder<Map<String, dynamic>>(
-              future: UserService().getCurrentUser(userId),
+            StreamBuilder<Map<String, dynamic>>(
+              stream: UserService().getCurrentUser(userId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return BarNotiTitle(title_small: "Hello", title_big: '');
@@ -363,13 +363,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: TextRow(
                         text: 'Challenges',
-                        onTap: () {
-                          Navigator.of(context).push(
-                            moveUpRoute(
-                              ChallengesScreen(),
-                            ),
-                          );
-                        },
+                        // onTap: () {
+                        //   Navigator.of(context).push(
+                        //     moveUpRoute(
+                        //       // ChallengesScreen(),
+                        //     ),
+                        //   );
+                        // },
                       ),
                     ),
 

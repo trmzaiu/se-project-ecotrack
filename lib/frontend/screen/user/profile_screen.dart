@@ -57,8 +57,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           SizedBox(height: 25),
 
-          FutureBuilder<Map<String, dynamic>>(
-            future: UserService().getCurrentUser(userId),
+          StreamBuilder<Map<String, dynamic>>(
+            stream: UserService().getCurrentUser(userId),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());

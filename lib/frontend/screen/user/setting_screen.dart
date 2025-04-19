@@ -25,16 +25,14 @@ class SettingScreen extends StatefulWidget {
 }
 
 class _SettingScreenState extends State<SettingScreen> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
+  late TextEditingController nameController;
+  late TextEditingController emailController;
+  late TextEditingController dateController;
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
   final TextEditingController currentPasswordController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
 
   bool _isReauthenticated = false;
-
-
 
   final String currentEmail = FirebaseAuth.instance.currentUser?.email ?? "";
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
@@ -48,9 +46,18 @@ class _SettingScreenState extends State<SettingScreen> {
   @override
   void initState() {
     super.initState();
+    nameController = TextEditingController();
+    emailController = TextEditingController();
+    dateController = TextEditingController();
   }
-  @override
 
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    dateController.dispose();
+    super.dispose();
+  }
 
   Future<void> _verifyIdentity(BuildContext context) async {
     final email = FirebaseAuth.instance.currentUser?.email;
@@ -102,10 +109,6 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
-
-
-
-
   Future<void> _updateEmail(String newEmail) async {
     if (!_isReauthenticated) {
       await _verifyIdentity(context);
@@ -117,7 +120,6 @@ class _SettingScreenState extends State<SettingScreen> {
         currentPassword: currentPasswordController.text,
         newEmail: newEmail,
       );
-
 
       await FirebaseAuth.instance.currentUser?.reload();
 
@@ -135,11 +137,6 @@ class _SettingScreenState extends State<SettingScreen> {
       );
     }
   }
-
-
-
-
-
 
   void _updatePassword(String newPassword, String confirmPassword) async {
     if (newPassword.isEmpty || confirmPassword.isEmpty) {
@@ -169,12 +166,6 @@ class _SettingScreenState extends State<SettingScreen> {
     }
   }
 
-
-
-
-
-
-
   Future<void> _pickImage(source) async {
     try {
       final pickedFile = await ImagePicker().pickImage(source: source);
@@ -190,10 +181,6 @@ class _SettingScreenState extends State<SettingScreen> {
       );
     }
   }
-
-
-
-
 
   void showImageSelection() {
     showModalBottomSheet(
@@ -228,7 +215,7 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   Future<void> showDatePicker(BuildContext context) async {
-    DateTime selectedDate = DateFormat("dd/MM/yyyy").parse(_dateController.text);
+    DateTime selectedDate = DateFormat("dd/MM/yyyy").parse(dateController.text);
     DateTime focusedDate = selectedDate;
     int selectedYear = selectedDate.year;
     int selectedMonth = selectedDate.month;
@@ -410,7 +397,9 @@ class _SettingScreenState extends State<SettingScreen> {
                       ),
                     ],
                   ),
+
                   SizedBox(height: 20),
+
                   Expanded(
                     child: TableCalendar(
                       firstDay: DateTime(1900),
@@ -474,17 +463,32 @@ class _SettingScreenState extends State<SettingScreen> {
                       selectedDayPredicate: (day) {
                         return isSameDay(selectedDate, day);
                       },
-                      onDaySelected: (selectedDay, focusedDay) {
+                      onDaySelected: (selectedDay, focusedDay) async {
                         setState(() {
                           selectedDOB = selectedDay;
-                          _dateController.text = DateFormat("dd/MM/yyyy").format(selectedDay);
+                          dateController.text = DateFormat("dd/MM/yyyy").format(selectedDay);
                         });
 
-                        _saveProfileInfo(); // Save after DOB is selected
+                        await UserService().updateUserDob(userId: userId, dob: selectedDOB!);
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Center(
+                              child: Text(
+                                'Date of birth updated successfully!',
+                                style: GoogleFonts.urbanist(
+                                  fontSize: 16,
+                                  fontWeight: AppFontWeight.semiBold,
+                                  color: AppColors.surface,
+                                ),
+                              ),
+                            ),
+                            backgroundColor: AppColors.board2,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
                         Navigator.pop(context);
                       },
-
-
 
                       onPageChanged: (focusedDay) {
                         setState(() {
@@ -535,26 +539,39 @@ class _SettingScreenState extends State<SettingScreen> {
           ),
         ),
       ),
-      onSelect: (Country country) {
-        setState(() {
-          selectedCountry = country;
-        });
+      onSelect: (Country country) async {
+        selectedCountry = country;
 
-        _saveProfileInfo(); // Save after Country is selected
+        await UserService().updateUserCountry(userId: userId, country: selectedCountry!.name);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Center(
+              child: Text(
+                'Country updated successfully!',
+                style: GoogleFonts.urbanist(
+                  fontSize: 16,
+                  fontWeight: AppFontWeight.semiBold,
+                  color: AppColors.surface,
+                ),
+              ),
+            ),
+            backgroundColor: AppColors.board2,
+            duration: Duration(seconds: 2),
+          ),
+        );
       },
-
-
-
     );
   }
 
-
-
   void _showDialog(BuildContext context, String information, TextEditingController controller, String hintText) {
-    controller.text = hintText; // Pre-fill with the current value
+    if (controller.text.isEmpty) {
+      controller.text = hintText;
+    }
 
     showDialog(
       context: context,
+      barrierDismissible: true,
       builder: (context) => InputDialog(
         information: information,
         controller: controller,
@@ -565,26 +582,49 @@ class _SettingScreenState extends State<SettingScreen> {
               if (information == 'name') {
                 await UserService().updateUserName(userId, controller.text);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Name updated successfully!')),
+                  SnackBar(
+                    content: Center(
+                      child: Text(
+                        'Name updated successfully!',
+                        style: GoogleFonts.urbanist(
+                          fontSize: 16,
+                          fontWeight: AppFontWeight.semiBold,
+                          color: AppColors.surface,
+                        ),
+                      ),
+                    ),
+                    backgroundColor: AppColors.board2,
+                    duration: Duration(seconds: 2),
+                  ),
                 );
-              } else if (information == 'email') {
-                _updateEmail(controller.text);
               }
-
-              setState(() {});
+              // else if (information == 'email') {
+              //   _updateEmail(controller.text);
+              // }
             } catch (e) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Failed to update $information: $e')),
+                SnackBar(
+                  content: Center(
+                    child: Text(
+                      'Failed to update $information',
+                      style: GoogleFonts.urbanist(
+                        fontSize: 16,
+                        fontWeight: AppFontWeight.semiBold,
+                        color: AppColors.surface,
+                      ),
+                    ),
+                  ),
+                  backgroundColor: AppColors.board2,
+                  duration: Duration(seconds: 2),
+                ),
               );
             }
           }
-          Navigator.pop(context);
+          Navigator.of(context).pop();
         },
       ),
     );
   }
-
-
 
   void _showDialogPassword(BuildContext context) {
     passwordController.clear();
@@ -609,7 +649,6 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -632,8 +671,8 @@ class _SettingScreenState extends State<SettingScreen> {
                     children: [
                       SizedBox(height: 30),
 
-                      FutureBuilder<Map<String, dynamic>>(
-                        future: UserService().getCurrentUser(userId),
+                      StreamBuilder<Map<String, dynamic>>(
+                        stream: UserService().getCurrentUser(userId),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return Center(child: CircularProgressIndicator());
@@ -649,15 +688,18 @@ class _SettingScreenState extends State<SettingScreen> {
 
                           if (user['dob'] != null && user['dob'].isNotEmpty) {
                             selectedDOB = DateTime.tryParse(user['dob']);
-                            _dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
+                            dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
                           } else {
                             selectedDOB = DateTime.now();
-                            _dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
+                            dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
                           }
 
                           if (user['country'] != null && user['country'].isNotEmpty) {
                             selectedCountry = Country.tryParse(user['country']);
                           }
+
+                          nameController.text = user['name'];
+                          emailController.text = user['email'];
 
                           return Column(
                             children: [
@@ -684,30 +726,7 @@ class _SettingScreenState extends State<SettingScreen> {
         ),
       ),
     );
-
   }
-  void _saveProfileInfo() async {
-    if (selectedDOB == null || selectedCountry == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select both DOB and Country')),
-      );
-      return;
-    }
-
-    try {
-      await UserService().updateUserDob(userId: userId, dob: selectedDOB!);
-      await UserService().updateUserCountry(userId: userId, country: selectedCountry!.name);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Profile updated successfully!')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update profile: $e')),
-      );
-    }
-  }
-
 
   Widget _avatarTile(String photoUrl) {
     return Column(
@@ -748,28 +767,28 @@ class _SettingScreenState extends State<SettingScreen> {
                 right: 5,
                 bottom: 0,
                 child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      // color: AppColors.surface,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.accent.withOpacity(0.5),
-                        width: 2,
-                      ),
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    // color: AppColors.surface,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.accent.withOpacity(0.5),
+                      width: 2,
                     ),
-                    child: ElevatedButton(
-                      onPressed: () => showImageSelection(),
-                      style: ElevatedButton.styleFrom(
-                          shape: CircleBorder(),
-                          padding: EdgeInsets.zero,
-                          backgroundColor: AppColors.surface,
-                          elevation: 0,
-                          shadowColor: Colors.transparent,
-                          overlayColor: AppColors.primary
-                      ),
-                      child: Icon(Icons.camera_alt, color: AppColors.accent),
-                    )
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () => showImageSelection(),
+                    style: ElevatedButton.styleFrom(
+                      shape: CircleBorder(),
+                      padding: EdgeInsets.zero,
+                      backgroundColor: AppColors.surface,
+                      elevation: 0,
+                      shadowColor: Colors.transparent,
+                      overlayColor: AppColors.primary
+                    ),
+                    child: Icon(Icons.camera_alt, color: AppColors.accent),
+                  )
                 ),
               )
             ],
@@ -868,48 +887,48 @@ class _SettingScreenState extends State<SettingScreen> {
         Material(
           color: Colors.transparent,
           child: InkWell(
-              highlightColor: AppColors.secondary.withOpacity(0.3),
-              splashColor: Colors.transparent,
-              borderRadius: BorderRadius.circular(6),
-              child: SizedBox(
-                  width: getPhoneWidth(context) - 60,
-                  height: 50,
-                  child: Container(
-                    width: getPhoneWidth(context) - 60,
-                    height: 50,
-                    padding: EdgeInsets.only(left: 15, right: 5),
-                    decoration: ShapeDecoration(
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                          width: 1,
-                          color: AppColors.tertiary,
-                        ),
+            highlightColor: AppColors.secondary.withOpacity(0.3),
+            splashColor: Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+            child: SizedBox(
+              width: getPhoneWidth(context) - 60,
+              height: 50,
+              child: Container(
+                width: getPhoneWidth(context) - 60,
+                height: 50,
+                padding: EdgeInsets.only(left: 15, right: 5),
+                decoration: ShapeDecoration(
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      width: 1,
+                      color: AppColors.tertiary,
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                child: TextFormField(
+                  controller: dateController,
+                  readOnly: true,
+                  style: GoogleFonts.urbanist(
+                      fontSize: 15,
+                      color: AppColors.tertiary,
+                      fontWeight: AppFontWeight.medium
+                  ),
+                  decoration: InputDecoration(
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.calendar_today, color: AppColors.tertiary),
+                      onPressed: () => showDatePicker(context),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 0),
+                    border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6),
-                      ),
+                        borderSide: BorderSide.none
                     ),
-                    child: TextFormField(
-                      controller: _dateController,
-                      readOnly: true,
-                      style: GoogleFonts.urbanist(
-                          fontSize: 15,
-                          color: AppColors.tertiary,
-                          fontWeight: AppFontWeight.medium
-                      ),
-                      decoration: InputDecoration(
-                        suffixIcon: IconButton(
-                          icon: Icon(Icons.calendar_today, color: AppColors.tertiary),
-                          onPressed: () => showDatePicker(context),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 0),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                            borderSide: BorderSide.none
-                        ),
-                      ),
-                      onTap: () => showDatePicker(context),
-                    ),
-                  )
+                  ),
+                  onTap: () => showDatePicker(context),
+                ),
               )
+            )
           ),
         ),
       ],
@@ -942,57 +961,57 @@ class _SettingScreenState extends State<SettingScreen> {
         Material(
           color: Colors.transparent,
           child: InkWell(
-              highlightColor: AppColors.secondary.withOpacity(0.3),
-              splashColor: Colors.transparent,
-              borderRadius: BorderRadius.circular(6),
-              onTap: () => showCountryPickerDialog(context),
-              child: SizedBox(
-                  width: getPhoneWidth(context) - 60,
-                  height: 50,
-                  child: Container(
-                    width: getPhoneWidth(context) - 60,
-                    height: 50,
-                    padding: EdgeInsets.only(left: 15, right: 15),
-                    decoration: ShapeDecoration(
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                          width: 1,
-                          color: AppColors.tertiary,
-                        ),
-                        borderRadius: BorderRadius.circular(6),
+            highlightColor: AppColors.secondary.withOpacity(0.3),
+            splashColor: Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+            onTap: () => showCountryPickerDialog(context),
+            child: SizedBox(
+              width: getPhoneWidth(context) - 60,
+              height: 50,
+              child: Container(
+                width: getPhoneWidth(context) - 60,
+                height: 50,
+                padding: EdgeInsets.only(left: 15, right: 15),
+                decoration: ShapeDecoration(
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      width: 1,
+                      color: AppColors.tertiary,
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    if (selectedCountry != null) ...[
+                      Text(
+                        selectedCountry!.flagEmoji,
+                        style: TextStyle(fontSize: 20),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        if (selectedCountry != null) ...[
-                          Text(
-                            selectedCountry!.flagEmoji,
-                            style: TextStyle(fontSize: 20),
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            selectedCountry!.name,
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.tertiary,
-                              fontSize: 15,
-                              fontWeight: AppFontWeight.medium,
-                            ),
-                          ),
-                        ] else
-                          Text(
-                            "Select Country",
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.tertiary,
-                              fontSize: 15,
-                              fontWeight: AppFontWeight.medium,
-                            ),
-                          ),
-                        Spacer(),
-                        Icon(Icons.arrow_drop_down, color: AppColors.tertiary),
-                      ],
-                    ),
-                  )
+                      SizedBox(width: 10),
+                      Text(
+                        selectedCountry!.name,
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.tertiary,
+                          fontSize: 15,
+                          fontWeight: AppFontWeight.medium,
+                        ),
+                      ),
+                    ] else
+                      Text(
+                        "Select Country",
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.tertiary,
+                          fontSize: 15,
+                          fontWeight: AppFontWeight.medium,
+                        ),
+                      ),
+                    Spacer(),
+                    Icon(Icons.arrow_drop_down, color: AppColors.tertiary),
+                  ],
+                ),
               )
+            )
           ),
         ),
       ],

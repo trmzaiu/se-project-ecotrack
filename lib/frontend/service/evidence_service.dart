@@ -206,5 +206,4 @@ class EvidenceService{
         .snapshots()
         .map((querySnapshot) => querySnapshot.size);
   }
-
 }
