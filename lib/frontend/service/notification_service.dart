@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import 'package:wastesortapp/database/model/evidence.dart';
 import '../../database/model/notification.dart'; // Your Notification model
 
@@ -44,56 +45,60 @@ class NotificationService {
     await _db.collection('notifications').doc(notificationId).set(notification.toMap());
   }
 
-  Stream<List<Map<String, dynamic>>> fetchNotificationsStream(String userId) {
-    return _db
+  Stream<List<Map<String, dynamic>>> fetchNotifications(String userId) {
+    return FirebaseFirestore.instance
         .collection('notifications')
         .where('userId', isEqualTo: userId)
         .orderBy('time', descending: true)
-        .snapshots()
+        .snapshots() // ✅ Converts to real-time updates
         .map((snapshot) {
-      // Group notifications by date.
+      // Group notifications by date
       Map<String, List<Map<String, dynamic>>> groupedNotifications = {};
 
       for (var doc in snapshot.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        Map<String, dynamic> data = doc.data();
 
-        // If 'time' is stored in Firestore as a Timestamp, use:
+        // Convert Firestore Timestamp or ensure valid parsing
         DateTime dateTime;
         if (data['time'] is Timestamp) {
           dateTime = (data['time'] as Timestamp).toDate();
         } else {
-          // Otherwise assume it's a string.
           dateTime = DateTime.parse(data['time']);
         }
-        String date = "${dateTime.year}-${dateTime.month}-${dateTime.day}";
 
-        // Trigger local notification immediately for new/unread notifications.
-        // (Be cautious: This may trigger multiple pop-ups if the stream updates repeatedly.)
+        // Format the date ("yyyy-MM-dd")
+        String date = DateFormat('yyyy-MM-dd').format(dateTime);
 
-        // Group notification by date.
         if (!groupedNotifications.containsKey(date)) {
           groupedNotifications[date] = [];
         }
+
+        // Format the time ("HH:mm")
+        String formattedTime = DateFormat("HH:mm").format(dateTime);
         groupedNotifications[date]!.add({
           "type": data['status'],
-          "time": "${dateTime.hour}:${dateTime.minute}",
-          "isRead": data['isRead'],
+          "time": formattedTime,
           "points": data['point'],
+          "isRead": data['isRead'],
+          "notificationId": doc.id
         });
       }
 
-      // Convert grouped data to a list.
+      // Convert grouped data into a list
       List<Map<String, dynamic>> notifications = [];
       groupedNotifications.forEach((date, items) {
         notifications.add({
           "date": date,
-          "items": items,
+          "items": items
         });
       });
 
+      // Sort notifications by date descending
+      notifications.sort((a, b) => b['date'].compareTo(a['date']));
       return notifications;
     });
   }
+
 
 
   Stream<int> countUnreadNotifications() {
@@ -141,30 +146,35 @@ class NotificationService {
     }
   }
 
-  Stream<bool> deleteAllNotifications() async* {
+  Future<void> deleteAllNotifications(String userId) async {
     try {
-      String? userId = _auth.currentUser?.uid;
-      if (userId == null) {
-        yield false;
+      // Reference to 'notifications' collection in Firestore
+      CollectionReference notificationsRef = FirebaseFirestore.instance.collection('notifications');
+
+      // Fetch all notifications for the current user
+      QuerySnapshot snapshot = await notificationsRef.where('userId', isEqualTo: userId).get();
+
+      if (snapshot.docs.isEmpty) {
+        print("✅ No notifications found for user: $userId");
         return;
       }
 
-      QuerySnapshot snapshot = await _db
-          .collection('notifications')
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      WriteBatch batch = _db.batch();
-      for (var doc in snapshot.docs) {
+      // Batch delete to improve performance
+      WriteBatch batch = FirebaseFirestore.instance.batch();
+      for (QueryDocumentSnapshot doc in snapshot.docs) {
         batch.delete(doc.reference);
       }
+
+      // Execute batch deletion
       await batch.commit();
-      yield true;
+      print("✅ Successfully deleted all notifications for user: $userId");
+
     } catch (e) {
-      print("Error while deleting notifications: $e");
-      yield false;
+      print("❌ Error deleting notifications: $e");
     }
   }
+
+
 
 
 
