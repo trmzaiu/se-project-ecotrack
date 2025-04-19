@@ -21,60 +21,15 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   final NotificationService _notiService = NotificationService();
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
-  Future<List<Map<String, dynamic>>>? _notificationsFuture;
+  Stream<List<Map<String, dynamic>>>? _notificationsFuture;
 
   @override
   void initState() {
     super.initState();
     // Replace "currentUserId" with the actual current user id
-    _notificationsFuture = fetchNotifications(userId);
+    _notificationsFuture = _notiService.fetchNotifications(userId);
   }
 
-  /// Fetch notifications from Firebase Firestore, then group them by date.
-  Future<List<Map<String, dynamic>>> fetchNotifications(String userId) async {
-    List<Map<String, dynamic>> notifications = [];
-
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collection('notifications')
-        .where('userId', isEqualTo: userId)
-        .get();
-
-    // Group notifications by date
-    Map<String, List<Map<String, dynamic>>> groupedNotifications = {};
-
-    for (var doc in snapshot.docs) {
-      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-      DateTime dateTime = DateTime.parse(data['time']);
-      // Format the date to match the sample format ("yyyy-MM-dd")
-      String date = DateFormat('yyyy-MM-dd').format(dateTime);
-
-      if (!groupedNotifications.containsKey(date)) {
-        groupedNotifications[date] = [];
-      }
-
-      // Format the time as originally provided ("HH:mm")
-      String formattedTime = DateFormat("HH:mm").format(dateTime);
-      groupedNotifications[date]!.add({
-        "type": data['status'],
-        "time": formattedTime,
-        "points": data['point'],
-        "isRead": data['isRead'],
-        "notificationId": data['notificationId']
-      });
-    }
-
-    // Create the notifications list structure similar to your sample notification
-    groupedNotifications.forEach((date, items) {
-      notifications.add({
-        "date": date,
-        "items": items
-      });
-    });
-
-    // Optional: sort notifications by date descending
-    notifications.sort((a, b) => b['date'].compareTo(a['date']));
-    return notifications;
-  }
 
   String formatDate(DateTime time) {
     return DateFormat("MMM dd, yyyy").format(time);
@@ -173,7 +128,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         fontWeight: AppFontWeight.regular,
                       ),
                     ),
-                    if (isRead)
+                    if (isRead == false)
                       Container(
                         width: 25,
                         height: 25,
@@ -236,7 +191,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 ),
               ),
               onTap: () {
-                _notiService.deleteAllNotifications();
+                _notiService.deleteAllNotifications(userId);
                 Navigator.pop(context);
               },
             ),
@@ -290,8 +245,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ],
           ),
           Expanded(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: _notificationsFuture,
+            child: StreamBuilder<List<Map<String, dynamic>>>(
+              stream: _notiService.fetchNotifications(FirebaseAuth.instance.currentUser!.uid), // ✅ Uses real-time Firestore updates
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -299,13 +254,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 if (snapshot.hasError) {
                   return Center(child: Text("Error: ${snapshot.error}"));
                 }
-                if (snapshot.hasData) {
+                if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                   final data = snapshot.data!;
                   return SingleChildScrollView(
                     child: Container(
-                      decoration: const BoxDecoration(
-                        color: AppColors.background,
-                      ),
+                      decoration: const BoxDecoration(color: AppColors.background),
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(15, 0, 15, 20),
                         child: Column(
@@ -313,15 +266,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           children: data.map((notification) {
                             DateTime date = DateTime.parse(notification["date"]);
                             List<Widget> items = (notification["items"] as List)
-                                .map<Widget>((item) {
-                              return buildNotificationItem(
-                                item["type"],
-                                item["time"],
-                                item["points"],
-                                item["isRead"],
-                                item["notificationId"],
-                              );
-                            }).toList();
+                                .map<Widget>((item) => buildNotificationItem(
+                                item["type"], item["time"], item["points"], item["isRead"], item["notificationId"]
+                            )).toList();
                             return buildNotificationCard(date, items);
                           }).toList(),
                         ),
@@ -329,10 +276,39 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     ),
                   );
                 }
-                return const Center(child: Text("No notifications found."));
+
+                // ✅ No notifications found → Show a card instead of plain text
+                return Center(
+                  child: Card(
+                    elevation: 5,
+                    color: AppColors.background,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.notifications_off, size: 40, color: Colors.grey),
+                          const SizedBox(height: 10),
+                          Text(
+                            "No notifications",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
               },
             ),
           ),
+
         ],
       ),
     );
