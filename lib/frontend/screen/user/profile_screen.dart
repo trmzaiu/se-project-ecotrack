@@ -17,6 +17,9 @@ import '../../service/user_service.dart';
 
 import '../../service/evidence_service.dart';
 import '../../service/tree_service.dart';
+import '../../widget/active_challenge.dart';
+import '../../widget/challenge_item.dart';
+import '../challenge/challenges_screen.dart';
 import '../evidence/evidence_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -220,36 +223,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 30),
                     child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            'History',
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'History',
+                          style: GoogleFonts.urbanist(
+                            color: AppColors.secondary,
+                            fontSize: 20,
+                            fontWeight: AppFontWeight.semiBold,
+                          ),
+                        ),
+
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              moveLeftRoute(
+                                EvidenceScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'See more',
                             style: GoogleFonts.urbanist(
-                              color: AppColors.secondary,
-                              fontSize: 20,
-                              fontWeight: AppFontWeight.semiBold,
+                              color: AppColors.tertiary,
+                              fontSize: 13,
+                              fontWeight: AppFontWeight.regular,
                             ),
                           ),
-
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                moveLeftRoute(
-                                  EvidenceScreen(),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              'See more',
-                              style: GoogleFonts.urbanist(
-                                color: AppColors.tertiary,
-                                fontSize: 13,
-                                fontWeight: AppFontWeight.regular,
-                              ),
-                            ),
-                          )
-                        ]
+                        )
+                      ]
                     ),
                   ),
 
@@ -316,6 +319,83 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       );
                     },
+                  ),
+
+                  SizedBox(height: 25),
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Active Challenges',
+                          style: GoogleFonts.urbanist(
+                            color: AppColors.secondary,
+                            fontSize: 20,
+                            fontWeight: AppFontWeight.semiBold,
+                          ),
+                        ),
+
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              moveLeftRoute(
+                                ChallengesScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'See more',
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.tertiary,
+                              fontSize: 13,
+                              fontWeight: AppFontWeight.regular,
+                            ),
+                          ),
+                        )
+                      ]
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: ActiveChallenge(
+                      image: 'lib/assets/images/zero_waste_challenge.png',
+                      type: 'Daily',
+                      title: 'Zero Waste Challenge',
+                      info: 'Reduce your waste for a whole week! Track your trash, use reusable items, and share your progress with #ZeroWasteWeek.',
+                      attend: '345',
+                    ),
+                  ),
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Daily Recycler", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 8),
+                            LinearProgressIndicator(
+                              value: 0.5,
+                              color: Colors.green,
+                              backgroundColor: Colors.grey[300],
+                              minHeight: 10,
+                            ),
+                            const SizedBox(height: 8),
+                            Text('Ends in 2 days', style: const TextStyle(color: Colors.grey)),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
 
                   SizedBox(height: 30),

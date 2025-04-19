@@ -5,6 +5,8 @@ class Users {
   final DateTime? dob;
   final String photoUrl;
   final String country;
+  final DateTime? dailyChallengeCompletedDate;
+  final int streak;
 
   Users({
     required this.userId,
@@ -13,6 +15,8 @@ class Users {
     this.dob,
     this.photoUrl = "",
     this.country = "",
+    this.dailyChallengeCompletedDate,
+    this.streak = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -23,6 +27,8 @@ class Users {
       'dob': dob?.toIso8601String(),
       'photoUrl': photoUrl,
       'country': country,
+      'dailyChallengeCompletedDate': dailyChallengeCompletedDate?.toIso8601String(),
+      'streak': streak,
     };
   }
 
@@ -38,6 +44,11 @@ class Users {
           : null,
       photoUrl: map['photoUrl'] ?? "",
       country: map['country'] ?? "",
+      dailyChallengeCompletedDate: (map['dailyChallengeCompletedDate'] != null &&
+          map['dailyChallengeCompletedDate'].toString().isNotEmpty)
+          ? DateTime.tryParse(map['dailyChallengeCompletedDate'])
+          : null,
+      streak: map['streak'] ?? 0,
     );
   }
 }

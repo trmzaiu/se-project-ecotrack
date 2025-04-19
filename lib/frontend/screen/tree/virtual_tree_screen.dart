@@ -106,7 +106,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
       if (_progress != animation.value) {
         setState(() {
           _progress = animation.value;
-        }); 
+        });
       }
     });
 

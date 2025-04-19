@@ -1,0 +1,52 @@
+[
+  {
+    "type": "dragdrop",
+    "question": "Drag to the right bins!",
+    "items": [
+      {"label": "tea_leaves", "targetBin": "organic"},
+      {"label": "newspaper", "targetBin": "recyclable"},
+      {"label": "chemical_bottle", "targetBin": "hazardous"},
+      {"label": "light_bulb", "targetBin": "general"}
+    ]
+  },
+  {
+    "type": "dragdrop",
+    "question": "Sort the following waste items into the correct bins.",
+    "items": [
+      {"label": "banana_peel", "targetBin": "organic"},
+      {"label": "plastic_bottle", "targetBin": "recyclable"},
+      {"label": "used_battery", "targetBin": "hazardous"},
+      {"label": "ceramic_plate", "targetBin": "general"}
+    ]
+  },
+  {
+    "type": "dragdrop",
+    "question": "Drag each item into the correct bin.",
+    "items": [
+      {"label": "apple_core", "targetBin": "organic"},
+      {"label": "cardboard_box", "targetBin": "recyclable"},
+      {"label": "expired_medicine", "targetBin": "hazardous"},
+      {"label": "styrofoam", "targetBin": "general"}
+    ]
+  },
+  {
+    "type": "dragdrop",
+    "question": "Identify and sort these items correctly.",
+    "items": [
+      {"label": "eggshell", "targetBin": "organic"},
+      {"label": "metal_can", "targetBin": "recyclable"},
+      {"label": "dust_cloth", "targetBin": "general"},
+      {"label": "mirror", "targetBin": "general"}
+    ]
+  },
+  {
+    "type": "dragdrop",
+    "question": "Sort these waste items correctly.",
+    "items": [
+      {"label": "mercury_thermometer", "targetBin": "hazardous"},
+      {"label": "disinfectant", "targetBin": "hazardous"},
+      {"label": "motor_oil", "targetBin": "hazardous"},
+      {"label": "broken_toy", "targetBin": "general"}
+    ]
+  }
+]

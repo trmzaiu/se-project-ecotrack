@@ -1,50 +1,15 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
+
+import '../../database/CloudinaryConfig.dart';
 
 class UserService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   UserService();
-
-  Future<void> updateUserEmail({
-    required String currentPassword,
-    required String newEmail,
-  }) async {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null || user.email == null) {
-      throw Exception('No user is currently logged in.');
-
-    }
-
-    try {
-
-      final credential = EmailAuthProvider.credential(
-        email: user.email!,
-        password: currentPassword,
-      );
-      await user.reauthenticateWithCredential(credential);
-      print(' Reauthentication successful');
-
-
-      await user.updateEmail(newEmail);
-      print(' Email updated in Firebase Auth');
-
-
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-        'email': newEmail,
-      });
-      print(' Email updated in Firestore');
-
-
-      await user.reload();
-
-    } catch (e) {
-      print(' Failed to update email: $e');
-      throw Exception('Failed to update email: $e');
-    }
-  }
 
   Future<void> updateUserPassword(String newPassword) async {
     final user = FirebaseAuth.instance.currentUser;
@@ -94,6 +59,30 @@ class UserService {
   }
 
   // Get current user data
+  Future<Map<String, dynamic>> getCurrentUserFuture(String userId) async {
+    final snapshot = await _db.collection('users').doc(userId).get();
+
+    if (!snapshot.exists) {
+      return {
+        'photoUrl': '',
+        'name': userId.substring(0, 10),
+        'email': '',
+        'dob': DateTime.now().toString(),
+        'country': ''
+      };
+    }
+
+    final data = snapshot.data() ?? {};
+
+    return {
+      'photoUrl': data['photoUrl'] ?? '',
+      'name': data['name'] ?? userId.substring(0, 10),
+      'email': data['email'] ?? '',
+      'dob': data['dob'] ?? DateTime.now().toString(),
+      'country': data['country'] ?? ''
+    };
+  }
+
   Stream<Map<String, dynamic>> getCurrentUser(String userId) {
     return _db.collection('users').doc(userId).snapshots().map((snapshot) {
       if (!snapshot.exists) {
@@ -118,6 +107,7 @@ class UserService {
     });
   }
 
+
   // Update user name
   Future<void> updateUserName(String userId, String newName) async {
     try {
@@ -127,16 +117,14 @@ class UserService {
     }
   }
 
-  Future<void> updateUserDob({
-    required String userId,
-    required DateTime dob,
-  }) async {
+  Future<void> updateUserDob(String userId, DateTime dob) async {
     String dobString = dob.toIso8601String();
 
     try {
-      await _db.collection('users').doc(userId).update({
-        'dob': dobString,
-      });
+      await _db.collection('users')
+          .doc(userId)
+          .update({'dob': dobString}
+      );
       print("User DOB updated: $dobString");
     } catch (e) {
       print("Failed to update DOB: $e");
@@ -144,18 +132,68 @@ class UserService {
     }
   }
 
-  Future<void> updateUserCountry({
-    required String userId,
-    required String country,
-  }) async {
+  Future<void> updateUserCountry(String userId, String country) async {
     try {
-      await _db.collection('users').doc(userId).update({
-        'country': country,
-      });
+      await _db.collection('users')
+          .doc(userId)
+          .update({'country': country});
       print("User country updated: $country");
     } catch (e) {
       print("Failed to update country: $e");
       throw Exception('Failed to update country');
     }
+  }
+
+  Future<void> updateUserAvatar(String userId, File image) async {
+    try {
+      String? photoUrl = await CloudinaryConfig().uploadImage(image);
+
+      await _db.collection('users')
+          .doc(userId)
+          .update({'photoUrl': photoUrl});
+
+      print("User photoUrl updated: $photoUrl");
+    } catch (e) {
+      print("Failed to update photoUrl for userId: $userId. Error: $e");
+
+      throw Exception('Failed to update photoUrl');
+    }
+  }
+
+  Stream<int> getUserStreak(String userId) {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .snapshots()
+        .map((snapshot) => snapshot.data()?['streak'] ?? 0);
+  }
+
+  Future<List<Map<String, dynamic>>> getUsersByIds(List<String> userIds) async {
+    if (userIds.isEmpty) return [];
+
+    final usersRef = FirebaseFirestore.instance.collection('users');
+    final List<Map<String, dynamic>> users = [];
+
+    final batches = <List<String>>[];
+    const batchSize = 10;
+
+    for (int i = 0; i < userIds.length; i += batchSize) {
+      batches.add(userIds.sublist(i, i + batchSize > userIds.length ? userIds.length : i + batchSize));
+    }
+
+    for (var batch in batches) {
+      final querySnapshot = await usersRef.where(FieldPath.documentId, whereIn: batch).get();
+      for (var doc in querySnapshot.docs) {
+        final data = doc.data();
+        users.add({
+          'id': doc.id,
+          'name': data['name'] ?? '',
+          'photoUrl': data['photoUrl'] ?? '',
+          'email': data['email'] ?? '',
+        });
+      }
+    }
+
+    return users;
   }
 }

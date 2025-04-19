@@ -72,7 +72,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
       body: Column(
         children: [
           BarTitle(title: 'Evidence', showBackButton: true),
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
           Expanded(
             child: Container(
               width: double.infinity,
@@ -87,7 +87,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
               ),
               child: Column(
                 children: [
-                  SizedBox(height: 30),
+                  const SizedBox(height: 30),
                   Container(
                     width: phoneWidth - 60,
                     padding: EdgeInsets.all(5),

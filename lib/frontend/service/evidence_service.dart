@@ -184,7 +184,7 @@ class EvidenceService{
     return _db.collection('evidences')
         .where('userId', isEqualTo: userId)
         .where('status', isEqualTo: 'Accepted')
-        .snapshots() // Lắng nghe thay đổi real-time
+        .snapshots()
         .map((querySnapshot) {
       Map<String, int> categoryCount = {};
 

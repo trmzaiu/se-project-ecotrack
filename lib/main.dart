@@ -158,11 +158,13 @@ class _MainScreenState extends State<MainScreen> {
                 onNotification: (notification) {
                   if (notification.extent >= 0.8 && !_isFullyOpened) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _sheetController.animateTo(
-                        maxChildSize,
-                        duration: Duration(milliseconds: 50),
-                        curve: Curves.easeInOut,
-                      );
+                      if (_sheetController.isAttached) {
+                        _sheetController.animateTo(
+                          maxChildSize,
+                          duration: Duration(milliseconds: 50),
+                          curve: Curves.easeInOut,
+                        );
+                      }
                     });
                   }
                   if (notification.extent >= maxChildSize && !_isFullyOpened) {

@@ -6,7 +6,7 @@ import 'package:wastesortapp/frontend/widget/bar_noti_title.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
-// import '../../challenge/challenges_screen.dart';
+import '../../service/challenge_service.dart';
 import '../../service/user_service.dart';
 import '../../utils/phone_size.dart';
 import '../../utils/route_transition.dart';
@@ -15,6 +15,8 @@ import '../../widget/challenge_item.dart';
 import '../../widget/custom_dialog.dart';
 import '../../widget/text_row.dart';
 import '../auth/login_screen.dart';
+import '../challenge/community_challenge_screen.dart';
+import '../challenge/daily_challenge_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -44,6 +46,19 @@ class _HomeScreenState extends State<HomeScreen> {
       "date": "March 18, 2022"
     }
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _handleStreakCheck();
+  }
+
+  void _handleStreakCheck() async {
+    if (_isUserLoggedIn()) {
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+      await ChallengeService().checkMissedDay(userId);
+    }
+  }
 
   bool _isUserLoggedIn() {
     return FirebaseAuth.instance.currentUser != null;
@@ -96,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             ),
 
-            SizedBox(height: 25),
+            const SizedBox(height: 25),
 
             Expanded(
               child: SingleChildScrollView(
@@ -139,38 +154,49 @@ class _HomeScreenState extends State<HomeScreen> {
                           Positioned(
                             top: 25,
                             left: 20,
-                            child: SizedBox(
-                              width: 135,
-                              height: 40,
-                              child: Text(
-                                'Have you sorted waste today?',
-                                style: GoogleFonts.urbanist(
-                                  color: AppColors.surface,
-                                  fontSize: phoneWidth * 0.43 * 0.1,
-                                  fontWeight: AppFontWeight.bold,
-                                  height: 0.9,
+                            child: Column(
+                              children: [
+                                RichText(
+                                  text: TextSpan(
+                                    style: GoogleFonts.urbanist(
+                                      color: AppColors.surface,
+                                      height: 1.2,
+                                    ),
+                                    children: [
+                                      TextSpan(
+                                        text: 'Have you sorted\n',
+                                        style: GoogleFonts.urbanist(
+                                          fontSize: phoneWidth * 0.043,
+                                          fontWeight: AppFontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: 'waste today?\n',
+                                        style: GoogleFonts.urbanist(
+                                          fontSize: phoneWidth * 0.043,
+                                          fontWeight: AppFontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(text: '\n', style: TextStyle(fontSize: 6)),
+                                      TextSpan(
+                                        text: 'Upload your evidence\n',
+                                        style: GoogleFonts.urbanist(
+                                          fontSize: phoneWidth * 0.03,
+                                          fontWeight: AppFontWeight.regular,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: 'to get bonus point.',
+                                        style: GoogleFonts.urbanist(
+                                          fontSize: phoneWidth * 0.03,
+                                          fontWeight: AppFontWeight.regular,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                textAlign: TextAlign.start,
-                              ),
-                            ),
-                          ),
-
-                          Positioned(
-                            top: 70,
-                            left: 20,
-                            child: SizedBox(
-                              width: (phoneWidth - 40)/3,
-                              child: Text(
-                                'Upload your evidence \nto get bonus point.',
-                                style: GoogleFonts.urbanist(
-                                  color: AppColors.surface,
-                                  fontSize: phoneWidth * 0.3 * 0.1,
-                                  fontWeight: AppFontWeight.regular,
-                                  height: 1.2,
-                                ),
-                                textAlign: TextAlign.start,
-                              ),
-                            ),
+                              ],
+                            )
                           ),
 
                           Positioned(
@@ -215,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
                     Padding(
                       padding: EdgeInsets.only(left: 20),
@@ -233,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       )
                     ),
 
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
 
                     Padding(
                       padding: EdgeInsets.only(left: 20, right: 20),
@@ -248,14 +274,158 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-                    SizedBox(height: 20),
+                    const SizedBox(height: 25),
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: TextRow(
+                        text: 'Challenges',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            moveUpRoute(
+                              CommunityChallengeScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    if (_isUserLoggedIn()) ...[
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: phoneWidth - 40,
+                        child: StreamBuilder<bool>(
+                          stream: ChallengeService().hasCompletedToday(userId),
+                          builder: (context, completedSnap) {
+                            final isCompleted = completedSnap.data ?? false;
+
+                            return AbsorbPointer(
+                              absorbing: isCompleted,
+                              child: GestureDetector(
+                                onTap: isCompleted
+                                    ? null
+                                    : () {
+                                  Navigator.of(context).push(
+                                    scaleRoute(const DailyChallengeScreen()),
+                                  );
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  padding: const EdgeInsets.all(20),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Daily Challenge',
+                                              style: GoogleFonts.urbanist(
+                                                fontSize: 24,
+                                                fontWeight: AppFontWeight.bold,
+                                                color: AppColors.primary,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 5),
+                                            Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.local_fire_department,
+                                                  color: Colors.deepOrange,
+                                                  size: 20,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                StreamBuilder<int>(
+                                                  stream: UserService().getUserStreak(userId),
+                                                  builder: (context, streakSnap) {
+                                                    final streak = streakSnap.data ?? 0;
+                                                    return Text(
+                                                      '$streak ${streak == 1 ? "day" : "days"} streak',
+                                                      style: GoogleFonts.urbanist(
+                                                        fontWeight: AppFontWeight.medium,
+                                                        fontSize: 14,
+                                                        color: AppColors.secondary,
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Icon(
+                                        isCompleted
+                                            ? Icons.check
+                                            : Icons.arrow_forward_ios,
+                                        size: isCompleted ? 25 : 20,
+                                        color: AppColors.secondary,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 40),
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: ChallengeItem(
+                        image: 'lib/assets/images/zero_waste_challenge.png',
+                        title: 'Zero Waste Challenge',
+                        info: 'Reduce your waste for a whole week! Track your trash, use reusable items, and share your progress with #ZeroWasteWeek.',
+                        attend: '345',
+                      ),
+                    ),
+
+                    const SizedBox(height: 35),
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: ChallengeItem(
+                        image: 'lib/assets/images/trash_to_treasure_challenge.png',
+                        title: 'Trash to Treasure Challenge',
+                        info: 'Turn waste into something useful! Up cycle old materials into creative DIY products and share with #TrashToTreasure.',
+                        attend: '243',
+                      ),
+                    ),
+
+                    const SizedBox(height: 35),
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: ChallengeItem(
+                        image: 'lib/assets/images/waste_sorting_challenge.png',
+                        title: 'Waste Sorting Challenge',
+                        info: 'Test your skills! Correctly classify waste and promote a cleaner planet.',
+                        attend: '476',
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
 
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: TextRow(text: 'Good to know'),
                     ),
 
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
 
                     SizedBox(
                       height: 160,
@@ -339,7 +509,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -357,59 +527,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       }),
                     ),
 
-                    SizedBox(height: 20),
-
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: TextRow(
-                        text: 'Challenges',
-                        // onTap: () {
-                        //   Navigator.of(context).push(
-                        //     moveUpRoute(
-                        //       // ChallengesScreen(),
-                        //     ),
-                        //   );
-                        // },
-                      ),
-                    ),
-
-                    SizedBox(height: 30),
-
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: ChallengeItem(
-                        image: 'lib/assets/images/zero_waste_challenge.png',
-                        title: 'Zero Waste Challenge',
-                        info: 'Reduce your waste for a whole week! Track your trash, use reusable items, and share your progress with #ZeroWasteWeek.',
-                        attend: '345',
-                      ),
-                    ),
-
-                    SizedBox(height: 35),
-
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: ChallengeItem(
-                        image: 'lib/assets/images/trash_to_treasure_challenge.png',
-                        title: 'Trash to Treasure Challenge',
-                        info: 'Turn waste into something useful! Up cycle old materials into creative DIY products and share with #TrashToTreasure.',
-                        attend: '243',
-                      ),
-                    ),
-
-                    SizedBox(height: 35),
-
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: ChallengeItem(
-                        image: 'lib/assets/images/waste_sorting_challenge.png',
-                        title: 'Waste Sorting Challenge',
-                        info: 'Test your skills! Correctly classify waste and promote a cleaner planet.',
-                        attend: '476',
-                      ),
-                    ),
-
-                    SizedBox(height: 40),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),

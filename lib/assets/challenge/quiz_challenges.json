@@ -1,0 +1,122 @@
+[
+  {
+    "type": "quiz",
+    "question": "Which item is considered organic waste?",
+    "options": ["Glass bottle", "Aluminum can", "Plastic bag", "Banana peel"],
+    "correctIndex": 3
+  },
+  {
+    "type": "quiz",
+    "question": "Which item is recyclable?",
+    "options": ["Leftover food", "Cigarette butts", "Banana", "Paper"],
+    "correctIndex": 3
+  },
+  {
+    "type": "quiz",
+    "question": "Which is an example of hazardous waste?",
+    "options": ["Cotton cloth", "Cardboard box", "Apple core", "Used battery"],
+    "correctIndex": 3
+  },
+  {
+    "type": "quiz",
+    "question": "What does the green bin usually stand for?",
+    "options": ["Plastic waste", "Glass waste", "Organic waste", "Hazardous waste"],
+    "correctIndex": 2
+  },
+  {
+    "type": "quiz",
+    "question": "What should you do before recycling a plastic bottle?",
+    "options": ["Crush it and throw it", "Rinse it", "Put it in the trash", "Burn it"],
+    "correctIndex": 1
+  },
+  {
+    "type": "quiz",
+    "question": "Which of the following can be composted?",
+    "options": ["Glass shards", "Plastic spoons", "Metal wires", "Fruit peels"],
+    "correctIndex": 3
+  },
+  {
+    "type": "quiz",
+    "question": "Which color bin is used for paper waste?",
+    "options": ["Red", "Blue", "Green", "Black"],
+    "correctIndex": 1
+  },
+  {
+    "type": "quiz",
+    "question": "What is the best way to dispose of used cooking oil?",
+    "options": ["Pour it down the drain", "Collect and bring to recycling center", "Flush down the toilet", "Throw in organic waste"],
+    "correctIndex": 1
+  },
+  {
+    "type": "quiz",
+    "question": "Which material takes the longest to decompose?",
+    "options": ["Glass", "Orange peel", "Paper", "Cotton"],
+    "correctIndex": 0
+  },
+  {
+    "type": "quiz",
+    "question": "Which one is NOT recyclable?",
+    "options": ["Plastic bottle", "Aluminum can", "Greasy pizza box", "Newspaper"],
+    "correctIndex": 2
+  },
+  {
+    "type": "quiz",
+    "question": "Which bin should broken glass go into?",
+    "options": ["Recyclable bin", "Organic bin", "Hazardous bin", "Landfill bin"],
+    "correctIndex": 0
+  },
+  {
+    "type": "quiz",
+    "question": "Why should we sort waste?",
+    "options": ["To increase pollution", "To create more landfills", "To recycle properly", "To make trash bags heavier"],
+    "correctIndex": 2
+  },
+  {
+    "type": "quiz",
+    "question": "Which of these items is biodegradable?",
+    "options": ["Styrofoam cup", "Plastic straw", "Glass bottle", "Apple core"],
+    "correctIndex": 3
+  },
+  {
+    "type": "quiz",
+    "question": "Which action helps reduce plastic waste?",
+    "options": ["Throwing plastic into rivers", "Buying single-use items", "Using plastic bags", "Using reusable water bottles"],
+    "correctIndex": 3
+  },
+  {
+    "type": "quiz",
+    "question": "What is e-waste?",
+    "options": ["Electronic waste", "Expired food", "Egg shells", "Empty cans"],
+    "correctIndex": 0
+  },
+  {
+    "type": "quiz",
+    "question": "Which of these is safe to compost?",
+    "options": ["Old batteries", "Tea bags", "Plastic wrap", "Glass bottle"],
+    "correctIndex": 1
+  },
+  {
+    "type": "quiz",
+    "question": "Where should you throw old medicine?",
+    "options": ["Organic bin", "Return to pharmacy or hazardous waste bin", "Burn it", "Flush in toilet"],
+    "correctIndex": 1
+  },
+  {
+    "type": "quiz",
+    "question": "What should not go into compost?",
+    "options": ["Vegetable peels", "Meat scraps", "Coffee grounds", "Grass clippings"],
+    "correctIndex": 1
+  },
+  {
+    "type": "quiz",
+    "question": "Which item is reusable?",
+    "options": ["Cloth bag", "Candy wrapper", "Plastic fork", "Paper towel"],
+    "correctIndex": 0
+  },
+  {
+    "type": "quiz",
+    "question": "Which of these actions pollutes the environment?",
+    "options": ["Recycling", "Littering", "Using reusable containers", "Composting"],
+    "correctIndex": 1
+  }
+]

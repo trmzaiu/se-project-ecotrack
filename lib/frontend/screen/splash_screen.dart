@@ -5,7 +5,6 @@ import 'dart:async';
 import 'package:wastesortapp/main.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
-import 'package:wastesortapp/frontend/screen/auth/opening_screen.dart';
 
 import '../utils/route_transition.dart';
 

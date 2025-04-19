@@ -50,6 +50,9 @@ dependencies:
   animated_leaderboard: ^0.1.4
   flutter_animate: ^4.5.2
   rxdart: ^0.28.0
+  photo_view: ^0.15.0
+  image: ^4.0.17
+  image_cropper: ^9.1.0
 
 dev_dependencies:
   flutter_test:

@@ -5,7 +5,9 @@ import 'package:country_picker/country_picker.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -13,11 +15,9 @@ import 'package:wastesortapp/frontend/service/user_service.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
 import '../../../theme/fonts.dart';
-import '../../service/user_service.dart';
 import '../../utils/phone_size.dart';
 import '../../widget/bar_title.dart';
 import '../../widget/input_dialog.dart';
-import 'package:wastesortapp/frontend/service/user_service.dart';
 
 class SettingScreen extends StatefulWidget {
   @override
@@ -25,160 +25,70 @@ class SettingScreen extends StatefulWidget {
 }
 
 class _SettingScreenState extends State<SettingScreen> {
-  late TextEditingController nameController;
-  late TextEditingController emailController;
-  late TextEditingController dateController;
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController dateController = TextEditingController();
   final TextEditingController currentPasswordController = TextEditingController();
-
-  bool _isReauthenticated = false;
 
   final String currentEmail = FirebaseAuth.instance.currentUser?.email ?? "";
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
-  Map<String, dynamic>? user;
 
+  ValueNotifier<Country?> selectedCountryNotifier = ValueNotifier<Country?>(null);
+
+  Map<String, dynamic>? user;
+  bool _isDialogOpen = false;
+  bool isDataInitialized = false;
   Country? selectedCountry;
   DateTime? selectedDOB;
+  File? selectedImage;
 
-  List<File> selectedImages = [];
-
-  @override
-  void initState() {
-    super.initState();
-    nameController = TextEditingController();
-    emailController = TextEditingController();
-    dateController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    emailController.dispose();
-    dateController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _verifyIdentity(BuildContext context) async {
-    final email = FirebaseAuth.instance.currentUser?.email;
-    if (email == null) return;
-
-    final passwordInputController = TextEditingController();
-
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Verify Identity'),
-        content: TextField(
-          controller: passwordInputController,
-          obscureText: true,
-          decoration: InputDecoration(labelText: 'Enter your password'),
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Center(
+          child: Text(
+            message,
+            style: GoogleFonts.urbanist(
+              fontSize: 16,
+              fontWeight: AppFontWeight.semiBold,
+              color: AppColors.surface,
+            ),
+          ),
         ),
-        actions: [
-          TextButton(
-            child: Text('Cancel'),
-            onPressed: () => Navigator.pop(context),
-          ),
-          TextButton(
-            child: Text('Verify'),
-            onPressed: () async {
-              try {
-                final user = FirebaseAuth.instance.currentUser;
-                final credential = EmailAuthProvider.credential(
-                  email: email,
-                  password: passwordInputController.text,
-                );
-                await user!.reauthenticateWithCredential(credential);
-
-                currentPasswordController.text = passwordInputController.text;
-                _isReauthenticated = true;
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Identity verified!')),
-                );
-              } catch (e) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Verification failed: $e')),
-                );
-              }
-            },
-          ),
-        ],
+        backgroundColor: AppColors.board2,
+        duration: Duration(seconds: 2),
       ),
     );
   }
 
-  Future<void> _updateEmail(String newEmail) async {
-    if (!_isReauthenticated) {
-      await _verifyIdentity(context);
-      if (!_isReauthenticated) return;
-    }
-
-    try {
-      await UserService().updateUserEmail(
-        currentPassword: currentPasswordController.text,
-        newEmail: newEmail,
-      );
-
-      await FirebaseAuth.instance.currentUser?.reload();
-
-      setState(() {
-
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Email updated successfully!')),
-      );
-    } catch (e) {
-      print(' Failed in _updateEmail: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update email: $e')),
-      );
-    }
-  }
-
   void _updatePassword(String newPassword, String confirmPassword) async {
     if (newPassword.isEmpty || confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("All fields are required")),
-      );
+      _showSnackBar('All fields are required');
       return;
     }
 
     if (newPassword != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Passwords do not match")),
-      );
+      _showSnackBar('Passwords do not match');
       return;
     }
 
     try {
       await UserService().updateUserPassword(newPassword);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Password updated successfully")),
-      );
+      _showSnackBar('Password updated successfully');
     } catch (e) {
       print('Failed to update password: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update password: $e')),
-      );
+      _showSnackBar('Failed to update password');
     }
   }
 
-  Future<void> _pickImage(source) async {
+  Future<void> _pickImage(ImageSource source) async {
     try {
       final pickedFile = await ImagePicker().pickImage(source: source);
       if (pickedFile != null) {
-        setState(() {
-          selectedImages.add(File(pickedFile.path));
-        });
+        final imageFile = File(pickedFile.path);
+        _showImageCropper(imageFile);
       }
     } catch (e) {
-      print('Error picking image: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to pick image!')),
-      );
+      debugPrint('Error picking image: $e');
+      _showSnackBar('Failed to pick image!');
     }
   }
 
@@ -212,6 +122,59 @@ class _SettingScreenState extends State<SettingScreen> {
         );
       },
     );
+  }
+
+  void _showImageCropper(File imageFile) async {
+    final cropped = await cropImage(imageFile);
+
+    if (cropped != null && await cropped.exists()) {
+      setState(() {
+        selectedImage = cropped;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Uploading avatar...")),
+      );
+
+      try {
+        await UserService().updateUserAvatar(userId, cropped);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Avatar updated successfully")),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e")),
+        );
+      }
+    }
+  }
+
+  Future<File?> cropImage(File imageFile) async {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: imageFile.path,
+      compressFormat: ImageCompressFormat.jpg,
+      compressQuality: 100,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Avatar',
+          toolbarColor: Colors.black,
+          toolbarWidgetColor: AppColors.surface,
+          statusBarColor: Colors.transparent,
+          backgroundColor: Colors.black,
+          activeControlsWidgetColor: AppColors.primary,
+          cropStyle: CropStyle.circle,
+          initAspectRatio: CropAspectRatioPreset.square,
+          lockAspectRatio: true,
+          showCropGrid: true,
+          hideBottomControls: false,
+        )
+      ],
+    );
+
+    return croppedFile != null ? File(croppedFile.path) : null;
   }
 
   Future<void> showDatePicker(BuildContext context) async {
@@ -338,12 +301,12 @@ class _SettingScreenState extends State<SettingScreen> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                          selectedYear.toString(),
-                                          style: GoogleFonts.urbanist(
-                                            fontSize: 16,
-                                            fontWeight: AppFontWeight.medium,
-                                            color: AppColors.primary,
-                                          )
+                                        selectedYear.toString(),
+                                        style: GoogleFonts.urbanist(
+                                          fontSize: 16,
+                                          fontWeight: AppFontWeight.medium,
+                                          color: AppColors.primary,
+                                        )
                                       ),
                                       Icon(Icons.arrow_drop_down, color: AppColors.primary),
                                     ],
@@ -469,24 +432,9 @@ class _SettingScreenState extends State<SettingScreen> {
                           dateController.text = DateFormat("dd/MM/yyyy").format(selectedDay);
                         });
 
-                        await UserService().updateUserDob(userId: userId, dob: selectedDOB!);
+                        await UserService().updateUserDob(userId, selectedDOB!);
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Center(
-                              child: Text(
-                                'Date of birth updated successfully!',
-                                style: GoogleFonts.urbanist(
-                                  fontSize: 16,
-                                  fontWeight: AppFontWeight.semiBold,
-                                  color: AppColors.surface,
-                                ),
-                              ),
-                            ),
-                            backgroundColor: AppColors.board2,
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
+                        _showSnackBar('Date of birth updated successfully!');
                         Navigator.pop(context);
                       },
 
@@ -540,93 +488,70 @@ class _SettingScreenState extends State<SettingScreen> {
         ),
       ),
       onSelect: (Country country) async {
-        selectedCountry = country;
+        selectedCountryNotifier.value = country;
+        await UserService().updateUserCountry(userId, country.name);
 
-        await UserService().updateUserCountry(userId: userId, country: selectedCountry!.name);
+        _showSnackBar('Country updated successfully!');
+      },
+    );
+  }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Center(
-              child: Text(
-                'Country updated successfully!',
-                style: GoogleFonts.urbanist(
-                  fontSize: 16,
-                  fontWeight: AppFontWeight.semiBold,
-                  color: AppColors.surface,
-                ),
-              ),
-            ),
-            backgroundColor: AppColors.board2,
-            duration: Duration(seconds: 2),
+  void _showDialogName(BuildContext context, String hintText) {
+    final TextEditingController controller = TextEditingController(text: hintText);
+
+    _isDialogOpen = true;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return WillPopScope(
+          onWillPop: () async {
+            _isDialogOpen = false;
+            return true;
+          },
+          child: InputDialog(
+            information: 'name',
+            controller: controller,
+            hintText: hintText,
+            onPressed: () async {
+              final newValue = controller.text.trim();
+
+              if (newValue.isNotEmpty && newValue != hintText) {
+                try {
+                  await UserService().updateUserName(userId, newValue);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Center(
+                        child: Text(
+                          'Failed to update name',
+                          style: GoogleFonts.urbanist(
+                            fontSize: 16,
+                            fontWeight: AppFontWeight.semiBold,
+                            color: AppColors.surface,
+                          ),
+                        ),
+                      ),
+                      backgroundColor: AppColors.board2,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+              }
+              _isDialogOpen = false;
+              Navigator.of(context).pop();
+            },
           ),
         );
       },
     );
   }
 
-  void _showDialog(BuildContext context, String information, TextEditingController controller, String hintText) {
-    if (controller.text.isEmpty) {
-      controller.text = hintText;
-    }
-
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) => InputDialog(
-        information: information,
-        controller: controller,
-        hintText: hintText,
-        onPressed: () async {
-          if (controller.text.isNotEmpty) {
-            try {
-              if (information == 'name') {
-                await UserService().updateUserName(userId, controller.text);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Center(
-                      child: Text(
-                        'Name updated successfully!',
-                        style: GoogleFonts.urbanist(
-                          fontSize: 16,
-                          fontWeight: AppFontWeight.semiBold,
-                          color: AppColors.surface,
-                        ),
-                      ),
-                    ),
-                    backgroundColor: AppColors.board2,
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              }
-              // else if (information == 'email') {
-              //   _updateEmail(controller.text);
-              // }
-            } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Center(
-                    child: Text(
-                      'Failed to update $information',
-                      style: GoogleFonts.urbanist(
-                        fontSize: 16,
-                        fontWeight: AppFontWeight.semiBold,
-                        color: AppColors.surface,
-                      ),
-                    ),
-                  ),
-                  backgroundColor: AppColors.board2,
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            }
-          }
-          Navigator.of(context).pop();
-        },
-      ),
-    );
-  }
-
   void _showDialogPassword(BuildContext context) {
+    final TextEditingController passwordController = TextEditingController();
+    final TextEditingController confirmPasswordController = TextEditingController();
+
     passwordController.clear();
     confirmPasswordController.clear();
 
@@ -643,7 +568,7 @@ class _SettingScreenState extends State<SettingScreen> {
           final confirmPassword = confirmPasswordController.text.trim();
 
           _updatePassword(newPassword, confirmPassword);
-          Navigator.pop(context); // Close dialog
+          Navigator.pop(context);
         },
       ),
     );
@@ -674,42 +599,47 @@ class _SettingScreenState extends State<SettingScreen> {
                       StreamBuilder<Map<String, dynamic>>(
                         stream: UserService().getCurrentUser(userId),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
+                          if (snapshot.connectionState == ConnectionState.waiting && !_isDialogOpen) {
                             return Center(child: CircularProgressIndicator());
                           }
 
-                          final user = snapshot.data ?? {
-                            'photoUrl': '',
-                            'name': userId.substring(0, 10),
-                            'email': '',
-                            'dob': '',
-                            'country': ''
-                          };
+                          final user = snapshot.data!;
 
-                          if (user['dob'] != null && user['dob'].isNotEmpty) {
-                            selectedDOB = DateTime.tryParse(user['dob']);
-                            dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
-                          } else {
-                            selectedDOB = DateTime.now();
-                            dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
+                          if (!_isDialogOpen && !isDataInitialized) {
+                            final user = snapshot.data ?? {
+                              'photoUrl': '',
+                              'name': userId.substring(0, 10),
+                              'email': '',
+                              'dob': '',
+                              'country': ''
+                            };
+
+                            if (user['dob'] != null && user['dob'].isNotEmpty) {
+                              selectedDOB = DateTime.tryParse(user['dob']);
+                              dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
+                            } else {
+                              selectedDOB = DateTime.now();
+                              dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
+                            }
+
+                            if (user['country'] != null && user['country'].isNotEmpty) {
+                              selectedCountryNotifier.value = Country.tryParse(user['country']);
+                            }
+                            isDataInitialized = true;
                           }
-
-                          if (user['country'] != null && user['country'].isNotEmpty) {
-                            selectedCountry = Country.tryParse(user['country']);
-                          }
-
-                          nameController.text = user['name'];
-                          emailController.text = user['email'];
 
                           return Column(
                             children: [
-                              _avatarTile(user['photoUrl']),
-                              _informationTile('Name', user['name'], () => _showDialog(context, 'name', nameController, user['name'])),
-                              _informationTile('Email', user['email'], () => _showDialog(context, 'email', emailController, user['email'])),
-                              _informationTile('Password', '••••••••••••', () => _showDialogPassword(context)),
+                              _avatarTile(user['photoUrl'] ?? ''),
+                              _informationTile('Name', user['name'] ?? '', () {
+                                _showDialogName(context, user['name'] ?? '');
+                              }),
+                              _informationTile('Email', user['email'] ?? '', () {}),
+                              _informationTile('Password', '••••••••••••', () {
+                                _showDialogPassword(context);
+                              }),
                               _dobTile(),
                               _countryTile(),
-
                               SizedBox(height: 20),
                             ],
                           );
@@ -936,85 +866,90 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   Widget _countryTile() {
-    return Column(
-      children: [
-        SizedBox(height: 20),
+    return ValueListenableBuilder<Country?>(
+      valueListenable: selectedCountryNotifier,
+      builder: (context, selectedCountry, _) {
+        return Column(
+          children: [
+            SizedBox(height: 20),
 
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: EdgeInsets.only(left: 30),
-            child: Text(
-              'Country',
-              style: GoogleFonts.urbanist(
-                color: AppColors.secondary,
-                fontSize: 18,
-                fontWeight: AppFontWeight.bold,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-        ),
-
-        SizedBox(height: 5),
-
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            highlightColor: AppColors.secondary.withOpacity(0.3),
-            splashColor: Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-            onTap: () => showCountryPickerDialog(context),
-            child: SizedBox(
-              width: getPhoneWidth(context) - 60,
-              height: 50,
-              child: Container(
-                width: getPhoneWidth(context) - 60,
-                height: 50,
-                padding: EdgeInsets.only(left: 15, right: 15),
-                decoration: ShapeDecoration(
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                      width: 1,
-                      color: AppColors.tertiary,
-                    ),
-                    borderRadius: BorderRadius.circular(6),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: EdgeInsets.only(left: 30),
+                child: Text(
+                  'Country',
+                  style: GoogleFonts.urbanist(
+                    color: AppColors.secondary,
+                    fontSize: 18,
+                    fontWeight: AppFontWeight.bold,
+                    letterSpacing: 0.5,
                   ),
                 ),
-                child: Row(
-                  children: [
-                    if (selectedCountry != null) ...[
-                      Text(
-                        selectedCountry!.flagEmoji,
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      SizedBox(width: 10),
-                      Text(
-                        selectedCountry!.name,
-                        style: GoogleFonts.urbanist(
+              ),
+            ),
+
+            SizedBox(height: 5),
+
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                highlightColor: AppColors.secondary.withOpacity(0.3),
+                splashColor: Colors.transparent,
+                borderRadius: BorderRadius.circular(6),
+                onTap: () => showCountryPickerDialog(context),
+                child: SizedBox(
+                  width: getPhoneWidth(context) - 60,
+                  height: 50,
+                  child: Container(
+                    width: getPhoneWidth(context) - 60,
+                    height: 50,
+                    padding: EdgeInsets.symmetric(horizontal: 15),
+                    decoration: ShapeDecoration(
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          width: 1,
                           color: AppColors.tertiary,
-                          fontSize: 15,
-                          fontWeight: AppFontWeight.medium,
                         ),
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                    ] else
-                      Text(
-                        "Select Country",
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.tertiary,
-                          fontSize: 15,
-                          fontWeight: AppFontWeight.medium,
-                        ),
-                      ),
-                    Spacer(),
-                    Icon(Icons.arrow_drop_down, color: AppColors.tertiary),
-                  ],
+                    ),
+                    child: Row(
+                      children: [
+                        if (selectedCountry != null) ...[
+                          Text(
+                            selectedCountry.flagEmoji,
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            selectedCountry.name,
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.tertiary,
+                              fontSize: 15,
+                              fontWeight: AppFontWeight.medium,
+                            ),
+                          ),
+                        ] else
+                          Text(
+                            "Select Country",
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.tertiary,
+                              fontSize: 15,
+                              fontWeight: AppFontWeight.medium,
+                            ),
+                          ),
+                        Spacer(),
+                        Icon(Icons.arrow_drop_down, color: AppColors.tertiary),
+                      ],
+                    ),
+                  ),
                 ),
-              )
-            )
-          ),
-        ),
-      ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
