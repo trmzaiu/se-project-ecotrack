@@ -150,8 +150,6 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   Future<File?> cropImage(File imageFile) async {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
     final croppedFile = await ImageCropper().cropImage(
       sourcePath: imageFile.path,
       compressFormat: ImageCompressFormat.jpg,

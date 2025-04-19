@@ -50,14 +50,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _handleStreakCheck();
+    if (_isUserLoggedIn()) {
+      _handleStreakCheck();
+    }
   }
 
   void _handleStreakCheck() async {
-    if (_isUserLoggedIn()) {
-      final userId = FirebaseAuth.instance.currentUser!.uid;
-      await ChallengeService().checkMissedDay(userId);
-    }
+    await ChallengeService().checkMissedDay(userId);
   }
 
   bool _isUserLoggedIn() {
@@ -93,23 +92,24 @@ class _HomeScreenState extends State<HomeScreen> {
         color: AppColors.background,
         child: Column(
           children: [
-            StreamBuilder<Map<String, dynamic>>(
-              stream: UserService().getCurrentUser(userId),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return BarNotiTitle(title_small: "Hello", title_big: '');
-                }
-                final isLoggedIn = userId.isNotEmpty;
-                final user = snapshot.data ?? {
-                  'photoUrl': '',
-                  'name': isLoggedIn
-                      ? (userId.length >= 10 ? userId.substring(0, 10) : userId)
-                      : 'Guest',
-                  'email': '',
-                };
-                return BarNotiTitle(title_small: "Hello", title_big: user['name'] ?? 'Guest');
-              }
-            ),
+            userId.isEmpty
+                ? const BarNotiTitle(title_small: "Hello", title_big: 'Guest')
+                : StreamBuilder<Map<String, dynamic>>(
+                    stream: UserService().getCurrentUser(userId),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const BarNotiTitle(title_small: "Hello", title_big: 'Guest');
+                      }
+
+                      final user = snapshot.data ?? {
+                        'photoUrl': '',
+                        'name': userId.length >= 10 ? userId.substring(0, 10) : userId,
+                        'email': '',
+                      };
+
+                      return BarNotiTitle(title_small: "Hello", title_big: user['name'] ?? 'Guest');
+                    }
+                  ),
 
             const SizedBox(height: 25),
 

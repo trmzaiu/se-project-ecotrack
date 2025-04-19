@@ -217,11 +217,11 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                               ),
                               AnimatedSlide(
-                                duration: Duration(milliseconds: 1000),
+                                duration: Duration(milliseconds: 50),
                                 curve: Curves.easeInOut,
                                 offset: _isFullyOpened ? Offset(0, 0) : Offset(0, 1),
                                 child: AnimatedOpacity(
-                                  duration: Duration(milliseconds: 500),
+                                  duration: Duration(milliseconds: 50),
                                   opacity: _isFullyOpened ? 1.0 : 0.0,
                                   child: _buildBottomNavigationBar(),
                                 ),

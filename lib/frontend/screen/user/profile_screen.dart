@@ -11,6 +11,7 @@ import 'package:wastesortapp/frontend/service/auth_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/frontend/utils/route_transition.dart';
 import 'package:wastesortapp/frontend/widget/bar_title.dart';
+import 'package:wastesortapp/main.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 import '../../service/user_service.dart';
@@ -40,7 +41,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await AuthenticationService().signOut();
     Navigator.of(context).pushReplacement(
       moveLeftRoute(
-        LoginScreen(),
+        MainScreen(),
       ),
     );
   }
