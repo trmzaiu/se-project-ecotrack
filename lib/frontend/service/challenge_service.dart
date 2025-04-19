@@ -96,11 +96,6 @@ class ChallengeService {
 
     try {
       final userRef = _firestore.collection('users').doc(userId);
-      final userDoc = await userRef.get();
-
-      final timestamp = userDoc.data()?['completedDate'];
-
-      if (timestamp == null || isSameDay(today, (timestamp as Timestamp).toDate())) return;
 
       await userRef.update({
         'completedDate': Timestamp.fromDate(today),
@@ -121,13 +116,16 @@ class ChallengeService {
       final timestamp = userDoc.data()?['completedDate'];
       final lastCompletedDate = timestamp != null ? (timestamp as Timestamp).toDate() : null;
 
-      if (lastCompletedDate == null) return;
+      if (lastCompletedDate == null) {
+        await userRef.update({'streak': 0});
+        return;
+      }
 
       final today = DateTime.now();
       final yesterday = today.subtract(Duration(days: 1));
 
       final missedYesterday = !isSameDay(lastCompletedDate, yesterday) &&
-          !isSameDay(lastCompletedDate, today);
+                                    !isSameDay(lastCompletedDate, today);
 
       if (missedYesterday) {
         await userRef.update({'streak': 0});

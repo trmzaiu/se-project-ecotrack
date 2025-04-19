@@ -5,7 +5,7 @@ class Users {
   final DateTime? dob;
   final String photoUrl;
   final String country;
-  final DateTime? dailyChallengeCompletedDate;
+  final DateTime? completedDate;
   final int streak;
 
   Users({
@@ -15,7 +15,7 @@ class Users {
     this.dob,
     this.photoUrl = "",
     this.country = "",
-    this.dailyChallengeCompletedDate,
+    this.completedDate,
     this.streak = 0,
   });
 
@@ -27,7 +27,7 @@ class Users {
       'dob': dob?.toIso8601String(),
       'photoUrl': photoUrl,
       'country': country,
-      'dailyChallengeCompletedDate': dailyChallengeCompletedDate?.toIso8601String(),
+      'completedDate': completedDate?.toIso8601String(),
       'streak': streak,
     };
   }
@@ -44,9 +44,9 @@ class Users {
           : null,
       photoUrl: map['photoUrl'] ?? "",
       country: map['country'] ?? "",
-      dailyChallengeCompletedDate: (map['dailyChallengeCompletedDate'] != null &&
-          map['dailyChallengeCompletedDate'].toString().isNotEmpty)
-          ? DateTime.tryParse(map['dailyChallengeCompletedDate'])
+      completedDate: (map['completedDate'] != null &&
+          map['completedDate'].toString().isNotEmpty)
+          ? DateTime.tryParse(map['completedDate'])
           : null,
       streak: map['streak'] ?? 0,
     );

@@ -26,16 +26,18 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
   Future<void> getChallenge() async {
     try {
       await TreeService().increaseDrops(userId, 5);
+      print("Challenge drops increased successfully.");
     } catch (e) {
-      print(e);
+      print("Error in getChallenge: $e");
     }
   }
 
   Future<void> completeChallenge() async {
     try {
       await ChallengeService().completeChallenge(userId);
+      print("Challenge completed successfully.");
     } catch (e) {
-      print(e);
+      print("Error in completeChallenge: $e");
     }
   }
 
@@ -272,7 +274,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                     builder: (context, candidateData, rejectedData) {
                       return Image.asset('lib/assets/images/${binType}_trash.png', height: 100);
                     },
-                    onAccept: (data) {
+                    onAccept: (data) async {
                       var parts = data.split('::');
                       String label = parts[0];
                       String correctBin = parts[1];
@@ -297,8 +299,8 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                         _showResultDialog(allCorrect);
 
                         if (allCorrect) {
-                          getChallenge();
-                          completeChallenge();
+                          await getChallenge();
+                          await completeChallenge();
                         }
                       }
                     }
