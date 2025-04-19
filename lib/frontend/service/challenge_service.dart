@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:wastesortapp/frontend/service/tree_service.dart';
 
 class ChallengeService {
   final _firestore = FirebaseFirestore.instance;
@@ -102,6 +103,8 @@ class ChallengeService {
         'streak': FieldValue.increment(1),
       });
 
+      await updateStreakChallengeProgress('UycmgdJDmMMaG4LEUrE9');
+
     } catch (e) {
       print("Error completing daily challenge: $e");
     }
@@ -118,6 +121,7 @@ class ChallengeService {
 
       if (lastCompletedDate == null) {
         await userRef.update({'streak': 0});
+        await updateStreakChallengeProgress('UycmgdJDmMMaG4LEUrE9');
         return;
       }
 
@@ -129,6 +133,7 @@ class ChallengeService {
 
       if (missedYesterday) {
         await userRef.update({'streak': 0});
+        await updateStreakChallengeProgress('UycmgdJDmMMaG4LEUrE9');
       }
     } catch (e) {
       print("Error checking streak reset: $e");
@@ -150,6 +155,21 @@ class ChallengeService {
     await ref.update({
       'participants': FieldValue.arrayUnion([userId])
     });
+  }
+
+  Future<bool> isUserJoinedFuture(String challengeId, String userId) async {
+    try {
+      final doc = await _firestore.collection('challenges').doc(challengeId).get();
+      if (!doc.exists) {
+        return false;
+      }
+
+      final participants = List<String>.from(doc.data()?['participants'] ?? []);
+      return participants.contains(userId);
+    } catch (e) {
+      print("Error checking user join status: $e");
+      return false;
+    }
   }
 
   /// Check if the user has already joined the challenge
@@ -191,10 +211,12 @@ class ChallengeService {
 
   /// Submit the user's form for a challenge
   Future<void> submitChallenge(String challengeId, String userId) async {
+    String formattedDate = DateFormat('dd-MM-yyyy').format(DateTime.now());
+
     await FirebaseFirestore.instance.collection('challengeSubmissions').add({
       'userId': userId,
       'challengeId': challengeId,
-      'submittedDate': Timestamp.now(),
+      'submittedDate': formattedDate,
     });
   }
 
@@ -203,24 +225,105 @@ class ChallengeService {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return Stream.value(false);
 
-    final now = DateTime.now();
-    final todayStart = DateTime(now.year, now.month, now.day);
-    final todayEnd = todayStart.add(const Duration(days: 1));
+    String formattedDate = DateFormat('dd-MM-yyyy').format(DateTime.now());
 
     return FirebaseFirestore.instance
         .collection('challengeSubmissions')
         .where('userId', isEqualTo: userId)
         .where('challengeId', isEqualTo: challengeId)
-        .where('submittedDate', isGreaterThanOrEqualTo: Timestamp.fromDate(todayStart))
-        .where('submittedDate', isLessThan: Timestamp.fromDate(todayEnd))
+        .where('submittedDate', isEqualTo: formattedDate)
         .snapshots()
         .map((snapshot) => snapshot.docs.isNotEmpty);
   }
 
   /// Update the progress of a challenge
-  Future<void> updateChallengeProgress(String challengeId) async {
-    await _firestore.collection('challenges')
-        .doc(challengeId)
-        .update({'progress': FieldValue.increment(1)});
+  Future<void> updateChallengeProgress(String challengeId, int value) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final userId = user.uid;
+
+    try {
+      bool isUserJoined = await isUserJoinedFuture(challengeId, userId);
+      bool isExpired = await checkChallengeDeadline(challengeId);
+
+      if (!isExpired && isUserJoined) {
+        await _firestore
+            .collection('challenges')
+            .doc(challengeId)
+            .update({'progress': FieldValue.increment(value)});
+
+        await submitChallenge(challengeId, userId);
+      }
+      await ChallengeService().rewardChallengeContributors(challengeId);
+    } catch (e) {
+      debugPrint("Failed to update challenge progress: $e");
+    }
+  }
+
+  Future<void> updateStreakChallengeProgress(String challengeId) async {
+    final challengeRef = _firestore.collection('challenges').doc(challengeId);
+    final challengeDoc = await challengeRef.get();
+
+    if (!challengeDoc.exists) return;
+
+    final participants = List<String>.from(challengeDoc.data()?['participants'] ?? []);
+
+    List<Future<int>> streakChecks = participants.map((userId) async {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final streak = userDoc.data()?['streak'] ?? 0;
+      return streak >= 7 ? 1 : 0;
+    }).toList();
+
+    final results = await Future.wait(streakChecks);
+    final qualifiedCount = results.fold(0, (sum, value) => sum + value);
+
+    await challengeRef.update({'progress': qualifiedCount});
+    await ChallengeService().rewardChallengeContributors(challengeId);
+    print('Updated progress to $qualifiedCount for challenge $challengeId');
+  }
+
+  Future<void> rewardChallengeContributors(String challengeId) async {
+    final challengeRef = _firestore.collection('challenges').doc(challengeId);
+    final challengeDoc = await challengeRef.get();
+
+    if (!challengeDoc.exists) return;
+
+    final data = challengeDoc.data()!;
+    final int progress = data['progress'] ?? 0;
+    final int target = data['target'] ?? 0;
+    final Timestamp? endTimestamp = data['endDate'];
+    final int rewardPoint = data['rewardPoints'] ?? 0;
+    final List<String> participants = List<String>.from(data['participants'] ?? []);
+    final List<String> rewardedUsers = List<String>.from(data['rewardedUsers'] ?? []);
+
+    final now = DateTime.now();
+    if (progress < target || (endTimestamp != null && now.isAfter(endTimestamp.toDate()))) {
+      print("Challenge either not completed or expired.");
+      return;
+    }
+
+    for (String userId in participants) {
+      if (rewardedUsers.contains(userId)) continue;
+
+      final hasContributed = await _firestore
+          .collection('challengeSubmissions')
+          .where('challengeId', isEqualTo: challengeId)
+          .where('userId', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (hasContributed.docs.isNotEmpty) {
+        final userRef = _firestore.collection('users').doc(userId);
+
+        await TreeService().increaseDrops(userId, rewardPoint);
+
+        rewardedUsers.add(userId);
+        print('Rewarded $rewardPoint points to user: $userId');
+      }
+    }
+
+    // Update rewardedUsers list in challenge
+    await challengeRef.update({'rewardedUsers': rewardedUsers});
   }
 }

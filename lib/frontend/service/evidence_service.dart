@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:wastesortapp/frontend/service/challenge_service.dart';
 import 'package:wastesortapp/frontend/service/notification_service.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
 import 'package:wastesortapp/theme/colors.dart';
@@ -154,12 +155,16 @@ class EvidenceService{
       await _db.collection('evidences').doc(evidence.evidenceId).update({'status': newStatus});
 
       if (newStatus == "Accepted") {
-        debugPrint("📝 Fetching treeId for user: ${evidence.userId}, ${evidence.point}");
+        debugPrint("✅ Evidence accepted, starting point and progress update...");
 
         await _treeService.increaseDrops(evidence.userId, evidence.point);
         Future.delayed(Duration(seconds: 2), () async {
           await _notiService.createNotification(status: 'point', point: evidence.point);
         });
+
+        debugPrint("📈 Updating challenge progress...");
+        await ChallengeService().updateChallengeProgress('bW5I80gXDWrwgnR6hWGH', evidence.point);
+        debugPrint("✅ Challenge progress update done!");
       }
 
     } catch (e) {

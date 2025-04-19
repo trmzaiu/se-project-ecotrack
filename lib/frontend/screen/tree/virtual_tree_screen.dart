@@ -10,10 +10,10 @@ import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
+import '../../service/challenge_service.dart';
 import '../../utils/route_transition.dart';
 import '../../widget/bar_title.dart';
 import 'leaderboard_screen.dart';
-
 
 class VirtualTreeScreen extends StatefulWidget {
 
@@ -235,12 +235,13 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
           actionsAlignment: MainAxisAlignment.center,
           actions: [
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 setState(() {
                   _trees += totalTrees;
                   _treeService.updateTree(userId, _trees);
                   grownTrees = 0;
                 });
+                await ChallengeService().updateChallengeProgress('ifBjxy9nJvFnZg636IU1', totalTrees);
                 _dialogShown = false;
                 Navigator.of(context).pop();
               },

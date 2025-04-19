@@ -30,6 +30,25 @@ class ChallengeDetailScreen extends StatefulWidget {
 class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
   late final String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Center(
+          child: Text(
+            message,
+            style: GoogleFonts.urbanist(
+              fontSize: 16,
+              fontWeight: AppFontWeight.semiBold,
+              color: AppColors.surface,
+            ),
+          ),
+        ),
+        backgroundColor: AppColors.board2,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   String _formatDuration(DateTime endTime) {
     final now = DateTime.now();
     final remaining = endTime.difference(now);
@@ -134,6 +153,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                         return Row(
                           children: [
                             SizedBox(
+                              width: 12*(displayUsers.length+1),
                               child: Stack(
                                 clipBehavior: Clip.none,
                                 children: List.generate(displayUsers.length, (index) {
@@ -157,7 +177,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                                   return index == 0
                                       ? avatar
                                       : Positioned(
-                                    left: index * 20.0,
+                                    left: index * 15,
                                     child: avatar,
                                   );
                                 }),
@@ -279,39 +299,196 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                       builder: (context, snapshot) {
                         final isJoined = snapshot.data ?? false;
 
-                        return SizedBox(
-                          width: double.infinity,
-                          child: !isJoined
-                              ? ElevatedButton(
-                            onPressed: () async {
-                              if (!_isUserLoggedIn()) {
-                                _showErrorDialog(context);
-                                return;
-                              }
+                        if (!isJoined) {
+                          return SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                if (!_isUserLoggedIn()) {
+                                  _showErrorDialog(context);
+                                  return;
+                                }
 
-                              await ChallengeService().joinChallenge(widget.challengeId, userId);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("You have joined the challenge!")),
+                                await ChallengeService().joinChallenge(widget.challengeId, userId);
+                                _showSnackBar("You have joined the challenge!");
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: AppColors.surface,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(
+                                "Join",
+                                style: GoogleFonts.urbanist(
+                                  fontSize: 16,
+                                  fontWeight: AppFontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        if (subtype == 'form') {
+                          return StreamBuilder<bool>(
+                            stream: ChallengeService().checkSubmissionToday(widget.challengeId),
+                            builder: (context, snapshot) {
+                              final submittedToday = snapshot.data ?? false;
+
+                              return SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: submittedToday
+                                      ? null
+                                      : () async {
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(16),
+                                          ),
+                                          title: Text("Confirm Pledge"),
+                                          content: const Text("Are you sure you didn’t use any single-use plastic today?"),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context, false),
+                                              child: const Text("Cancel"),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () => Navigator.pop(context, true),
+                                              child: const Text("Submit"),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+
+                                    if (confirm != true) return;
+
+                                    await ChallengeService().submitChallenge(widget.challengeId, userId);
+                                    await ChallengeService().updateChallengeProgress(widget.challengeId, 1);
+
+                                    _showSnackBar("Pledge submitted successfully!");
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: AppColors.surface,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    submittedToday ? 'Already submitted today' : 'Submit Pledge',
+                                    style: GoogleFonts.urbanist(
+                                      fontSize: 16,
+                                      fontWeight: AppFontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               );
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: AppColors.surface,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                          );
+                        }
+
+                        if (subtype == 'streak') {
+                          return StreamBuilder<bool>(
+                            stream: ChallengeService().hasCompletedToday(userId),
+                            builder: (context, completedSnap) {
+                              final isCompleted = completedSnap.data ?? false;
+
+                              return SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: isCompleted
+                                      ? null
+                                      : () {
+                                    Navigator.of(context).push(
+                                      scaleRoute(const DailyChallengeScreen()),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: AppColors.surface,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    isCompleted ? 'Already completed today' : 'Start challenge',
+                                    style: GoogleFonts.urbanist(
+                                      fontSize: 16,
+                                      fontWeight: AppFontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        }
+
+                        if (subtype == 'evidence') {
+                          return SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  scaleRoute(UploadScreen()),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: AppColors.surface,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(
+                                'Start challenge',
+                                style: GoogleFonts.urbanist(
+                                  fontSize: 16,
+                                  fontWeight: AppFontWeight.bold,
+                                ),
                               ),
                             ),
-                            child: Text(
-                              "Join",
-                              style: GoogleFonts.urbanist(
-                                fontSize: 16,
-                                fontWeight: AppFontWeight.bold,
+                          );
+                        }
+
+                        if (subtype == 'tree') {
+                          return SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  scaleRoute(VirtualTreeScreen()),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: AppColors.surface,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(
+                                'Start challenge',
+                                style: GoogleFonts.urbanist(
+                                  fontSize: 16,
+                                  fontWeight: AppFontWeight.bold,
+                                ),
                               ),
                             ),
-                          )
-                              : null
-                        );
+                          );
+                        }
+
+                        // Default return widget to prevent the 'null' return error
+                        return SizedBox.shrink();
                       },
                     ),
 
@@ -322,173 +499,21 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
 
                         return SizedBox(
                           width: double.infinity,
-                          child: !isExpired
-                              ? Text(
-                                "This challenge is no longer available",
-                                style: GoogleFonts.urbanist(
-                                fontSize: 18,
-                                fontWeight: AppFontWeight.bold,
-                                color: AppColors.tertiary,
-                              ),
-                            )
+                          child: isExpired
+                              ? Center(
+                                child: Text(
+                                  "This challenge is no longer available",
+                                  style: GoogleFonts.urbanist(
+                                    fontSize: 16,
+                                    fontWeight: AppFontWeight.medium,
+                                    color: AppColors.tertiary,
+                                  ),
+                                )
+                              )
                               : null
                         );
                       },
                     ),
-
-                    if (subtype == 'form')
-                      StreamBuilder<bool>(
-                        stream: ChallengeService().checkSubmissionToday(widget.challengeId),
-                        builder: (context, snapshot) {
-                          final submittedToday = snapshot.data ?? false;
-
-                          return SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: submittedToday
-                                  ? null
-                                  : () async {
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      title: Text("Confirm Pledge"),
-                                      content: const Text("Are you sure you didn’t use any single-use plastic today?"),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context, false),
-                                          child: const Text("Cancel"),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: () => Navigator.pop(context, true),
-                                          child: const Text("Submit"),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-
-                                if (confirm != true) return;
-
-                                await ChallengeService().submitChallenge(widget.challengeId, userId);
-                                await ChallengeService().updateChallengeProgress(widget.challengeId);
-
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text("Pledge submitted successfully!")),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: AppColors.surface,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Text(
-                                submittedToday ? 'Already submitted today' : 'Submit Pledge',
-                                style: GoogleFonts.urbanist(
-                                  fontSize: 16,
-                                  fontWeight: AppFontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-
-                    if (subtype == 'streak')
-                      StreamBuilder<bool>(
-                        stream: ChallengeService().hasCompletedToday(userId),
-                        builder: (context, completedSnap) {
-                          final isCompleted = completedSnap.data ?? false;
-
-                          return SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: isCompleted
-                                  ? null
-                                  : () {
-                                Navigator.of(context).push(
-                                  scaleRoute(const DailyChallengeScreen()),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: AppColors.surface,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Text(
-                                isCompleted ? 'Already completed today' : 'Start challenge',
-                                style: GoogleFonts.urbanist(
-                                  fontSize: 16,
-                                  fontWeight: AppFontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-
-                    if (subtype == 'evidence')
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              scaleRoute(UploadScreen()),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: AppColors.surface,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            'Start challenge',
-                            style: GoogleFonts.urbanist(
-                              fontSize: 16,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                    if (subtype == 'tree')
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              scaleRoute(VirtualTreeScreen()),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: AppColors.surface,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            'Start challenge',
-                            style: GoogleFonts.urbanist(
-                              fontSize: 16,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      )
                   ],
                 )
               )

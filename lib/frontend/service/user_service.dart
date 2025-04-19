@@ -168,6 +168,27 @@ class UserService {
         .map((snapshot) => snapshot.data()?['streak'] ?? 0);
   }
 
+  Future<int> checkUserStreakFuture(String userId) async {
+    try {
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data();
+        if (data != null && data.containsKey('streak')) {
+          return data['streak'] as int;
+        }
+      }
+
+      return 0; // Default streak if not found
+    } catch (e) {
+      print('Error fetching user streak: $e');
+      return 0;
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getUsersByIds(List<String> userIds) async {
     if (userIds.isEmpty) return [];
 

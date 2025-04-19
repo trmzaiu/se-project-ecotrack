@@ -33,6 +33,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
     _tabController = TabController(length: 3, vsync: this);
   }
 
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -51,14 +52,18 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
     if (imageUrl.isEmpty || imageSizes.containsKey(imageUrl)) return;
 
     final ImageProvider imageProvider = CachedNetworkImageProvider(imageUrl);
-    final ImageStream stream = imageProvider.resolve(ImageConfiguration());
+    final ImageStream stream = imageProvider.resolve(const ImageConfiguration());
 
     stream.addListener(ImageStreamListener((ImageInfo info, bool _) {
-      setState(() {
-        imageSizes[imageUrl] = Size(
-          info.image.width.toDouble(),
-          info.image.height.toDouble(),
-        );
+      Future.microtask(() {
+        if (mounted) {
+          setState(() {
+            imageSizes[imageUrl] = Size(
+              info.image.width.toDouble(),
+              info.image.height.toDouble(),
+            );
+          });
+        }
       });
     }));
   }
