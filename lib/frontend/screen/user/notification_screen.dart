@@ -245,68 +245,71 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ],
           ),
           Expanded(
-            child: StreamBuilder<List<Map<String, dynamic>>>(
-              stream: _notiService.fetchNotifications(FirebaseAuth.instance.currentUser!.uid), // ✅ Uses real-time Firestore updates
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(child: Text("Error: ${snapshot.error}"));
-                }
-                if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                  final data = snapshot.data!;
-                  return SingleChildScrollView(
-                    child: Container(
-                      decoration: const BoxDecoration(color: AppColors.background),
+            child: Container(
+              color: AppColors.background,
+              child: StreamBuilder<List<Map<String, dynamic>>>(
+                stream: _notiService.fetchNotifications(FirebaseAuth.instance.currentUser!.uid), // ✅ Uses real-time Firestore updates
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text("Error: ${snapshot.error}"));
+                  }
+                  if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                    final data = snapshot.data!;
+                    return SingleChildScrollView(
+                      child: Container(
+                        decoration: const BoxDecoration(color: AppColors.background),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(15, 0, 15, 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: data.map((notification) {
+                              DateTime date = DateTime.parse(notification["date"]);
+                              List<Widget> items = (notification["items"] as List)
+                                  .map<Widget>((item) => buildNotificationItem(
+                                  item["type"], item["time"], item["points"], item["isRead"], item["notificationId"]
+                              )).toList();
+                              return buildNotificationCard(date, items);
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  // ✅ No notifications found → Show a card instead of plain text
+                  return Center(
+                    child: Card(
+                      elevation: 5,
+                      color: AppColors.background,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(15, 0, 15, 20),
+                        padding: const EdgeInsets.all(20),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: data.map((notification) {
-                            DateTime date = DateTime.parse(notification["date"]);
-                            List<Widget> items = (notification["items"] as List)
-                                .map<Widget>((item) => buildNotificationItem(
-                                item["type"], item["time"], item["points"], item["isRead"], item["notificationId"]
-                            )).toList();
-                            return buildNotificationCard(date, items);
-                          }).toList(),
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.notifications_off, size: 40, color: Colors.grey),
+                            const SizedBox(height: 10),
+                            Text(
+                              "No notifications",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   );
-                }
-
-                // ✅ No notifications found → Show a card instead of plain text
-                return Center(
-                  child: Card(
-                    elevation: 5,
-                    color: AppColors.background,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.notifications_off, size: 40, color: Colors.grey),
-                          const SizedBox(height: 10),
-                          Text(
-                            "No notifications",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+                },
+              ),
+            )
           ),
 
         ],

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,11 +12,12 @@ import '../../service/user_service.dart';
 import '../../utils/phone_size.dart';
 import '../../utils/route_transition.dart';
 import '../../widget/category_box.dart';
-import '../../widget/challenge_item.dart';
 import '../../widget/custom_dialog.dart';
 import '../../widget/text_row.dart';
 import '../auth/login_screen.dart';
-import '../challenge/community_challenge_screen.dart';
+import '../challenge/challenge_detail_screen.dart';
+import '../challenge/challenge_screen.dart';
+import '../challenge/community_challenge_card.dart';
 import '../challenge/daily_challenge_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -276,21 +278,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 25),
 
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: TextRow(
-                        text: 'Challenges',
-                        onTap: () {
-                          Navigator.of(context).push(
-                            moveUpRoute(
-                              CommunityChallengeScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-
                     if (_isUserLoggedIn()) ...[
+                      Padding(
+                          padding: EdgeInsets.only(left: 20),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Your daily mission",
+                              style: GoogleFonts.urbanist(
+                                color: AppColors.secondary,
+                                fontSize: 16,
+                                fontWeight: AppFontWeight.bold,
+                              ),
+                              textAlign: TextAlign.start,
+                            ),
+                          )
+                      ),
+
                       const SizedBox(height: 10),
                       SizedBox(
                         width: phoneWidth - 40,
@@ -306,7 +310,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ? null
                                     : () {
                                   Navigator.of(context).push(
-                                    scaleRoute(const DailyChallengeScreen()),
+                                    scaleRoute(DailyChallengeScreen()),
                                   );
                                 },
                                 child: Container(
@@ -380,45 +384,80 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                         ),
                       ),
+
+                      const SizedBox(height: 25),
                     ],
 
-                    const SizedBox(height: 40),
-
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: ChallengeItem(
-                        image: 'lib/assets/images/zero_waste_challenge.png',
-                        title: 'Zero Waste Challenge',
-                        info: 'Reduce your waste for a whole week! Track your trash, use reusable items, and share your progress with #ZeroWasteWeek.',
-                        attend: '345',
+                      child: TextRow(
+                        text: 'Challenges',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            moveUpRoute(
+                              ChallengeScreen(),
+                            ),
+                          );
+                        },
                       ),
                     ),
 
-                    const SizedBox(height: 35),
+                    const SizedBox(height: 10),
 
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: ChallengeItem(
-                        image: 'lib/assets/images/trash_to_treasure_challenge.png',
-                        title: 'Trash to Treasure Challenge',
-                        info: 'Turn waste into something useful! Up cycle old materials into creative DIY products and share with #TrashToTreasure.',
-                        attend: '243',
-                      ),
+                    FutureBuilder<List<QueryDocumentSnapshot>>(
+                      future: ChallengeService().loadChallenges('community'),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return Center(
+                            child: Text(
+                              'No community challenges available.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.urbanist(
+                                color: AppColors.secondary,
+                                fontSize: 16,
+                                fontWeight: AppFontWeight.medium,
+                              ),
+                            ),
+                          );
+                        }
+
+                        final challenges = snapshot.data!;
+
+                        final limitedChallenges = challenges.take(3).toList();
+
+
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          itemCount: limitedChallenges.length,
+                          itemBuilder: (context, index) {
+                            final doc = challenges[index];
+                            final data = doc.data() as Map<String, dynamic>;
+                            data['id'] = doc.id;
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ChallengeDetailScreen(data: data, challengeId: data['id']),
+                                  ),
+                                );
+                              },
+                              child: CommunityChallengeCard(data: data)
+                            );
+                          },
+                        );
+                      },
                     ),
 
-                    const SizedBox(height: 35),
-
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: ChallengeItem(
-                        image: 'lib/assets/images/waste_sorting_challenge.png',
-                        title: 'Waste Sorting Challenge',
-                        info: 'Test your skills! Correctly classify waste and promote a cleaner planet.',
-                        attend: '476',
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 5),
 
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),

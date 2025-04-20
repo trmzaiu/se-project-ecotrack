@@ -241,7 +241,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                   _treeService.updateTree(userId, _trees);
                   grownTrees = 0;
                 });
-                await ChallengeService().updateChallengeProgress('ifBjxy9nJvFnZg636IU1', totalTrees);
+                await ChallengeService().updateChallengeProgress('tree', totalTrees);
                 _dialogShown = false;
                 Navigator.of(context).pop();
               },

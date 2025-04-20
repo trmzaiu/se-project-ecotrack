@@ -1,11 +1,10 @@
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import 'package:wastesortapp/frontend/screen/auth/login_screen.dart';
 import 'package:wastesortapp/frontend/screen/user/setting_screen.dart';
 import 'package:wastesortapp/frontend/service/auth_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
@@ -14,13 +13,14 @@ import 'package:wastesortapp/frontend/widget/bar_title.dart';
 import 'package:wastesortapp/main.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
+import '../../service/challenge_service.dart';
 import '../../service/user_service.dart';
 
 import '../../service/evidence_service.dart';
 import '../../service/tree_service.dart';
 import '../../widget/active_challenge.dart';
-import '../../widget/challenge_item.dart';
-import '../challenge/challenges_screen.dart';
+import '../challenge/challenge_detail_screen.dart';
+import '../challenge/community_challenge_card.dart';
 import '../evidence/evidence_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -59,99 +59,98 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           BarTitle(title: "Profile", textColor: AppColors.secondary, showNotification: true),
 
-          SizedBox(height: 25),
-
-          StreamBuilder<Map<String, dynamic>>(
-            stream: UserService().getCurrentUser(userId),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              }
-
-              final user = snapshot.data ?? {
-                'photoUrl': '',
-                'name': userId.substring(0, 10),
-                'email': '',
-              };
-
-              return Column(
-                children: [
-                  Container(
-                    width: 125,
-                    height: 125,
-                    decoration: ShapeDecoration(
-                      image: DecorationImage(
-                        image: user['photoUrl'] != '' ? CachedNetworkImageProvider(user['photoUrl']) : AssetImage('lib/assets/images/avatar_default.png'),
-                        fit: BoxFit.cover,
-                      ),
-                      shape: OvalBorder(
-                        side: BorderSide(
-                          width: 5,
-                          color: AppColors.tertiary.withOpacity(0.8),
-                        )
-                      )
-                    ),
-                  ),
-
-                  SizedBox(height: 5),
-
-                  Text(
-                    user['name'],
-                    style: GoogleFonts.urbanist(
-                      color: AppColors.secondary,
-                      fontSize: 24,
-                      fontWeight: AppFontWeight.bold,
-                    ),
-                  ),
-
-                  Text(
-                    user['email'],
-                    style: GoogleFonts.urbanist(
-                      color: AppColors.tertiary,
-                      fontSize: 16,
-                      fontWeight: AppFontWeight.regular,
-                    ),
-                  ),
-                ]
-              );
-            }
-          ),
-
-          SizedBox(height: 30),
-
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                moveLeftRoute(
-                  SettingScreen(),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-              padding: EdgeInsets.symmetric(horizontal: 35, vertical: 10),
-              elevation: 0,
-            ),
-            child: Text(
-              'Edit Profile',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.urbanist(
-                color: AppColors.surface,
-                fontSize: 14,
-                fontWeight: AppFontWeight.semiBold,
-              ),
-            ),
-          ),
-
-          SizedBox(height: 20),
+          const SizedBox(height: 25),
 
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: Column(
                 children: [
-                  // SizedBox(height: 10),
+                  StreamBuilder<Map<String, dynamic>>(
+                    stream: UserService().getCurrentUser(userId),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+
+                      final user = snapshot.data ?? {
+                        'photoUrl': '',
+                        'name': userId.substring(0, 10),
+                        'email': '',
+                      };
+
+                      return Column(
+                        children: [
+                          Container(
+                            width: 125,
+                            height: 125,
+                            decoration: ShapeDecoration(
+                                image: DecorationImage(
+                                  image: user['photoUrl'] != '' ? CachedNetworkImageProvider(user['photoUrl']) : AssetImage('lib/assets/images/avatar_default.png'),
+                                  fit: BoxFit.cover,
+                                ),
+                                shape: OvalBorder(
+                                    side: BorderSide(
+                                      width: 5,
+                                      color: AppColors.tertiary.withOpacity(0.8),
+                                    )
+                                )
+                            ),
+                          ),
+
+                          const SizedBox(height: 5),
+
+                          Text(
+                            user['name'],
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.secondary,
+                              fontSize: 24,
+                              fontWeight: AppFontWeight.bold,
+                            ),
+                          ),
+
+                          Text(
+                            user['email'],
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.tertiary,
+                              fontSize: 16,
+                              fontWeight: AppFontWeight.regular,
+                            ),
+                          ),
+                        ]
+                      );
+                    }
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        moveLeftRoute(
+                          SettingScreen(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                      padding: EdgeInsets.symmetric(horizontal: 35, vertical: 10),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Edit Profile',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.urbanist(
+                        color: AppColors.surface,
+                        fontSize: 14,
+                        fontWeight: AppFontWeight.semiBold,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 30),
                     child: Align(
@@ -168,7 +167,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
 
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
 
                   Align(
                     alignment: Alignment.center,
@@ -219,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
 
-                  SizedBox(height: 25),
+                  const SizedBox(height: 25),
 
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 30),
@@ -257,7 +256,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
 
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
 
                   StreamBuilder<Map<String, int>>(
                     stream: EvidenceService(context).getTotalEachAcceptedCategory(userId),
@@ -322,7 +321,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                   ),
 
-                  SizedBox(height: 25),
+                  const SizedBox(height: 25),
 
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 30),
@@ -341,11 +340,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                         GestureDetector(
                           onTap: () {
-                            Navigator.of(context).push(
-                              moveLeftRoute(
-                                ChallengesScreen(),
-                              ),
-                            );
+                            // Navigator.of(context).push(
+                            //   moveLeftRoute(
+                            //
+                            //   ),
+                            // );
                           },
                           child: Text(
                             'See more',
@@ -360,46 +359,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
 
-                  SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: ActiveChallenge(
-                      image: 'lib/assets/images/zero_waste_challenge.png',
-                      type: 'Daily',
-                      title: 'Zero Waste Challenge',
-                      info: 'Reduce your waste for a whole week! Track your trash, use reusable items, and share your progress with #ZeroWasteWeek.',
-                      attend: '345',
-                    ),
-                  ),
+                  FutureBuilder<List<QueryDocumentSnapshot>>(
+                    future: ChallengeService().loadChallengesUserJoined(userId),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
 
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Daily Recycler", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 8),
-                            LinearProgressIndicator(
-                              value: 0.5,
-                              color: Colors.green,
-                              backgroundColor: Colors.grey[300],
-                              minHeight: 10,
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'You haven\'t joined any challenges yet',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.secondary,
+                              fontSize: 16,
+                              fontWeight: AppFontWeight.medium,
                             ),
-                            const SizedBox(height: 8),
-                            Text('Ends in 2 days', style: const TextStyle(color: Colors.grey)),
-                          ],
-                        ),
-                      ),
-                    ),
+                          ),
+                        );
+                      }
+
+                      final challenges = snapshot.data!;
+
+                      final limitedChallenges = challenges.take(2).toList();
+
+
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 30),
+                        itemCount: limitedChallenges.length,
+                        itemBuilder: (context, index) {
+                          final doc = challenges[index];
+                          final data = doc.data() as Map<String, dynamic>;
+                          data['id'] = doc.id;
+                          return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ChallengeDetailScreen(data: data, challengeId: data['id']),
+                                  ),
+                                );
+                              },
+                              child: CommunityChallengeCard(data: data)
+                          );
+                        },
+                      );
+                    },
                   ),
 
-                  SizedBox(height: 30),
+                  const SizedBox(height: 5),
 
                   ElevatedButton(
                     onPressed: () => _signOut(context),
@@ -421,7 +436,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
 
-                  SizedBox(height: 35),
+                  const SizedBox(height: 35),
                 ],
               ),
             )

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +10,7 @@ import 'package:wastesortapp/frontend/screen/evidence/upload_evidence_screen.dar
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
+import '../../../main.dart';
 import '../../../theme/colors.dart';
 import '../../service/challenge_service.dart';
 import '../../service/user_service.dart';
@@ -30,6 +33,79 @@ class ChallengeDetailScreen extends StatefulWidget {
 class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
   late final String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
+  late DateTime startTime;
+  late DateTime endTime;
+  late Duration remainingTime;
+  Timer? countdownTimer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    Timestamp startTimestamp = widget.data['startDate'];
+    Timestamp endTimestamp = widget.data['endDate'];
+
+    startTime = startTimestamp.toDate();
+    endTime = endTimestamp.toDate();
+
+    final now = DateTime.now();
+
+    // Check if the challenge hasn't started yet or if it's already ongoing
+    if (now.isBefore(startTime)) {
+      // Show countdown until the challenge starts
+      remainingTime = startTime.difference(now);
+    } else if (now.isBefore(endTime)) {
+      // Show countdown until the challenge ends
+      remainingTime = endTime.difference(now);
+    } else {
+      remainingTime = Duration.zero; // The challenge has ended
+    }
+
+    // Start the countdown timer
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    countdownTimer?.cancel();
+    countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final now = DateTime.now();
+
+      if (now.isBefore(startTime)) {
+        setState(() {
+          remainingTime = startTime.difference(now);
+        });
+      } else if (now.isBefore(endTime)) {
+        setState(() {
+          remainingTime = endTime.difference(now);
+        });
+      } else {
+        setState(() {
+          remainingTime = Duration.zero;
+        });
+      }
+    });
+  }
+
+  String _formatDuration(Duration d) {
+    if (d == Duration.zero) return "Challenge ended";
+
+    if (d.inDays >= 1) {
+      return "${d.inDays} ${d.inDays == 1 ? 'day' : 'days'}";
+    } else if (d.inHours >= 1) {
+      return "${d.inHours} ${d.inHours == 1 ? 'hour' : 'hours'}";
+    } else if (d.inMinutes >= 1) {
+      return "${d.inMinutes} ${d.inMinutes == 1 ? 'minute' : 'minutes'}";
+    } else {
+      return "${d.inSeconds} ${d.inSeconds == 1 ? 'second' : 'seconds'}";
+    }
+  }
+
+  @override
+  void dispose() {
+    countdownTimer?.cancel();
+    super.dispose();
+  }
+
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -47,16 +123,6 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
         duration: Duration(seconds: 2),
       ),
     );
-  }
-
-  String _formatDuration(DateTime endTime) {
-    final now = DateTime.now();
-    final remaining = endTime.difference(now);
-    if (remaining.isNegative) return "Challenge ended";
-    final days = remaining.inDays;
-    final hours = remaining.inHours % 24;
-    final minutes = remaining.inMinutes % 60;
-    return "$days d $hours h $minutes m left";
   }
 
   bool _isUserLoggedIn() {
@@ -89,12 +155,9 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
     final title = widget.data['title'] ?? 'No title';
     final description =widget.data['description'] ?? 'No description';
     final reward = widget.data['rewardPoints'] ?? 0;
-    final target = widget.data['targetValue'] ?? 1000;
+    final target = widget.data['targetValue'] ?? 0;
     final progress = widget.data['progress'] ?? 0;
-    final subtype = widget.data['subtype'] ?? '';
     final participants = (widget.data['participants'] as List?)?.length ?? 0;
-    final Timestamp endTimestamp = widget.data['endDate'];
-    final endTime = endTimestamp.toDate();
 
     final progressRatio = (progress / target).clamp(0.0, 1.0);
     final percentage = (progressRatio * 100).toStringAsFixed(2);
@@ -199,13 +262,28 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
 
                             Align(
                               alignment: Alignment.centerRight,
-                              child: Text(
-                                _formatDuration(endTime),
-                                style: GoogleFonts.urbanist(
-                                  fontSize: 14,
-                                  color: AppColors.secondary,
-                                  fontWeight: AppFontWeight.regular,
-                                ),
+                              child: Text.rich(
+                                TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: remainingTime == Duration.zero ? '' : startTime.isAfter(DateTime.now()) ? 'Start in ' : 'End in ',
+                                      style: GoogleFonts.urbanist(
+                                        fontSize: 14,
+                                        color: AppColors.secondary,
+                                        fontWeight: AppFontWeight.medium,
+                                      ),
+                                    ),
+
+                                    TextSpan(
+                                      text: _formatDuration(remainingTime),
+                                      style: GoogleFonts.urbanist(
+                                        fontSize: 14,
+                                        color: remainingTime == Duration.zero ? AppColors.tertiary : Color(0xFFC62828),
+                                        fontWeight: AppFontWeight.semiBold,
+                                      ),
+                                    ),
+                                  ]
+                                )
                               ),
                             ),
                           ],
@@ -299,218 +377,48 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                       builder: (context, snapshot) {
                         final isJoined = snapshot.data ?? false;
 
-                        if (!isJoined) {
-                          return SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                if (!_isUserLoggedIn()) {
-                                  _showErrorDialog(context);
-                                  return;
-                                }
+                        return FutureBuilder<DocumentSnapshot>(
+                          future: FirebaseFirestore.instance.collection('challenges').doc(widget.challengeId).get(),
+                          builder: (context, challengeSnap) {
+                            if (!challengeSnap.hasData) return CircularProgressIndicator();
 
-                                await ChallengeService().joinChallenge(widget.challengeId, userId);
-                                _showSnackBar("You have joined the challenge!");
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: AppColors.surface,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Text(
-                                "Join",
-                                style: GoogleFonts.urbanist(
-                                  fontSize: 16,
-                                  fontWeight: AppFontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
+                            final data = challengeSnap.data!.data() as Map<String, dynamic>;
+                            final startDate = (data['startDate'] as Timestamp).toDate();
+                            final endDate = (data['endDate'] as Timestamp).toDate();
+                            final subtype = data['subtype'] as String? ?? '';
+                            final now = DateTime.now();
+                            final question = data['question'] as String? ?? '';
 
-                        if (subtype == 'form') {
-                          return StreamBuilder<bool>(
-                            stream: ChallengeService().checkSubmissionToday(widget.challengeId),
-                            builder: (context, snapshot) {
-                              final submittedToday = snapshot.data ?? false;
+                            final isComingSoon = now.isBefore(startDate);
+                            final isExpired = now.isAfter(endDate);
+                            final isActive = !isComingSoon && !isExpired;
 
-                              return SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: submittedToday
-                                      ? null
-                                      : () async {
-                                    final confirm = await showDialog<bool>(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(16),
-                                          ),
-                                          title: Text("Confirm Pledge"),
-                                          content: const Text("Are you sure you didn’t use any single-use plastic today?"),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(context, false),
-                                              child: const Text("Cancel"),
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: () => Navigator.pop(context, true),
-                                              child: const Text("Submit"),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
+                            if (!isJoined) {
+                              if (isComingSoon || isExpired) {
+                                String label = isComingSoon ? 'Coming Soon' : 'This challenge is no longer available';
+                                return _buildLabel(label);
+                              }
 
-                                    if (confirm != true) return;
+                              return _buildJoinButton();
+                            }
 
-                                    await ChallengeService().submitChallenge(widget.challengeId, userId);
-                                    await ChallengeService().updateChallengeProgress(widget.challengeId, 1);
+                            if (!isActive) {
+                              return _buildLabel("This challenge is no longer available");
+                            }
 
-                                    _showSnackBar("Pledge submitted successfully!");
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
-                                    foregroundColor: AppColors.surface,
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    submittedToday ? 'Already submitted today' : 'Submit Pledge',
-                                    style: GoogleFonts.urbanist(
-                                      fontSize: 16,
-                                      fontWeight: AppFontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        }
-
-                        if (subtype == 'streak') {
-                          return StreamBuilder<bool>(
-                            stream: ChallengeService().hasCompletedToday(userId),
-                            builder: (context, completedSnap) {
-                              final isCompleted = completedSnap.data ?? false;
-
-                              return SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: isCompleted
-                                      ? null
-                                      : () {
-                                    Navigator.of(context).push(
-                                      scaleRoute(const DailyChallengeScreen()),
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
-                                    foregroundColor: AppColors.surface,
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    isCompleted ? 'Already completed today' : 'Start challenge',
-                                    style: GoogleFonts.urbanist(
-                                      fontSize: 16,
-                                      fontWeight: AppFontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        }
-
-                        if (subtype == 'evidence') {
-                          return SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  scaleRoute(UploadScreen()),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: AppColors.surface,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Text(
-                                'Start challenge',
-                                style: GoogleFonts.urbanist(
-                                  fontSize: 16,
-                                  fontWeight: AppFontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-
-                        if (subtype == 'tree') {
-                          return SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  scaleRoute(VirtualTreeScreen()),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: AppColors.surface,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Text(
-                                'Start challenge',
-                                style: GoogleFonts.urbanist(
-                                  fontSize: 16,
-                                  fontWeight: AppFontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-
-                        // Default return widget to prevent the 'null' return error
-                        return SizedBox.shrink();
-                      },
-                    ),
-
-                    FutureBuilder<bool>(
-                      future: ChallengeService().checkChallengeDeadline(widget.challengeId),
-                      builder: (context, snapshot) {
-                        final isExpired = snapshot.data ?? false;
-
-                        return SizedBox(
-                          width: double.infinity,
-                          child: isExpired
-                              ? Center(
-                                child: Text(
-                                  "This challenge is no longer available",
-                                  style: GoogleFonts.urbanist(
-                                    fontSize: 16,
-                                    fontWeight: AppFontWeight.medium,
-                                    color: AppColors.tertiary,
-                                  ),
-                                )
-                              )
-                              : null
+                            switch (subtype) {
+                              case 'form':
+                                return _buildFormSubmitButton(question);
+                              case 'streak':
+                                return _buildStreakButton();
+                              case 'evidence':
+                                return _buildNavigationButton(UploadScreen(), "Start challenge");
+                              case 'tree':
+                                return _buildNavigationButton(VirtualTreeScreen(), "Start challenge");
+                              default:
+                                return _buildLabel("Unknown challenge type");
+                            }
+                          },
                         );
                       },
                     ),
@@ -522,6 +430,173 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
         )
       )
 
+    );
+  }
+
+  Widget _buildLabel(String text) => Center(
+    child: Text(
+      text,
+      style: GoogleFonts.urbanist(
+        fontSize: 15,
+        fontWeight: AppFontWeight.semiBold,
+        color: Colors.grey.shade600,
+      ),
+    ),
+  );
+
+  Widget _buildJoinButton() => SizedBox(
+    width: double.infinity,
+    child: ElevatedButton(
+      onPressed: () async {
+        if (!_isUserLoggedIn()) {
+          _showErrorDialog(context);
+          return;
+        }
+
+        await ChallengeService().joinChallenge(widget.challengeId, userId);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("You have joined the challenge!")),
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      child: Text(
+        "Join",
+        style: GoogleFonts.urbanist(
+          fontSize: 15,
+          fontWeight: AppFontWeight.semiBold,
+        ),
+      ),
+    ),
+  );
+
+  Widget _buildFormSubmitButton(String question) {
+    return StreamBuilder<bool>(
+      stream: ChallengeService().checkSubmissionToday(widget.challengeId),
+      builder: (context, snapshot) {
+        final submittedToday = snapshot.data ?? false;
+
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: submittedToday
+                ? null
+                : () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    title: const Text("Confirm Pledge"),
+                    content: Text(question),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text("Cancel"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text("Submit"),
+                      ),
+                    ],
+                  );
+                },
+              );
+
+              if (confirm != true) return;
+
+              await ChallengeService().submitChallenge(widget.challengeId, userId);
+              await ChallengeService().updateFormChallengeProgress(widget.challengeId);
+
+              _showSnackBar('Pledge submitted successfully!');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.surface,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              submittedToday ? 'Already submitted today' : 'Submit Pledge',
+              style: GoogleFonts.urbanist(
+                fontSize: 16,
+                fontWeight: AppFontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStreakButton() {
+    return StreamBuilder<bool>(
+      stream: ChallengeService().hasCompletedToday(userId),
+      builder: (context, completedSnap) {
+        final isCompleted = completedSnap.data ?? false;
+
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: isCompleted
+                ? null
+                : () {
+              Navigator.of(context).push(scaleRoute(const DailyChallengeScreen()));
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.surface,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              isCompleted ? 'Already completed today' : 'Start challenge',
+              style: GoogleFonts.urbanist(
+                fontSize: 16,
+                fontWeight: AppFontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildNavigationButton(Widget screen, String label) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.of(context).push(scaleRoute(screen));
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.surface,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.urbanist(
+            fontSize: 16,
+            fontWeight: AppFontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 }

@@ -163,7 +163,7 @@ class EvidenceService{
         });
 
         debugPrint("📈 Updating challenge progress...");
-        await ChallengeService().updateChallengeProgress('bW5I80gXDWrwgnR6hWGH', evidence.point);
+        await ChallengeService().updateChallengeProgress('evidence', evidence.point);
         debugPrint("✅ Challenge progress update done!");
       }
 
