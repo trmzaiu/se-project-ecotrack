@@ -143,6 +143,29 @@ class ChallengeService {
     }
   }
 
+  // --- Weekly Challenges ---
+  /// Load the weekly challenge for week
+  Future<Map<String, dynamic>> loadWeeklyChallenge() async {
+    try {
+      final loggedWeeklyQuery = await _firestore
+          .collection('challenges')
+          .where('type', isEqualTo: 'weekly')
+          .get();
+
+      if (loggedWeeklyQuery.docs.isEmpty) {
+        return {'error': 'No weekly challenges available'};
+      }
+
+      final randomIndex = Random().nextInt(loggedWeeklyQuery.docs.length);
+      final selectedChallenge = loggedWeeklyQuery.docs[randomIndex].data();
+
+      return selectedChallenge;
+    } catch (e) {
+      print("Error loading weekly challenge: $e");
+      return {'error': 'Error loading weekly challenge'};
+    }
+  }
+
   // --- Community Challenges ---
   /// Load all challenges by type
   Future<List<QueryDocumentSnapshot>> loadChallenges(String type) async {
@@ -487,11 +510,11 @@ class ChallengeService {
       if (rewardedUsers.contains(userId)) continue;
 
       final hasContributed = await _firestore
-          .collection('challengeSubmissions')
-          .where('challengeId', isEqualTo: challengeId)
-          .where('userId', isEqualTo: userId)
-          .limit(1)
-          .get();
+        .collection('challengeSubmissions')
+        .where('challengeId', isEqualTo: challengeId)
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .get();
 
       if (hasContributed.docs.isNotEmpty) {
         await TreeService().increaseDrops(userId, rewardPoint);

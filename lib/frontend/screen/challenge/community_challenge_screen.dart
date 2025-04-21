@@ -17,14 +17,16 @@ import '../auth/login_screen.dart';
 import 'challenge_detail_screen.dart';
 import 'community_challenge_card.dart';
 
-class ChallengeScreen extends StatefulWidget {
+class CommunityChallengeScreen extends StatefulWidget {
+  final int index;
 
+  CommunityChallengeScreen({super.key, this.index = 0});
 
   @override
-  _ChallengeScreenState createState() => _ChallengeScreenState();
+  _CommunityChallengeScreenState createState() => _CommunityChallengeScreenState();
 }
 
-class _ChallengeScreenState extends State<ChallengeScreen> with SingleTickerProviderStateMixin {
+class _CommunityChallengeScreenState extends State<CommunityChallengeScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
 
@@ -32,7 +34,7 @@ class _ChallengeScreenState extends State<ChallengeScreen> with SingleTickerProv
   void initState() {
     super.initState();
 
-    _tabController = TabController(length:  _isUserLoggedIn() ? 3 : 2, vsync: this);
+    _tabController = TabController(length:  _isUserLoggedIn() ? 3 : 2, vsync: this, initialIndex: widget.index,);
   }
 
   @override
@@ -50,7 +52,8 @@ class _ChallengeScreenState extends State<ChallengeScreen> with SingleTickerProv
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.transparent,
-      body: Container(
+      body:
+      Container(
         color: AppColors.secondary,
         child: Column(
           children: [
@@ -185,17 +188,14 @@ Widget _buildAllCommunityContent() {
             final data = doc.data() as Map<String, dynamic>;
             data['id'] = doc.id;
             return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          ChallengeDetailScreen(
-                              data: data, challengeId: data['id']),
-                    ),
-                  );
-                },
-                child: CommunityChallengeCard(data: data)
+              onTap: () {
+                Navigator.of(context).push(
+                  scaleRoute(
+                    ChallengeDetailScreen(data: data, challengeId: data['id']),
+                  ),
+                );
+              },
+              child: CommunityChallengeCard(data: data)
             );
           },
         );
@@ -239,12 +239,9 @@ Widget _buildActiveCommunityContent() {
             data['id'] = doc.id;
             return GestureDetector(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          ChallengeDetailScreen(
-                              data: data, challengeId: data['id']),
+                  Navigator.of(context).push(
+                    scaleRoute(
+                      ChallengeDetailScreen(data: data, challengeId: data['id']),
                     ),
                   );
                 },
@@ -292,15 +289,14 @@ Widget _buildUseJoinedContent(String userId) {
             final data = doc.data() as Map<String, dynamic>;
             data['id'] = doc.id;
             return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ChallengeDetailScreen(data: data, challengeId: data['id']),
-                    ),
-                  );
-                },
-                child: CommunityChallengeCard(data: data)
+              onTap: () {
+                Navigator.of(context).push(
+                  scaleRoute(
+                    ChallengeDetailScreen(data: data, challengeId: data['id']),
+                  ),
+                );
+              },
+              child: CommunityChallengeCard(data: data)
             );
           },
         );

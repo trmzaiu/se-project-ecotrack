@@ -244,11 +244,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
               ),
             ],
           ),
+
           Expanded(
             child: Container(
               color: AppColors.background,
               child: StreamBuilder<List<Map<String, dynamic>>>(
-                stream: _notiService.fetchNotifications(FirebaseAuth.instance.currentUser!.uid), // ✅ Uses real-time Firestore updates
+                stream: _notiService.fetchNotifications(FirebaseAuth.instance.currentUser!.uid),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());

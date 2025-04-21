@@ -16,7 +16,7 @@ import '../../widget/custom_dialog.dart';
 import '../../widget/text_row.dart';
 import '../auth/login_screen.dart';
 import '../challenge/challenge_detail_screen.dart';
-import '../challenge/challenge_screen.dart';
+import '../challenge/community_challenge_screen.dart';
 import '../challenge/community_challenge_card.dart';
 import '../challenge/daily_challenge_screen.dart';
 
@@ -395,7 +395,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () {
                           Navigator.of(context).push(
                             moveUpRoute(
-                              ChallengeScreen(),
+                              CommunityChallengeScreen(),
                             ),
                           );
                         },

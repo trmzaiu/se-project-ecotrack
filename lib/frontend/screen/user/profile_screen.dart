@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wastesortapp/frontend/screen/challenge/weekly_challenge_screen.dart';
 import 'package:wastesortapp/frontend/screen/user/setting_screen.dart';
 import 'package:wastesortapp/frontend/service/auth_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
@@ -21,6 +22,7 @@ import '../../service/tree_service.dart';
 import '../../widget/active_challenge.dart';
 import '../challenge/challenge_detail_screen.dart';
 import '../challenge/community_challenge_card.dart';
+import '../challenge/community_challenge_screen.dart';
 import '../evidence/evidence_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -330,7 +332,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          'Active Challenges',
+                          'Weekly Goal',
                           style: GoogleFonts.urbanist(
                             color: AppColors.secondary,
                             fontSize: 20,
@@ -340,11 +342,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                         GestureDetector(
                           onTap: () {
-                            // Navigator.of(context).push(
-                            //   moveLeftRoute(
-                            //
-                            //   ),
-                            // );
+                            Navigator.of(context).push(
+                              moveLeftRoute(
+                                  WeeklyChallengeScreen()
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'See more',
+                            style: GoogleFonts.urbanist(
+                              color: AppColors.tertiary,
+                              fontSize: 13,
+                              fontWeight: AppFontWeight.regular,
+                            ),
+                          ),
+                        )
+                      ]
+                    ),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Your Challenges',
+                          style: GoogleFonts.urbanist(
+                            color: AppColors.secondary,
+                            fontSize: 20,
+                            fontWeight: AppFontWeight.semiBold,
+                          ),
+                        ),
+
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              moveLeftRoute(
+                                  CommunityChallengeScreen(index: 2)
+                              ),
+                            );
                           },
                           child: Text(
                             'See more',
@@ -385,9 +425,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       }
 
                       final challenges = snapshot.data!;
-
                       final limitedChallenges = challenges.take(2).toList();
-
 
                       return ListView.builder(
                         shrinkWrap: true,
