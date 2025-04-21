@@ -1,8 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:http/http.dart';
-import 'package:wastesortapp/frontend/screen/auth/opening_screen.dart';
 import 'package:wastesortapp/frontend/screen/auth/register_screen.dart';
 import 'package:wastesortapp/frontend/service/auth_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
@@ -54,6 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
+        _authService.addToken(user.uid);
         _navigateToMainScreen(context);
       }
     } on FirebaseAuthException catch (e) {
@@ -71,6 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
+        _authService.addToken(user.uid);
         _navigateToMainScreen(context);
       } else {
         _showErrorDialog(context, "Google Sign-In failed.");
@@ -90,6 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
+        _authService.addToken(user.uid);
         _navigateToMainScreen(context);
       } else {
         _showErrorDialog(context, "Facebook Sign-In failed.");

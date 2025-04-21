@@ -1,70 +1,73 @@
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:wastesortapp/frontend/screen/tree/virtual_tree_screen.dart';
+import 'package:wastesortapp/frontend/service/evidence_service.dart';
 import 'package:wastesortapp/frontend/service/notification_service.dart';
-import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
+import '../../../database/model/evidence.dart';
+import '../../utils/format_time.dart';
+import '../../utils/route_transition.dart';
 import '../../widget/bar_title.dart';
+import '../evidence/evidence_detail_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({Key? key}) : super(key: key);
-
   @override
   State<NotificationScreen> createState() => _NotificationScreenState();
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  final NotificationService _notiService = NotificationService();
+  final NotificationService _notificationService = NotificationService();
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
-  Stream<List<Map<String, dynamic>>>? _notificationsFuture;
+  late final Stream<List<Map<String, dynamic>>> _notificationsStream;
 
   @override
   void initState() {
     super.initState();
-    // Replace "currentUserId" with the actual current user id
-    _notificationsFuture = _notiService.fetchNotifications(userId);
-  }
-
-
-  String formatDate(DateTime time) {
-    return DateFormat("MMM dd, yyyy").format(time);
-  }
-
-  String formatDateTime(DateTime time) {
-    final int hour = time.hour;
-    final int minute = time.minute;
-    final String period = hour >= 12 ? 'PM' : 'AM';
-    final int formattedHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-
-    return '$formattedHour:${minute.toString().padLeft(2, '0')} $period';
+    _notificationsStream = _notificationService.fetchNotifications(userId);
   }
 
   Widget buildNotificationItem(
-     String type,
-     String time,
-     int points,
-     bool isRead, String notificationId
+      BuildContext context,
+      String notificationId,
+      String type,
+      String title,
+      String body,
+      bool isRead,
+      String time
   ) {
-    String waterTitle = 'Water Level Reached the Limit!';
-    String waterContent = 'Check now to prevent overflow or adjust as needed.';
-    String evidenceTitle = 'Your Evidence Was Approved!';
-    String evidenceContent = 'You earned $points points. Keep contributing for more rewards!';
-
-    DateTime parsedTime = DateFormat("HH:mm").parse(time);
-    String formattedTime = formatDateTime(parsedTime);  // Ensure this function exists.
+    EvidenceService evidenceService = EvidenceService(context);
+    Evidences evidence;
 
     return GestureDetector(
       onTap: () async {
-        // Call the function to mark the notification as read.
+        if (type == 'water') {
+          Navigator.of(context).push(moveUpRoute(VirtualTreeScreen()));
+        } else if (type == 'evidence') {
+          evidence = await evidenceService.getEvidenceById(notificationId);
+          print("Evidence details: ${evidence.toMap()}");
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EvidenceDetailScreen(
+                category: evidence.category,
+                status: evidence.status,
+                description: '${evidence.description}',
+                date: formatDate(evidence.date),
+                point: evidence.point,
+                imagePaths: evidence.imagesUrl,
+              ),
+            ),
+          );
+        }
         await NotificationService().markNotificationAsRead(notificationId);
         print("Notification $notificationId marked as read.");
-
-        // Optionally, trigger a UI update or refresh the notification list.
       },
       child: Padding(
         padding: const EdgeInsets.only(top: 10),
@@ -97,7 +100,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      type == 'water' ? waterTitle : evidenceTitle,
+                      title,
                       style: GoogleFonts.urbanist(
                         color: AppColors.secondary,
                         fontSize: 14,
@@ -105,7 +108,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ),
                     ),
                     Text(
-                      type == 'water' ? waterContent : evidenceContent,
+                      body,
                       style: GoogleFonts.urbanist(
                         color: AppColors.tertiary,
                         fontSize: 14,
@@ -121,14 +124,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      formattedTime,
+                      time,
                       style: GoogleFonts.urbanist(
                         color: AppColors.tertiary,
                         fontSize: 12,
                         fontWeight: AppFontWeight.regular,
                       ),
                     ),
-                    if (isRead == false)
+                    if (isRead)
                       Container(
                         width: 25,
                         height: 25,
@@ -149,17 +152,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
-
-  Widget buildNotificationCard(DateTime date, List<Widget> children) {
+  Widget buildNotificationCard(String date, List<Widget> children) {
     return GestureDetector(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 15),
           Text(
-            (formatDate(DateTime.now()) == formatDate(date))
-                ? 'Today'
-                : formatDate(date),
+            date,
             style: GoogleFonts.urbanist(
               color: AppColors.secondary,
               fontSize: 20,
@@ -191,7 +191,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 ),
               ),
               onTap: () {
-                _notiService.deleteAllNotifications(userId);
+                _notificationService.deleteAllNotifications();
                 Navigator.pop(context);
               },
             ),
@@ -204,7 +204,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 ),
               ),
               onTap: () {
-                _notiService.markAllNotificationsAsRead();
+                _notificationService.markAllNotificationsAsRead();
                 Navigator.pop(context);
               },
             ),
@@ -244,68 +244,58 @@ class _NotificationScreenState extends State<NotificationScreen> {
               ),
             ],
           ),
-
           Expanded(
             child: Container(
               color: AppColors.background,
               child: StreamBuilder<List<Map<String, dynamic>>>(
-                stream: _notiService.fetchNotifications(FirebaseAuth.instance.currentUser!.uid),
+                stream: _notificationsStream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError) {
-                    return Center(child: Text("Error: ${snapshot.error}"));
-                  }
-                  if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                    final data = snapshot.data!;
-                    return SingleChildScrollView(
-                      child: Container(
-                        decoration: const BoxDecoration(color: AppColors.background),
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(15, 0, 15, 20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: data.map((notification) {
-                              DateTime date = DateTime.parse(notification["date"]);
-                              List<Widget> items = (notification["items"] as List)
-                                  .map<Widget>((item) => buildNotificationItem(
-                                  item["type"], item["time"], item["points"], item["isRead"], item["notificationId"]
-                              )).toList();
-                              return buildNotificationCard(date, items);
-                            }).toList(),
-                          ),
+                  } else if (snapshot.data == null || snapshot.data!.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No notifications yet',
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
+                          fontSize: 16,
+                          fontWeight: AppFontWeight.regular,
                         ),
                       ),
                     );
                   }
 
-                  // ✅ No notifications found → Show a card instead of plain text
-                  return Center(
-                    child: Card(
-                      elevation: 5,
-                      color: AppColors.background,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.notifications_off, size: 40, color: Colors.grey),
-                            const SizedBox(height: 10),
-                            Text(
-                              "No notifications",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                          ],
+                  final grouped = groupFromRawList(snapshot.data!);
+                  print("Notification Data: ${snapshot.data}");
+                  return SingleChildScrollView(
+                    child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: AppColors.background,
                         ),
-                      ),
+                        child: Padding(
+                            padding: const EdgeInsets.fromLTRB(15, 0, 15, 20),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: grouped.map((group) {
+                                  final date = group['date'];
+                                  final items = group['items'] as List<Map<String, dynamic>>;
+                                  final children = items.map((item) {
+                                    return buildNotificationItem(
+                                      context,
+                                      item['notificationId'],
+                                      item['type'],
+                                      item['title'],
+                                      item['body'],
+                                      item['isRead'],
+                                      item['time'],
+                                    );
+                                  }).toList();
+
+                                  return buildNotificationCard(date, children);
+                                }).toList()
+                            )
+                        )
                     ),
                   );
                 },

@@ -26,6 +26,8 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   bool _isPermissionGranted = false;
   bool _hasRequested = false;
   bool _isInitializing = true;
+  bool showCamera = true;
+
 
   @override
   void initState() {
@@ -126,6 +128,11 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
       if (await imageFile.exists()) {
         if (!mounted) return;
+
+        setState(() {
+          showCamera = false;
+        });
+
         Navigator.of(context).push(PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 300),
           pageBuilder: (context, animation, secondaryAnimation) =>
@@ -145,6 +152,10 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
             );
           },
         ));
+
+        setState(() {
+          showCamera = true;
+        });
       } else {
         debugPrint("❌");
       }
@@ -208,7 +219,8 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: _isPermissionGranted
+      body: showCamera
+      ? _isPermissionGranted
         ? CameraAwesomeBuilder.awesome(
           progressIndicator: Container(
             color: Colors.black,
@@ -237,18 +249,42 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
               return SingleCaptureRequest(filePath, sensors.first);
             },
           ),
+          // onMediaCaptureEvent: (event) {
+          //   if (event.status == MediaCaptureStatus.success && event.isPicture) {
+          //     event.captureRequest.when(
+          //       single: (single) {
+          //         if (!mounted) return;
+          //         WidgetsBinding.instance.addPostFrameCallback((_) {
+          //           Navigator.of(context).push(
+          //             moveLeftRoute(
+          //               ScanScreen(imagePath: single.file?.path ?? ""),
+          //               settings: RouteSettings(name: "ScanScreen"),
+          //             ),
+          //           );
+          //         });
+          //       },
+          //     );
+          //   }
+          // },
           onMediaCaptureEvent: (event) {
             if (event.status == MediaCaptureStatus.success && event.isPicture) {
               event.captureRequest.when(
-                single: (single) {
+                single: (single) async {
                   if (!mounted) return;
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    Navigator.of(context).push(
-                      moveLeftRoute(
-                        ScanScreen(imagePath: single.file?.path ?? ""),
-                        settings: RouteSettings(name: "ScanScreen"),
-                      ),
-                    );
+
+                  setState(() {
+                    showCamera = false;
+                  });
+
+                  await Navigator.of(context).push(
+                    moveLeftRoute(
+                      ScanScreen(imagePath: single.file?.path ?? ""),
+                      settings: const RouteSettings(name: "ScanScreen"),
+                    ),
+                  );
+
+                  setState(() {
+                    showCamera = true;
                   });
                 },
               );
@@ -501,6 +537,8 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
           ),
         ),
       )
+    : Container(color: Colors.black,)
     );
   }
 }
+
