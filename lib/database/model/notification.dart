@@ -1,27 +1,32 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Notification {
   final String notificationId;
   final String userId;
-  final DateTime time;
-  final String status;
+  final String title;
+  final String body;
+  final String type;
   final bool isRead;
-  final int point;
+  final DateTime time;
 
   Notification({
     required this.notificationId,
     required this.userId,
-    required this.status,
+    required this.title,
+    required this.body,
+    required this.type,
     required this.isRead,
     required this.time,
-    required this.point
   });
   Map<String, dynamic> toMap() {
     return {
       'notificationId': notificationId,
       'userId': userId,
-      'time': time.toIso8601String(),
-      'status': status,
+      'title': title,
+      'body': body,
+      'type': type,
       'isRead': isRead,
-      'point': point,
+      'time': Timestamp.fromDate(time),
     };
   }
 

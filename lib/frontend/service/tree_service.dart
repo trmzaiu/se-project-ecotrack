@@ -4,8 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:wastesortapp/frontend/service/notification_service.dart';
 
-import '../../database/model/tree.dart';
-
 class TreeService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final _notiService = NotificationService();
@@ -83,10 +81,14 @@ class TreeService {
 
         Future.delayed(Duration(seconds: 2));
 
-        var currentDrops = treesRef.docs.first.data()?['drops'] ?? 0;
+        var currentDrops = treesRef.docs.first.data()['drops'] ?? 0;
         int newDrops = currentDrops + increment;
         if (newDrops >= 100){
-          await _notiService.createNotification(status: 'water', point : 0);
+          await _notiService.sendNotificationToUser(
+              receiverUserId: userId,
+              title: 'Water Level Reached the Limit!',
+              body: 'Check now to prevent overflow or adjust as needed.',
+              type: 'water');
         }
 
         debugPrint("✅ Drops incremented by $increment for treeId: $treeId");
@@ -113,6 +115,4 @@ class TreeService {
       return {'drops': 0, 'trees': 0};
     });
   }
-
-
 }

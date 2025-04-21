@@ -17,9 +17,7 @@ import 'package:wastesortapp/theme/fonts.dart';
 import '../../ScanAI/processImage.dart';
 import '../../database/CloudinaryConfig.dart';
 import '../../database/model/evidence.dart';
-import '../screen/camera/camera_screen.dart';
 import '../screen/evidence/evidence_screen.dart';
-import '../screen/user/profile_screen.dart';
 import '../utils/route_transition.dart';
 
 class EvidenceService{
@@ -27,7 +25,7 @@ class EvidenceService{
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TreeService _treeService = TreeService();
-  final _notiService = NotificationService();
+  final _notificationService = NotificationService();
 
   EvidenceService(this.context);
 
@@ -158,8 +156,14 @@ class EvidenceService{
         debugPrint("✅ Evidence accepted, starting point and progress update...");
 
         await _treeService.increaseDrops(evidence.userId, evidence.point);
-        Future.delayed(Duration(seconds: 2), () async {
-          await _notiService.createNotification(status: 'point', point: evidence.point);
+        Future.delayed(Duration(seconds: 5), () async {
+          await _notificationService.sendNotificationToUser(
+            notificationId: evidence.evidenceId,
+            receiverUserId: evidence.userId,
+            title: 'Your Evidence Was Approved!',
+            body: 'You earned ${evidence.point} points. Keep contributing for more rewards!',
+            type: 'evidence',
+          );
         });
 
         debugPrint("📈 Updating challenge progress...");
@@ -210,5 +214,18 @@ class EvidenceService{
         .where('status', isEqualTo: 'Accepted')
         .snapshots()
         .map((querySnapshot) => querySnapshot.size);
+  }
+
+  Future<Evidences> getEvidenceById(String evidenceId) async {
+    return _db.collection('evidences')
+        .doc(evidenceId)
+        .get()
+        .then((doc) {
+      if (doc.exists) {
+        return Evidences.fromFirestore(doc);
+      } else {
+        throw Exception("Evidence not found");
+      }
+    });
   }
 }

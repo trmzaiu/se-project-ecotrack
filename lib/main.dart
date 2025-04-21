@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -17,6 +18,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:wastesortapp/database/firebase_options.dart';
 import 'package:wastesortapp/frontend/screen/user/profile_screen.dart';
 
+import 'frontend/screen/user/notification_screen.dart';
+import 'frontend/service/notification_service.dart';
 import 'frontend/utils/phone_size.dart';
 import 'frontend/widget/custom_dialog.dart';
 
@@ -32,6 +35,9 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await NotificationService.init();
+  await NotificationService.requestNotificationPermission();
+
   runApp(
     MyApp()
   );
@@ -44,10 +50,13 @@ void main() async{
   // );
 }
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'EcoTrack',
       theme: ThemeData(
@@ -64,7 +73,11 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: SplashScreen(),
+      routes: {
+        '/notification': (context) => NotificationScreen(),
+        '/': (context) => SplashScreen(),
+      },
+      initialRoute: '/',
     );
   }
 }
