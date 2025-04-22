@@ -19,7 +19,7 @@ class BarNotiTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 40, left: 20, right: 20),
+      padding: EdgeInsets.only(top: 40),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,

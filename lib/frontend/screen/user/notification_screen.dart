@@ -269,33 +269,33 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   print("Notification Data: ${snapshot.data}");
                   return SingleChildScrollView(
                     child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                        ),
-                        child: Padding(
-                            padding: const EdgeInsets.fromLTRB(15, 0, 15, 20),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: grouped.map((group) {
-                                  final date = group['date'];
-                                  final items = group['items'] as List<Map<String, dynamic>>;
-                                  final children = items.map((item) {
-                                    return buildNotificationItem(
-                                      context,
-                                      item['notificationId'],
-                                      item['type'],
-                                      item['title'],
-                                      item['body'],
-                                      item['isRead'],
-                                      item['time'],
-                                    );
-                                  }).toList();
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(15, 0, 15, 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: grouped.map((group) {
+                            final date = group['date'];
+                            final items = group['items'] as List<Map<String, dynamic>>;
+                            final children = items.map((item) {
+                              return buildNotificationItem(
+                                context,
+                                item['notificationId'],
+                                item['type'],
+                                item['title'],
+                                item['body'],
+                                item['isRead'],
+                                item['time'],
+                              );
+                            }).toList();
 
-                                  return buildNotificationCard(date, children);
-                                }).toList()
-                            )
+                            return buildNotificationCard(date, children);
+                          }).toList()
                         )
+                      )
                     ),
                   );
                 },

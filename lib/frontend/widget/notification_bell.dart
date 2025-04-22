@@ -84,23 +84,30 @@ class NotificationBell extends StatelessWidget {
             // Only show the badge if there's at least one unread notification.
             if (count > 0)
               Positioned(
-                left: 22,
-                top: 7,
+                left: 20,
+                top: 6,
                 child: Container(
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
                     color: Colors.red,
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  constraints: const BoxConstraints(minWidth: 15),
-                  child: Text(
-                    count > 99 ? "99+" : count.toString(),
-                    style: GoogleFonts.urbanist(
-                      fontSize: 10,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
                       color: AppColors.surface,
-                      height: 1,
+                      width: 1,
                     ),
-                    textAlign: TextAlign.center,
+                  ),
+                  constraints: const BoxConstraints(minWidth: 18, maxHeight: 18),
+                  child: Center(
+                    child: Text(
+                      count > 9 ? "9+" : count.toString(),
+                      style: GoogleFonts.urbanist(
+                        fontSize: 11,
+                        color: AppColors.surface,
+                        fontWeight: AppFontWeight.semiBold,
+                        height: 0.9
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
               )

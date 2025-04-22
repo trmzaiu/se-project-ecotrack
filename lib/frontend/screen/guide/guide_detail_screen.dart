@@ -558,6 +558,7 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
 
     return Scaffold(
       body: Container(
+        padding: EdgeInsets.symmetric(horizontal: 20),
         color: AppColors.background,
         child: Column(
           children: [
@@ -643,12 +644,46 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
 
                     SizedBox(height: 55),
 
-                    Padding(
-                      padding: EdgeInsets.only(left: 20),
-                      child: Align(
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Materials',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
+                          fontSize: 20,
+                          fontWeight: AppFontWeight.semiBold,
+                        ),
+                      )
+                    ),
+
+                    SizedBox(height: 28),
+
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      clipBehavior: Clip.none,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: wasteItem.map((item) {
+                          return Padding(
+                            padding: EdgeInsets.only(right: 20),
+                            child: WasteItem(
+                              imagePath: item['imagePath'],
+                              title: item['title'],
+                              svgColor: item['svgColor'],
+                              detail: item['detail'],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+
+                    SizedBox(height: 25),
+
+                    Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Materials',
+                          'Guidelines',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.urbanist(
                             color: AppColors.secondary,
@@ -656,49 +691,6 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                             fontWeight: AppFontWeight.semiBold,
                           ),
                         )
-                      ),
-                    ),
-
-                    SizedBox(height: 28),
-
-                    Padding(
-                      padding: EdgeInsets.only(left: 20),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        clipBehavior: Clip.none,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: wasteItem.map((item) {
-                            return Padding(
-                              padding: EdgeInsets.only(right: 20),
-                              child: WasteItem(
-                                imagePath: item['imagePath'],
-                                title: item['title'],
-                                svgColor: item['svgColor'],
-                                detail: item['detail'],
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 25),
-
-                    Padding(
-                      padding: EdgeInsets.only(left: 20),
-                      child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Guidelines',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.secondary,
-                              fontSize: 20,
-                              fontWeight: AppFontWeight.semiBold,
-                            ),
-                          )
-                      ),
                     ),
 
                     SizedBox(height: 10),
