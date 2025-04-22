@@ -59,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleStreakCheck() async {
     await ChallengeService().checkMissedDay(userId);
+    await ChallengeService().updateWeeklyProgressForTasks(userId, 'streak');
   }
 
   bool _isUserLoggedIn() {

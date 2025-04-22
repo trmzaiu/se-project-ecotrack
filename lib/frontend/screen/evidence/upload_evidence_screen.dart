@@ -402,6 +402,7 @@ class _UploadScreenState extends State<UploadScreen> {
                       ),
 
                       SizedBox(height: 25),
+
                       Center(
                         child: GestureDetector(
                           onTap: isUploading ? null : _submit,

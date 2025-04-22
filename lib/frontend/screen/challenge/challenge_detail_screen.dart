@@ -216,7 +216,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                         return Row(
                           children: [
                             SizedBox(
-                              width: 12*(displayUsers.length+1),
+                              width: 13*(displayUsers.length+1),
                               child: Stack(
                                 clipBehavior: Clip.none,
                                 children: List.generate(displayUsers.length, (index) {
@@ -388,6 +388,10 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                             final subtype = data['subtype'] as String? ?? '';
                             final now = DateTime.now();
                             final question = data['question'] as String? ?? '';
+                            final progress = data['progress'] ?? 0;
+                            final target = data['targetValue'] ?? 100;
+                            final rewardedUsers = List<String>.from(data['rewardedUsers'] ?? []);
+                            final claimedReward = rewardedUsers.contains(userId);
 
                             final isComingSoon = now.isBefore(startDate);
                             final isExpired = now.isAfter(endDate);
@@ -404,6 +408,32 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
 
                             if (!isActive) {
                               return _buildLabel("This challenge is no longer available");
+                            }
+
+                            if (progress == target) {
+                              return ElevatedButton(
+                                onPressed: claimedReward
+                                    ? null
+                                    : () async {
+                                      await ChallengeService().rewardChallengeContributors(widget.challengeId, userId);
+                                    },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: claimedReward ? AppColors.accent : AppColors.primary,
+                                  foregroundColor: AppColors.surface,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  minimumSize: Size(200, 0),
+                                ),
+                                child: Text(
+                                  claimedReward ? 'Claimed' : 'Claim',
+                                  style: GoogleFonts.urbanist(
+                                    fontSize: 16,
+                                    fontWeight: AppFontWeight.bold,
+                                  ),
+                                ),
+                              );
                             }
 
                             switch (subtype) {
@@ -481,6 +511,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
       stream: ChallengeService().checkSubmissionToday(widget.challengeId),
       builder: (context, snapshot) {
         final submittedToday = snapshot.data ?? false;
+        print(submittedToday);
 
         return SizedBox(
           width: double.infinity,

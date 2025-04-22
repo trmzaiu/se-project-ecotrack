@@ -19,10 +19,10 @@ import '../../service/user_service.dart';
 
 import '../../service/evidence_service.dart';
 import '../../service/tree_service.dart';
-import '../../widget/active_challenge.dart';
 import '../challenge/challenge_detail_screen.dart';
 import '../challenge/community_challenge_card.dart';
 import '../challenge/community_challenge_screen.dart';
+import '../challenge/weekly_challenge_progress_card.dart';
 import '../evidence/evidence_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -32,11 +32,13 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
+  late Future<Map<String, dynamic>> _weeklyChallengeFuture;
   Map<String, dynamic>? user;
 
   @override
   void initState() {
     super.initState();
+    _weeklyChallengeFuture = ChallengeService().loadWeeklyChallenge(userId);
   }
 
   Future<void> _signOut(BuildContext context) async {
@@ -65,6 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           Expanded(
             child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 30),
               scrollDirection: Axis.vertical,
               child: Column(
                 children: [
@@ -87,16 +90,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             width: 125,
                             height: 125,
                             decoration: ShapeDecoration(
-                                image: DecorationImage(
-                                  image: user['photoUrl'] != '' ? CachedNetworkImageProvider(user['photoUrl']) : AssetImage('lib/assets/images/avatar_default.png'),
-                                  fit: BoxFit.cover,
-                                ),
-                                shape: OvalBorder(
-                                    side: BorderSide(
-                                      width: 5,
-                                      color: AppColors.tertiary.withOpacity(0.8),
-                                    )
+                              image: DecorationImage(
+                                image: user['photoUrl'] != '' ? CachedNetworkImageProvider(user['photoUrl']) : AssetImage('lib/assets/images/avatar_default.png'),
+                                fit: BoxFit.cover,
+                              ),
+                              shape: OvalBorder(
+                                side: BorderSide(
+                                  width: 5,
+                                  color: AppColors.tertiary.withOpacity(0.8),
                                 )
+                              )
                             ),
                           ),
 
@@ -153,18 +156,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 20),
 
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Statistics',
-                        textAlign: TextAlign.left,
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.secondary,
-                          fontSize: 20,
-                          fontWeight: AppFontWeight.semiBold,
-                        ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Statistics',
+                      textAlign: TextAlign.left,
+                      style: GoogleFonts.urbanist(
+                        color: AppColors.secondary,
+                        fontSize: 20,
+                        fontWeight: AppFontWeight.semiBold,
                       ),
                     ),
                   ),
@@ -222,40 +222,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 25),
 
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'History',
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'History',
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
+                          fontSize: 20,
+                          fontWeight: AppFontWeight.semiBold,
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            moveLeftRoute(
+                              EvidenceScreen(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'See more',
                           style: GoogleFonts.urbanist(
-                            color: AppColors.secondary,
-                            fontSize: 20,
-                            fontWeight: AppFontWeight.semiBold,
+                            color: AppColors.tertiary,
+                            fontSize: 13,
+                            fontWeight: AppFontWeight.regular,
                           ),
                         ),
-
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              moveLeftRoute(
-                                EvidenceScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            'See more',
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.tertiary,
-                              fontSize: 13,
-                              fontWeight: AppFontWeight.regular,
-                            ),
-                          ),
-                        )
-                      ]
-                    ),
+                      )
+                    ]
                   ),
 
                   const SizedBox(height: 10),
@@ -275,48 +272,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       return Column(
                         children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 30),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                _history(
-                                  context,
-                                  'lib/assets/images/recycle.png',
-                                  'Recyclable \nWaste',
-                                  categoryCounts['Recyclable']?.toString() ?? '0',
-                                ),
-                                _history(
-                                  context,
-                                  'lib/assets/images/organic.png',
-                                  'Organic \nWaste',
-                                  categoryCounts['Organic']?.toString() ?? '0',
-                                ),
-                              ],
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _history(
+                                context,
+                                'lib/assets/images/recycle.png',
+                                'Recyclable \nWaste',
+                                categoryCounts['Recyclable']?.toString() ?? '0',
+                              ),
+                              _history(
+                                context,
+                                'lib/assets/images/organic.png',
+                                'Organic \nWaste',
+                                categoryCounts['Organic']?.toString() ?? '0',
+                              ),
+                            ],
                           ),
 
                           SizedBox(height: phoneWidth - phoneWidth * 0.405 * 2 - 60),
 
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 30),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                _history(
-                                  context,
-                                  'lib/assets/images/hazard.png',
-                                  'Hazardous \nWaste',
-                                  categoryCounts['Hazardous']?.toString() ?? '0',
-                                ),
-                                _history(
-                                  context,
-                                  'lib/assets/images/general.png',
-                                  'General \nWaste',
-                                  categoryCounts['General']?.toString() ?? '0',
-                                ),
-                              ],
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _history(
+                                context,
+                                'lib/assets/images/hazard.png',
+                                'Hazardous \nWaste',
+                                categoryCounts['Hazardous']?.toString() ?? '0',
+                              ),
+                              _history(
+                                context,
+                                'lib/assets/images/general.png',
+                                'General \nWaste',
+                                categoryCounts['General']?.toString() ?? '0',
+                              ),
+                            ],
                           ),
                         ],
                       );
@@ -325,22 +316,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 25),
 
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Weekly Goal',
-                          style: GoogleFonts.urbanist(
-                            color: AppColors.secondary,
-                            fontSize: 20,
-                            fontWeight: AppFontWeight.semiBold,
-                          ),
-                        ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Weekly Goal',
+                      textAlign: TextAlign.left,
+                      style: GoogleFonts.urbanist(
+                        color: AppColors.secondary,
+                        fontSize: 20,
+                        fontWeight: AppFontWeight.semiBold,
+                      ),
+                    ),
+                  ),
 
-                        GestureDetector(
+                  const SizedBox(height: 10),
+
+                  FutureBuilder<Map<String, dynamic>>(
+                    future: _weeklyChallengeFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text("Error loading weekly challenge"));
+                      } else if (!snapshot.hasData || snapshot.data == null || snapshot.data!.containsKey('error')) {
+                        final error = snapshot.data?['error'] ?? 'Unknown error';
+                        return Center(child: Text("Error: $error"));
+                      } else {
+                        final weeklyChallenge = snapshot.data!;
+                        final goalPoints = weeklyChallenge['target'] ?? 7;
+                        final currentPoints = weeklyChallenge['currentPoints'] ?? 0;
+
+                        return GestureDetector(
                           onTap: () {
                             Navigator.of(context).push(
                               moveLeftRoute(
@@ -348,57 +354,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             );
                           },
-                          child: Text(
-                            'See more',
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.tertiary,
-                              fontSize: 13,
-                              fontWeight: AppFontWeight.regular,
-                            ),
+                          child: WeeklyChallengeProgressCard(
+                            userId: userId,
+                            goalPoints: goalPoints,
+                            margin: 0,
+                            padding: 30,
                           ),
-                        )
-                      ]
-                    ),
+                        );
+                      }
+                    },
                   ),
 
                   const SizedBox(height: 25),
 
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Your Challenges',
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Your Challenges',
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
+                          fontSize: 20,
+                          fontWeight: AppFontWeight.semiBold,
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            moveLeftRoute(
+                                CommunityChallengeScreen(index: 2)
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'See more',
                           style: GoogleFonts.urbanist(
-                            color: AppColors.secondary,
-                            fontSize: 20,
-                            fontWeight: AppFontWeight.semiBold,
+                            color: AppColors.tertiary,
+                            fontSize: 13,
+                            fontWeight: AppFontWeight.regular,
                           ),
                         ),
-
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              moveLeftRoute(
-                                  CommunityChallengeScreen(index: 2)
-                              ),
-                            );
-                          },
-                          child: Text(
-                            'See more',
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.tertiary,
-                              fontSize: 13,
-                              fontWeight: AppFontWeight.regular,
-                            ),
-                          ),
-                        )
-                      ]
-                    ),
+                      )
+                    ]
                   ),
-
                   const SizedBox(height: 10),
 
                   FutureBuilder<List<QueryDocumentSnapshot>>(
@@ -428,23 +428,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       final limitedChallenges = challenges.take(2).toList();
 
                       return ListView.builder(
+                        padding: EdgeInsets.all(0),
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 30),
                         itemCount: limitedChallenges.length,
                         itemBuilder: (context, index) {
                           final doc = challenges[index];
                           final data = doc.data() as Map<String, dynamic>;
                           data['id'] = doc.id;
                           return GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ChallengeDetailScreen(data: data, challengeId: data['id']),
-                                  ),
-                                );
-                              },
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ChallengeDetailScreen(data: data, challengeId: data['id']),
+                                ),
+                              );
+                            },
                               child: CommunityChallengeCard(data: data)
                           );
                         },

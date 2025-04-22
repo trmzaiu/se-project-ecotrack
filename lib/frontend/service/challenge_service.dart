@@ -67,7 +67,7 @@ class ChallengeService {
   }
 
   /// Check if two dates are the same day
-  bool isSameDay(DateTime date1, DateTime date2) {
+  bool _isSameDay(DateTime date1, DateTime date2) {
     final d1 = date1.toUtc().add(const Duration(hours: 7));
     final d2 = date2.toUtc().add(const Duration(hours: 7));
     return d1.year == d2.year &&
@@ -83,14 +83,22 @@ class ChallengeService {
         .snapshots()
         .map((docSnap) {
       final data = docSnap.data();
-      final timestamp = data?['completedDate'] as Timestamp?;
+      final timestamp = data?['completedDailyDate'] as Timestamp?;
 
       if (timestamp == null) return false;
 
-      final completedDate = timestamp.toDate();
+      final completedDailyDate = timestamp.toDate();
       final today = DateTime.now().toUtc().add(const Duration(hours: 7));
 
-      return isSameDay(completedDate, today);
+      return _isSameDay(completedDailyDate, today);
+    });
+  }
+
+  /// Update daily completion
+  Future<void> _completeDailyChallenge(DocumentReference userRef, DateTime today) async {
+    await userRef.update({
+      'completedDailyDate': Timestamp.fromDate(today),
+      'streak': FieldValue.increment(1),
     });
   }
 
@@ -101,12 +109,14 @@ class ChallengeService {
     try {
       final userRef = _firestore.collection('users').doc(userId);
 
-      await userRef.update({
-        'completedDate': Timestamp.fromDate(today),
-        'streak': FieldValue.increment(1),
-      });
+      // Update daily completion
+      await _completeDailyChallenge(userRef, today);
 
+      // Updates the progress of challenge type streak
       await updateStreakChallengeProgress();
+
+      // Check and update progressTask
+      await updateWeeklyProgressForTasks(userId, 'daily');
 
     } catch (e) {
       print("Error completing daily challenge: $e");
@@ -119,10 +129,10 @@ class ChallengeService {
       final userRef = _firestore.collection('users').doc(userId);
       final userDoc = await userRef.get();
 
-      final timestamp = userDoc.data()?['completedDate'];
-      final lastCompletedDate = timestamp != null ? (timestamp as Timestamp).toDate() : null;
+      final timestamp = userDoc.data()?['completedDailyDate'];
+      final lastcompletedDailyDate = timestamp != null ? (timestamp as Timestamp).toDate() : null;
 
-      if (lastCompletedDate == null) {
+      if (lastcompletedDailyDate == null) {
         await userRef.update({'streak': 0});
         await updateStreakChallengeProgress();
         return;
@@ -131,8 +141,8 @@ class ChallengeService {
       final today = DateTime.now().toUtc().add(const Duration(hours: 7));
       final yesterday = today.subtract(Duration(days: 1));
 
-      final missedYesterday = !isSameDay(lastCompletedDate, yesterday) &&
-                                    !isSameDay(lastCompletedDate, today);
+      final missedYesterday = !_isSameDay(lastcompletedDailyDate, yesterday) &&
+                                    !_isSameDay(lastcompletedDailyDate, today);
 
       if (missedYesterday) {
         await userRef.update({'streak': 0});
@@ -145,25 +155,311 @@ class ChallengeService {
 
   // --- Weekly Challenges ---
   /// Load the weekly challenge for week
-  Future<Map<String, dynamic>> loadWeeklyChallenge() async {
-    try {
-      final loggedWeeklyQuery = await _firestore
-          .collection('challenges')
-          .where('type', isEqualTo: 'weekly')
-          .get();
+  Future<Map<String, dynamic>> loadWeeklyChallenge(String userId) async {
+    final weekLog = getCurrentWeekLog();
+    final userRef = _firestore.collection('users').doc(userId);
 
-      if (loggedWeeklyQuery.docs.isEmpty) {
-        return {'error': 'No weekly challenges available'};
-      }
+    // Step 1: Check if a weekly challenge already assigned this week
+    final existingChallengeQuery = await _firestore
+        .collection('challenges')
+        .where('type', isEqualTo: 'weekly')
+        .where('weekLog', isEqualTo: weekLog)
+        .get();
 
-      final randomIndex = Random().nextInt(loggedWeeklyQuery.docs.length);
-      final selectedChallenge = loggedWeeklyQuery.docs[randomIndex].data();
+    if (existingChallengeQuery.docs.isNotEmpty) {
+      print('✅ Found weekly challenge for this week');
+      final selectedChallenge = existingChallengeQuery.docs.first.data();
+
+      // Ensure user data is in sync
+      await setupUserWeeklyChallenge(userRef, selectedChallenge, weekLog);
 
       return selectedChallenge;
-    } catch (e) {
-      print("Error loading weekly challenge: $e");
-      return {'error': 'Error loading weekly challenge'};
     }
+
+    // Step 2: Pick a random challenge from unassigned ones
+    final allTemplatesQuery = await _firestore
+        .collection('challenges')
+        .where('type', isEqualTo: 'weekly')
+        .get();
+
+    if (allTemplatesQuery.docs.isEmpty) {
+      return {'error': 'No weekly challenge templates available'};
+    }
+
+    final randomDoc = allTemplatesQuery.docs[Random().nextInt(allTemplatesQuery.docs.length)];
+    final selectedChallenge = randomDoc.data();
+
+    // Step 3: Mark the selected challenge as assigned for this week
+    await _firestore.collection('challenges').doc(randomDoc.id).update({
+      'weekLog': weekLog,
+    });
+
+    print('🎯 Random weekly challenge assigned for week $weekLog');
+
+    // Step 4: Setup user progress
+    await setupUserWeeklyChallenge(userRef, selectedChallenge, weekLog);
+
+    return selectedChallenge;
+  }
+
+  /// Setup user's weekly challenge progress if not already set
+  Future<void> setupUserWeeklyChallenge(DocumentReference userRef, Map<String, dynamic> challenge, String weekLog) async {
+    final userDoc = await userRef.get();
+    final userData = userDoc.data() as Map<String, dynamic>?;
+
+    // Only initialize if user's current weekLog is different
+    if (userData == null || userData['weekLog'] != weekLog) {
+      final challengeTasks = challenge['weekTasks'] as List<dynamic>? ?? [];
+
+      // Create initial task progress list
+      final userTasks = challengeTasks.map((task) => {
+        'taskId': task['index'],
+        'completed': false,
+        'progressTask': 0,
+        'subtype': task['subtype'] ?? ''
+      }).toList();
+
+      // Save progress to user document
+      await userRef.set({
+        'weekLog': weekLog,
+        'tasks': userTasks,
+        'weekProgress': 0,
+        'completedWeekly': false
+      }, SetOptions(merge: true));
+
+      print('✅ Weekly challenge progress initialized for user');
+    }
+  }
+
+  /// Generate a string key for the current year-week (e.g., 2025-16)
+  String getCurrentWeekLog() {
+    final now = DateTime.now().toUtc().add(Duration(hours: 7));
+    final firstDayOfYear = DateTime(now.year, 1, 1);
+    final daysSinceFirstDay = now.difference(firstDayOfYear).inDays;
+
+    // Calculate week number in year
+    final weekNumber = ((daysSinceFirstDay + firstDayOfYear.weekday - 1) / 7).floor() + 1;
+
+    return '${now.year}-$weekNumber';
+  }
+
+  /// Stream task status (progress & completion) for a specific task index
+  Stream<Map<String, dynamic>> getTaskStatus(String userId, int taskIndex) {
+    return _firestore.collection('users').doc(userId).snapshots().map((userDoc) {
+      if (!userDoc.exists) {
+        throw Exception('User not found');
+      }
+
+      final List<dynamic> weekTasks = userDoc.data()?['weekTasks'] ?? [];
+
+      // Return the task status if it exists
+      if (taskIndex < weekTasks.length) {
+        final taskData = weekTasks[taskIndex] as Map<String, dynamic>;
+
+        final int progressTask = taskData['progressTask'] ?? 0;
+        final bool isCompleted = taskData['completed'] ?? false;
+
+        return {
+          'progressTask': progressTask,
+          'isCompleted': isCompleted,
+        };
+      }
+
+      // Fallback if task not found
+      return {
+        'progressTask': 0,
+        'isCompleted': false,
+      };
+    }).handleError((e) {
+      print('Error fetching task status stream: $e');
+      return {
+        'progressTask': 0,
+        'isCompleted': false,
+      };
+    });
+  }
+
+  /// Mark a weekly task as completed and update user's week progress
+  Future<void> completeWeeklyTask(String userId, int taskIndex, int taskPoint) async {
+    final userRef = _firestore.collection('users').doc(userId);
+    final userDoc = await userRef.get();
+
+    final List<dynamic> tasksData = userDoc['weekTasks'] ?? [];
+
+    if (taskIndex >= tasksData.length) {
+      print("⚠️ Task index $taskIndex is out of range");
+      return;
+    }
+
+    final Map<String, dynamic> task = Map<String, dynamic>.from(tasksData[taskIndex]);
+
+    if (task['completed'] == true) {
+      print("✅ Task $taskIndex already completed");
+      return;
+    }
+
+    // Mark task as completed
+    task['completed'] = true;
+    tasksData[taskIndex] = task;
+
+    // Update total weekly progress
+    final newWeekProgress = (userDoc['weekProgress'] ?? 0) + taskPoint;
+
+    await userRef.update({
+      'weekTasks': tasksData,
+      'weekProgress': newWeekProgress,
+    });
+
+    print("✅ Task $taskIndex marked completed, +$taskPoint points");
+
+    // Check if challenge completed
+    bool isSame = await compareUserWeekProgressWithTarget(userId);
+    if (isSame) {
+      await setWeeklyChallengeCompleted(userId, true);
+    }
+  }
+
+  /// Compare user's current weekly progress with the challenge target
+  Future<bool> compareUserWeekProgressWithTarget(String userId) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final userData = userDoc.data();
+
+      if (userData == null) {
+        throw Exception('User not found');
+      }
+
+      final String userWeekLog = userData['weekLog'];
+      final int userProgress = userData['weekProgress'] ?? 0;
+
+      // Get the weekly challenge assigned for current week
+      final querySnapshot = await _firestore
+          .collection('challenges')
+          .where('type', isEqualTo: 'weekly')
+          .where('weekLog', isEqualTo: userWeekLog)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        throw Exception('No matching weekly challenge found');
+      }
+
+      final challengeData = querySnapshot.docs.first.data();
+      final int target = challengeData['target'] ?? 0;
+
+      return userProgress >= target;
+    } catch (e) {
+      print('Error comparing week progress with target: $e');
+      return false;
+    }
+  }
+
+  /// Stream whether the weekly challenge is completed by the user
+  Stream<bool> isWeeklyChallengeCompleted(String userId) {
+    return _firestore.collection('users').doc(userId).snapshots().map((snapshot) {
+      final data = snapshot.data();
+      return data?['completedWeekly'] ?? false;
+    });
+  }
+
+  /// Update user's completion status for the weekly challenge
+  Future<void> setWeeklyChallengeCompleted(String userId, bool status) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'completedWeekly': status,
+      });
+    } catch (e) {
+      print('Error updating completedWeekly: $e');
+    }
+  }
+
+  /// Update task progress
+  Future<void> updateWeeklyProgressForTasks(
+      String userId,
+      String taskSubtype, {
+        String? category, // optional, required only for "evidence"
+      }) async {
+    final weekLog = getCurrentWeekLog();
+
+    // Step 1: Query the weekly challenge for the given weekLog
+    final weeklyQuery = await _firestore
+        .collection('challenges')
+        .where('type', isEqualTo: 'weekly')
+        .where('weekLog', isEqualTo: weekLog)
+        .get();
+
+    if (weeklyQuery.docs.isNotEmpty) {
+      final weeklyChallenge = weeklyQuery.docs.first.data();
+      final List<dynamic> weekTasks = weeklyChallenge['tasks'] ?? [];
+
+      // Step 2: Find all task indexes that match the given subtype (and category if subtype == evidence)
+      final taskIndexes = _getTaskIndexesBySubtype(
+        weekTasks,
+        taskSubtype,
+        category: category?.toLowerCase(),
+      );
+
+      if (taskIndexes.isNotEmpty) {
+        final userRef = _firestore.collection('users').doc(userId);
+        final userDoc = await userRef.get();
+        final userData = userDoc.data();
+
+        if (userData != null && userData['weekLog'] == weekLog) {
+          final List<dynamic> userWeekTasks = userData['weekTasks'] ?? [];
+          final int userStreak = userData['streak'] ?? 0;
+
+          for (final taskIndex in taskIndexes) {
+            if (taskIndex < userWeekTasks.length && taskIndex < weekTasks.length) {
+              final Map<String, dynamic> userTask = Map<String, dynamic>.from(userWeekTasks[taskIndex]);
+              final Map<String, dynamic> challengeTask = Map<String, dynamic>.from(weekTasks[taskIndex]);
+
+              final int progress = userTask['progressTask'] ?? 0;
+              final int target = challengeTask['targetValue'] ?? 1;
+
+              // If the subtype is "streak", we need to check if the user's streak matches the dayStreak in the challenge
+              if (taskSubtype == 'streak' && userStreak >= challengeTask['dayStreak']) {
+                // Only update if progress is less than the target
+                if (progress < target) {
+                  userTask['progressTask'] = progress + 1;
+                  userWeekTasks[taskIndex] = userTask;
+                }
+              } else if (taskSubtype != 'streak') {
+                // For other subtypes, continue with the regular logic
+                if (progress < target) {
+                  userTask['progressTask'] = progress + 1;
+                  userWeekTasks[taskIndex] = userTask;
+                }
+              }
+            }
+          }
+
+          await userRef.update({
+            'weekTasks': userWeekTasks,
+          });
+
+          print('📈 Updated progressTask for weekly tasks (subtype: $taskSubtype)');
+        }
+      }
+    }
+  }
+
+  /// Get task index by  subtype
+  List<int> _getTaskIndexesBySubtype(
+      List<dynamic> tasks,
+      String subtype, {
+        String? category,
+      }) {
+    return tasks.asMap().entries
+        .where((entry) {
+      final task = entry.value as Map<String, dynamic>;
+      final isMatchingSubtype = task['subtype'] == subtype;
+      if (subtype == 'evidence') {
+        final taskCategory = (task['category'] ?? '').toString();
+        return isMatchingSubtype && category != null && taskCategory == category;
+      }
+      return isMatchingSubtype;
+    })
+        .map((entry) => entry.key)
+        .toList();
   }
 
   // --- Community Challenges ---
@@ -283,13 +579,6 @@ class ChallengeService {
     });
   }
 
-  /// Check if a challenge has expired based on its end date
-  bool isChallengeExpired(Timestamp endTimestamp) {
-    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
-    final endDate = endTimestamp.toDate();
-    return now.isAfter(endDate);
-  }
-
   /// Check if the challenge deadline has passed
   Future<bool> checkChallengeDeadline(String challengeId) async {
     final doc = await FirebaseFirestore.instance
@@ -332,13 +621,43 @@ class ChallengeService {
 
   /// Submit the user's form for a challenge
   Future<void> submitChallenge(String challengeId, String userId) async {
-    String formattedDate = DateFormat('dd-MM-yyyy').format(DateTime.now().toUtc().add(const Duration(hours: 7)));
+    String formattedDate = DateFormat('dd-MM-yyyy')
+        .format(DateTime.now().toUtc().add(const Duration(hours: 7)));
 
-    await FirebaseFirestore.instance.collection('challengeSubmissions').add({
-      'userId': userId,
-      'challengeId': challengeId,
-      'submittedDate': formattedDate,
-    });
+    final challengeQuery = await _firestore
+        .collection('challenges')
+        .where('id', isEqualTo: challengeId)
+        .get();
+
+    if (challengeQuery.docs.isEmpty) {
+      print("No challenge found.");
+      return;
+    }
+
+    final challengeDoc = challengeQuery.docs.first;
+    final challengeRef = challengeDoc.reference;
+    final challengeData = challengeDoc.data();
+
+    final List<dynamic> submittedList =
+        (challengeData['formSubmittedUser'] as List<dynamic>?) ?? [];
+
+    final alreadySubmitted = submittedList.any((entry) =>
+    entry['userId'] == userId && entry['submittedDate'] == formattedDate);
+
+    if (!alreadySubmitted) {
+      submittedList.add({
+        'userId': userId,
+        'submittedDate': formattedDate,
+      });
+
+      await challengeRef.update({
+        'formSubmittedUser': submittedList,
+      });
+
+      print("Submission saved.");
+    } else {
+      print("Already submitted today.");
+    }
   }
 
   /// Check if the user has submitted the challenge for today
@@ -346,18 +665,117 @@ class ChallengeService {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return Stream.value(false);
 
-    String formattedDate = DateFormat('dd-MM-yyyy').format(DateTime.now().toUtc().add(const Duration(hours: 7)));
+    String formattedDate = DateFormat('dd-MM-yyyy').format(
+      DateTime.now().toUtc().add(const Duration(hours: 7)),
+    );
 
-    return FirebaseFirestore.instance
-        .collection('challengeSubmissions')
-        .where('userId', isEqualTo: userId)
-        .where('challengeId', isEqualTo: challengeId)
-        .where('submittedDate', isEqualTo: formattedDate)
+    return _firestore.collection('challenges')
+        .where('id', isEqualTo: challengeId)
         .snapshots()
-        .map((snapshot) => snapshot.docs.isNotEmpty);
+        .map((snapshot) {
+      if (snapshot.docs.isEmpty) return false;
+      final data = snapshot.docs.first.data();
+      final formSubmittedList = data['formSubmittedUser'] as List<dynamic>? ?? [];
+      return formSubmittedList.any((entry) =>
+      entry['userId'] == userId && entry['submittedDate'] == formattedDate);
+    });
   }
 
-  /// Update the progress of a challenge
+  /// Update the progress of challenge
+  // Future<void> updateChallengeProgress(
+  //     {required String subtype, int value = 1, String? challengeId}) async {
+  //   final user = FirebaseAuth.instance.currentUser;
+  //   if (user == null) return;
+  //
+  //   final userId = user.uid;
+  //
+  //   try {
+  //     QuerySnapshot querySnapshot;
+  //     if (challengeId != null) {
+  //       // If challengeId is provided, query by challengeId
+  //       querySnapshot = await _firestore
+  //           .collection('challenges')
+  //           .where('id', isEqualTo: challengeId)
+  //           .get();
+  //     } else {
+  //       // If challengeId is not provided, query all challenges with the given subtype
+  //       querySnapshot = await _firestore
+  //           .collection('challenges')
+  //           .where('type', isEqualTo: 'community')
+  //           .where('subtype', isEqualTo: subtype)
+  //           .get();
+  //     }
+  //
+  //     if (querySnapshot.docs.isEmpty) {
+  //       print("No active challenges found.");
+  //       return;
+  //     }
+  //
+  //     for (final challengeDoc in querySnapshot.docs) {
+  //       final challengeId = challengeDoc.id;
+  //       final challengeData = challengeDoc.data();
+  //       bool isOngoing = await isOngoingChallenge(challengeId);
+  //
+  //       if (!isOngoing) {
+  //         print("Challenge $challengeId is not active at the moment.");
+  //         continue;
+  //       }
+  //
+  //       bool isUserJoined = await isUserJoinedFuture(challengeId, userId);
+  //       if (!isUserJoined) {
+  //         print("User has not joined challenge $challengeId.");
+  //         continue;
+  //       }
+  //
+  //       final currentProgress = challengeData['progress'] ?? 0;
+  //       final target = challengeData['targetValue'] ?? 0; // Assuming 'targetValue' stores the target
+  //
+  //       // Check if progress has reached the target
+  //       if (currentProgress == target) {
+  //         print("Challenge $challengeId progress has already reached the target.");
+  //         continue;
+  //       }
+  //
+  //       // If subtype is 'streak', check for streak condition
+  //       if (subtype == 'streak') {
+  //         final participants = List<String>.from(challengeData['participants'] ?? []);
+  //         final condition = challengeData['condition'] ?? 0;
+  //
+  //         // List of participants who meet the streak condition
+  //         List<Future<int>> streakChecks = participants.map((userId) async {
+  //           final userDoc = await _firestore.collection('users').doc(userId).get();
+  //           final streak = userDoc.data()?['streak'] ?? 0;
+  //           return streak >= condition ? 1 : 0;
+  //         }).toList();
+  //
+  //         final results = await Future.wait(streakChecks);
+  //         final qualifiedCount = results.fold(0, (sum, value) => sum + value);
+  //
+  //         // Update progress for streak challenge
+  //         await _firestore.collection('challenges').doc(challengeId).update({
+  //           'progress': qualifiedCount,
+  //         });
+  //         print("Streak progress updated for challenge $challengeId");
+  //       } else {
+  //         // Update progress for form or other challenge types
+  //         await _firestore
+  //             .collection('challenges')
+  //             .doc(challengeId)
+  //             .update({'progress': FieldValue.increment(value)});
+  //         print("Progress updated for challenge $challengeId");
+  //       }
+  //
+  //       // Submit the challenge after updating progress
+  //       await submitChallenge(challengeId, userId);
+  //
+  //       // Optionally, reward contributors
+  //       // await ChallengeService().rewardChallengeContributors(challengeId);
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Failed to update challenge progress: $e");
+  //   }
+  // }
+
   Future<void> updateChallengeProgress(String subtype, int value) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -399,13 +817,14 @@ class ChallengeService {
 
         await submitChallenge(challengeId, userId);
 
-        await ChallengeService().rewardChallengeContributors(challengeId);
+        // await ChallengeService().rewardChallengeContributors(challengeId);
       }
     } catch (e) {
       debugPrint("Failed to update challenge progress: $e");
     }
   }
 
+  /// Updates the progress of a challenge type form
   Future<void> updateFormChallengeProgress(String challengeId) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -433,12 +852,13 @@ class ChallengeService {
 
       await submitChallenge(challengeId, userId);
 
-      await ChallengeService().rewardChallengeContributors(challengeId);
+      // await ChallengeService().rewardChallengeContributors(challengeId);
     } catch (e) {
       debugPrint("Failed to update challenge progress: $e");
     }
   }
 
+  /// Updates the progress of challenge type streak
   Future<void> updateStreakChallengeProgress() async {
     try {
       final querySnapshot = await _firestore
@@ -479,14 +899,15 @@ class ChallengeService {
           'progress': qualifiedCount,
         });
 
-        await ChallengeService().rewardChallengeContributors(challengeId);
+        // await ChallengeService().rewardChallengeContributors(challengeId);
       }
     } catch (e) {
       print("Error updating streak challenges progress: $e");
     }
   }
 
-  Future<void> rewardChallengeContributors(String challengeId) async {
+  /// Rewards users who contributed to a challenge
+  Future<void> rewardChallengeContributors(String challengeId, String userId) async {
     final challengeRef = _firestore.collection('challenges').doc(challengeId);
     final challengeDoc = await challengeRef.get();
 
@@ -502,29 +923,24 @@ class ChallengeService {
 
     final now = DateTime.now().toUtc().add(const Duration(hours: 7));
     if (progress < target || (endTimestamp != null && now.isAfter(endTimestamp.toDate()))) {
-      print("Challenge either not completed or expired.");
+      print("Challenge not completed or expired.");
       return;
     }
 
-    for (String userId in participants) {
-      if (rewardedUsers.contains(userId)) continue;
-
+    if (participants.contains(userId)) {
       final hasContributed = await _firestore
-        .collection('challengeSubmissions')
-        .where('challengeId', isEqualTo: challengeId)
-        .where('userId', isEqualTo: userId)
-        .limit(1)
-        .get();
+          .collection('challengeSubmissions')
+          .where('challengeId', isEqualTo: challengeId)
+          .where('userId', isEqualTo: userId)
+          .limit(1)
+          .get();
 
       if (hasContributed.docs.isNotEmpty) {
         await TreeService().increaseDrops(userId, rewardPoint);
-
         rewardedUsers.add(userId);
-        print('Rewarded $rewardPoint points to user: $userId');
       }
     }
 
-    // Update rewardedUsers list in challenge
     await challengeRef.update({'rewardedUsers': rewardedUsers});
   }
 }

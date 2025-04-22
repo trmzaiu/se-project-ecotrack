@@ -139,35 +139,48 @@ class EvidenceService{
     try {
       bool allMatched = true;
 
-      for (String imageUrl in evidence.imagesUrl) {
+      // Download and classify all images concurrently (in parallel)
+      List<Future<String?>> classificationFutures = evidence.imagesUrl.map((imageUrl) async {
+        // Download each image file
         File imageFile = await _downloadImage(imageUrl);
-        String? predictedCategory = await ApiService.classifyImage(imageFile);
+        // Classify the image
+        return await ApiService.classifyImage(imageFile);
+      }).toList();
 
-        if (predictedCategory == null || predictedCategory != evidence.category) {
-          allMatched = false;
-          break;
-        }
-      }
+      // Wait for all classification results
+      List<String?> predictedCategories = await Future.wait(classificationFutures);
 
+      // Check if all categories match the evidence's category
+      allMatched = predictedCategories.every((category) => category != null && category == evidence.category);
+
+      // Update the evidence status based on classification results
       String newStatus = allMatched ? "Accepted" : "Rejected";
       await _db.collection('evidences').doc(evidence.evidenceId).update({'status': newStatus});
 
+      // If evidence is accepted, start updating points and progress
       if (newStatus == "Accepted") {
         debugPrint("✅ Evidence accepted, starting point and progress update...");
 
+        // Increase points for the user
         await _treeService.increaseDrops(evidence.userId, evidence.point);
-        Future.delayed(Duration(seconds: 5), () async {
-          await _notificationService.sendNotificationToUser(
-            notificationId: evidence.evidenceId,
-            receiverUserId: evidence.userId,
-            title: 'Your Evidence Was Approved!',
-            body: 'You earned ${evidence.point} points. Keep contributing for more rewards!',
-            type: 'evidence',
-          );
-        });
+
+        // Send notification to the user immediately (no need for delay)
+        await _notificationService.sendNotificationToUser(
+          notificationId: evidence.evidenceId,
+          receiverUserId: evidence.userId,
+          title: 'Your Evidence Was Approved!',
+          body: 'You earned ${evidence.point} points. Keep contributing for more rewards!',
+          type: 'evidence',
+        );
 
         debugPrint("📈 Updating challenge progress...");
-        await ChallengeService().updateChallengeProgress('evidence', evidence.point);
+
+        // Update challenge progress for "evidence" and the weekly task progress
+        await Future.wait([
+          ChallengeService().updateChallengeProgress('evidence', evidence.point),
+          ChallengeService().updateWeeklyProgressForTasks(evidence.userId, 'evidence', category: evidence.category.toLowerCase())
+        ]);
+
         debugPrint("✅ Challenge progress update done!");
       }
 

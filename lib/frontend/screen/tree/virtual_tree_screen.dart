@@ -56,16 +56,13 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
     _loadTreeData();
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
   void _loadTreeData() {
-    _treeService.getTreeProgress(userId).listen((snapshot) {
+    _treeSubscription = _treeService.getTreeProgress(userId).listen((snapshot) {
       if (snapshot.exists) {
         var data = snapshot.data() as Map<String, dynamic>;
+
+        if (!mounted) return;
+
         setState(() {
           _levelOfTree = (data['levelOfTree'] as int? ?? 0).clamp(0, 3);
           _progress = (data['progress'] as num?)?.toDouble() ?? 0.0;
@@ -75,6 +72,12 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _treeSubscription?.cancel();
+    super.dispose();
   }
 
   int getLeftDrops(int state, double currentProgress) {
@@ -214,52 +217,58 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
       builder: (BuildContext context) {
         return AlertDialog(
           content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (totalTrees > 0) ...[
-                  Image.asset('lib/assets/images/state4.png', width: getPhoneWidth(context)/3.5),
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (totalTrees > 0) ...[
+                Image.asset('lib/assets/images/state4.png', width: getPhoneWidth(context)/3.5),
+                SizedBox(height: 10),
+                Text(
+                    "Congratulations! You have grown $totalTrees ${totalTrees >
+                        1 ? 'trees' : 'tree'}!",
+                    style: GoogleFonts.urbanist(color: AppColors.secondary)
+                ),
+              ] else
+                ...[
+                  Image.asset('lib/assets/images/state$state.png', width: getPhoneWidth(context)/3.5),
                   SizedBox(height: 10),
-                  Text(
-                      "Congratulations! You have grown $totalTrees ${totalTrees >
-                          1 ? 'trees' : 'tree'}!",
-                      style: GoogleFonts.urbanist(color: AppColors.secondary)
-                  ),
-                ] else
-                  ...[
-                    Image.asset('lib/assets/images/state$state.png', width: getPhoneWidth(context)/3.5),
-                    SizedBox(height: 10),
-                    Text("You are at level $state",
-                        style: GoogleFonts.urbanist(color: AppColors.secondary)),
-                  ],
-              ]),
+                  Text("You are at level $state",
+                      style: GoogleFonts.urbanist(color: AppColors.secondary)),
+                ],
+            ]),
           actionsAlignment: MainAxisAlignment.center,
           actions: [
             TextButton(
               onPressed: () async {
                 setState(() {
                   _trees += totalTrees;
-                  _treeService.updateTree(userId, _trees);
                   grownTrees = 0;
+                  _dialogShown = false;
                 });
-                await ChallengeService().updateChallengeProgress('tree', totalTrees);
-                _dialogShown = false;
+
                 Navigator.of(context).pop();
-              },
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(AppColors.primary),
-                foregroundColor: WidgetStateProperty.all(AppColors.surface),
-                overlayColor: WidgetStateProperty.all(Color(0x4CE7E0DA)),
-                shadowColor: WidgetStateProperty.all(Colors.transparent),
-                shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25)),
-                ),
-                elevation: WidgetStateProperty.all(1),
-                fixedSize: WidgetStateProperty.all(Size(100, 40)),
-                textStyle: WidgetStateProperty.all(
-                    GoogleFonts.urbanist(fontSize: 13, fontWeight: AppFontWeight.semiBold)),
+
+                _treeService.updateTree(userId, _trees);
+                ChallengeService().updateChallengeProgress('tree', totalTrees);
+
+                for (int i = 0; i < totalTrees; i++) {
+                  ChallengeService().updateWeeklyProgressForTasks(userId, 'tree');
+                }
+            },
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(AppColors.primary),
+              foregroundColor: WidgetStateProperty.all(AppColors.surface),
+              overlayColor: WidgetStateProperty.all(Color(0x4CE7E0DA)),
+              shadowColor: WidgetStateProperty.all(Colors.transparent),
+              shape: WidgetStateProperty.all(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25)),
               ),
-              child: (totalTrees == 0) ? Text("Continue") : Text("Donate"),
+              elevation: WidgetStateProperty.all(1),
+              fixedSize: WidgetStateProperty.all(Size(100, 40)),
+              textStyle: WidgetStateProperty.all(
+                  GoogleFonts.urbanist(fontSize: 13, fontWeight: AppFontWeight.semiBold)),
+            ),
+            child: (totalTrees == 0) ? Text("Continue") : Text("Donate"),
             ),
           ],
         );
