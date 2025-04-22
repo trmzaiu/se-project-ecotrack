@@ -237,10 +237,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       GestureDetector(
                         onTap: () {
-                          Navigator.of(context).push(
-                            moveLeftRoute(
-                              EvidenceScreen(),
-                            ),
+                          Navigator.of(context).pushAndRemoveUntil(
+                            moveLeftRoute(EvidenceScreen(), settings: RouteSettings(name: "EvidenceScreen")),
+                                (route) => route.settings.name != "UploadScreen" && route.settings.name != "EvidenceScreen" || route.isFirst,
                           );
                         },
                         child: Text(

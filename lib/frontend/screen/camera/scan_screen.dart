@@ -335,11 +335,12 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
                     child: GestureDetector(
                       onTap: () {
                         if (_isUserLoggedIn()) {
-                          Navigator.of(context).pushReplacement(
+                          Navigator.of(context).pushAndRemoveUntil(
                             moveLeftRoute(
                               UploadScreen(imagePath: widget.imagePath),
                               settings: RouteSettings(name: "UploadScreen"),
                             ),
+                                (route) => route.settings.name != "ScanScreen" || route.isFirst,
                           );
                         } else {
                           _showErrorDialog(context);

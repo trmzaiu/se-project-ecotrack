@@ -12,6 +12,7 @@ import 'frontend/screen/auth/login_screen.dart';
 import 'frontend/screen/camera/camera_screen.dart';
 import 'frontend/screen/guide/guide_screen.dart';
 import 'frontend/screen/home/home_screen.dart';
+import 'frontend/screen/navigator_observer.dart';
 import 'frontend/screen/splash_screen.dart';
 import 'frontend/screen/tree/virtual_tree_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -53,6 +54,8 @@ void main() async{
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 class MyApp extends StatelessWidget {
+  final MyNavigatorObserver myObserver = MyNavigatorObserver();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -73,6 +76,7 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
+      navigatorObservers: [myObserver],
       routes: {
         '/notification': (context) => NotificationScreen(),
         '/': (context) => SplashScreen(),
