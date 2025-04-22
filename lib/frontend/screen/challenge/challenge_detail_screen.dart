@@ -21,10 +21,9 @@ import '../tree/virtual_tree_screen.dart';
 import 'daily_challenge_screen.dart';
 
 class ChallengeDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> data;
   final String challengeId;
 
-  const ChallengeDetailScreen({super.key, required this.data, required this.challengeId});
+  const ChallengeDetailScreen({super.key, required this.challengeId});
 
   @override
   _ChallengeDetailScreenState createState() => _ChallengeDetailScreenState();
@@ -32,72 +31,51 @@ class ChallengeDetailScreen extends StatefulWidget {
 
 class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
   late final String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-
-  late DateTime startTime;
-  late DateTime endTime;
-  late Duration remainingTime;
+  DateTime? startTime;
+  DateTime? endTime;
+  Duration remainingTime = Duration.zero;
   Timer? countdownTimer;
+  bool _timerInitialized = false;
 
-  @override
-  void initState() {
-    super.initState();
-
-    Timestamp startTimestamp = widget.data['startDate'];
-    Timestamp endTimestamp = widget.data['endDate'];
-
-    startTime = startTimestamp.toDate();
-    endTime = endTimestamp.toDate();
+  void _initTimer(DateTime start, DateTime end) {
+    startTime = start;
+    endTime = end;
 
     final now = DateTime.now();
-
-    // Check if the challenge hasn't started yet or if it's already ongoing
-    if (now.isBefore(startTime)) {
-      // Show countdown until the challenge starts
-      remainingTime = startTime.difference(now);
-    } else if (now.isBefore(endTime)) {
-      // Show countdown until the challenge ends
-      remainingTime = endTime.difference(now);
+    if (now.isBefore(start)) {
+      remainingTime = start.difference(now);
+    } else if (now.isBefore(end)) {
+      remainingTime = end.difference(now);
     } else {
-      remainingTime = Duration.zero; // The challenge has ended
+      remainingTime = Duration.zero;
     }
 
-    // Start the countdown timer
     _startCountdown();
+    _timerInitialized = true;
   }
 
   void _startCountdown() {
     countdownTimer?.cancel();
     countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       final now = DateTime.now();
-
-      if (now.isBefore(startTime)) {
-        setState(() {
-          remainingTime = startTime.difference(now);
-        });
-      } else if (now.isBefore(endTime)) {
-        setState(() {
-          remainingTime = endTime.difference(now);
-        });
-      } else {
-        setState(() {
+      setState(() {
+        if (now.isBefore(startTime!)) {
+          remainingTime = startTime!.difference(now);
+        } else if (now.isBefore(endTime!)) {
+          remainingTime = endTime!.difference(now);
+        } else {
           remainingTime = Duration.zero;
-        });
-      }
+        }
+      });
     });
   }
 
   String _formatDuration(Duration d) {
     if (d == Duration.zero) return "Challenge ended";
-
-    if (d.inDays >= 1) {
-      return "${d.inDays} ${d.inDays == 1 ? 'day' : 'days'}";
-    } else if (d.inHours >= 1) {
-      return "${d.inHours} ${d.inHours == 1 ? 'hour' : 'hours'}";
-    } else if (d.inMinutes >= 1) {
-      return "${d.inMinutes} ${d.inMinutes == 1 ? 'minute' : 'minutes'}";
-    } else {
-      return "${d.inSeconds} ${d.inSeconds == 1 ? 'second' : 'seconds'}";
-    }
+    if (d.inDays >= 1) return "${d.inDays} ${d.inDays == 1 ? 'day' : 'days'}";
+    if (d.inHours >= 1) return "${d.inHours} ${d.inHours == 1 ? 'hour' : 'hours'}";
+    if (d.inMinutes >= 1) return "${d.inMinutes} ${d.inMinutes == 1 ? 'minute' : 'minutes'}";
+    return "${d.inSeconds} ${d.inSeconds == 1 ? 'second' : 'seconds'}";
   }
 
   @override
@@ -151,255 +129,280 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final image = widget.data['image'] ?? '';
-    final title = widget.data['title'] ?? 'No title';
-    final description =widget.data['description'] ?? 'No description';
-    final reward = widget.data['rewardPoints'] ?? 0;
-    final target = widget.data['targetValue'] ?? 0;
-    final progress = widget.data['progress'] ?? 0;
-    final participants = (widget.data['participants'] as List?)?.length ?? 0;
+    return StreamBuilder<DocumentSnapshot>(
+      stream: ChallengeService().getChallengeById(widget.challengeId),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
+        }
 
-    final progressRatio = (progress / target).clamp(0.0, 1.0);
-    final percentage = (progressRatio * 100).toStringAsFixed(2);
+        final data = snapshot.data!.data() as Map<String, dynamic>;
 
-    return Scaffold(
-      body: Container(
-        height: double.infinity,
-        color: AppColors.background,
-        child: SingleChildScrollView(
-          child:  Column(
-            children: [
-              Stack(
+        if (!_timerInitialized) {
+          final start = (data['startDate'] as Timestamp).toDate();
+          final end = (data['endDate'] as Timestamp).toDate();
+          _initTimer(start, end);
+        }
+
+        final image = data['image'] ?? '';
+        final title = data['title'] ?? 'No title';
+        final description = data['description'] ?? 'No description';
+        final reward = data['rewardPoints'] ?? 0;
+        final target = data['targetValue'] ?? 0;
+        final progress = data['progress'] ?? 0;
+        final subtype = data['subtype'] ?? '';
+        final question = data['question'] ?? '';
+        final participantsList = (data['participants'] as List?) ?? [];
+        final participants = participantsList.length;
+        final rewardedUsers = List<String>.from(data['rewardedUsers'] ?? []);
+
+        final progressRatio = (progress / target).clamp(0.0, 1.0);
+        final percentage = (progressRatio * 100).toStringAsFixed(2);
+
+        final now = DateTime.now();
+        final isComingSoon = now.isBefore(data['startDate']);
+        final isExpired = now.isAfter(data['endDate']);
+        final isActive = !isComingSoon && !isExpired;
+
+        return Scaffold(
+          body: Container(
+            height: double.infinity,
+            color: AppColors.background,
+            child: SingleChildScrollView(
+              child: Column(
                 children: [
-                  SizedBox(
-                    height: getPhoneWidth(context) * 6/7,
-                    width: double.infinity,
-                    child: Image.asset('lib/assets/images/$image.png', fit: BoxFit.cover),
+                  Stack(
+                    children: [
+                      SizedBox(
+                        height: getPhoneWidth(context) * 6 / 7,
+                        width: double.infinity,
+                        child: Image.asset('lib/assets/images/$image.png',
+                            fit: BoxFit.cover),
+                      ),
+
+                      Positioned(
+                        top: 25,
+                        left: 15,
+                        child: GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: Center(
+                              child: SvgPicture.asset(
+                                'lib/assets/icons/ic_close.svg',
+                                width: 45,
+                                height: 45,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
+                        )
+                      )
+                    ],
                   ),
 
-                  Positioned(
-                    top: 25,
-                    left: 15,
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: Center(
-                          child: SvgPicture.asset(
-                            'lib/assets/icons/ic_close.svg',
-                            width: 45,
-                            height: 45,
-                            color: Colors.grey,
+                  Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        FutureBuilder<List<Map<String, dynamic>>>(
+                          future: UserService().getUsersByIds(List<String>.from(participantsList)),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return SizedBox();
+                            }
+
+                            final users = snapshot.data!;
+                            final displayUsers = users.take(3).toList();
+
+                            return Row(
+                              children: [
+                                SizedBox(
+                                  width: 13 * (displayUsers.length + 1),
+                                  child: Stack(
+                                    clipBehavior: Clip.none,
+                                    children: List.generate(
+                                        displayUsers.length, (index) {
+                                      final user = displayUsers[index];
+                                      final avatar = Container(
+                                        width: 25,
+                                        height: 25,
+                                        decoration: ShapeDecoration(
+                                          shape: OvalBorder(
+                                            side: BorderSide(
+                                              width: 1,
+                                              color: AppColors.surface
+                                            ),
+                                          ),
+                                          image: DecorationImage(
+                                            image: user['photoUrl'] !=
+                                                null &&
+                                                user['photoUrl'] != ''
+                                                ? CachedNetworkImageProvider(
+                                                user['photoUrl']) as ImageProvider
+                                                : AssetImage(
+                                                'lib/assets/images/avatar_default.png'),
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      );
+
+                                      return index == 0
+                                          ? avatar
+                                          : Positioned(
+                                        left: index * 15,
+                                        child: avatar,
+                                      );
+                                    }),
+                                  )
+                                ),
+
+                                const SizedBox(width: 8),
+
+                                Expanded(
+                                  child: Text(
+                                    "$participants ${participants == 1 ? 'participant' : 'participants'}",
+                                    style: GoogleFonts.urbanist(
+                                      fontSize: 14,
+                                      color: AppColors.secondary,
+                                      fontWeight: AppFontWeight.regular,
+                                    ),
+                                  ),
+                                ),
+
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: remainingTime == Duration.zero
+                                              ? ''
+                                              : (startTime != null && startTime!.isAfter(DateTime.now()))
+                                              ? 'Start in '
+                                              : 'End in ',
+                                          style: GoogleFonts.urbanist(
+                                            fontSize: 14,
+                                            color: AppColors.secondary,
+                                            fontWeight: AppFontWeight.medium,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: _formatDuration(remainingTime),
+                                          style: GoogleFonts.urbanist(
+                                            fontSize: 14,
+                                            color: remainingTime == Duration.zero
+                                                ? AppColors.tertiary
+                                                : const Color(0xFFC62828),
+                                            fontWeight: AppFontWeight.semiBold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            title,
+                            style: GoogleFonts.urbanist(
+                              fontSize: 42,
+                              fontWeight: AppFontWeight.semiBold,
+                              color: AppColors.primary,
+                              height: 1.2
+                            ),
                           ),
                         ),
-                      ),
-                    )
-                  )
-                ],
-              ),
 
-              Padding(
-                padding: EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    FutureBuilder<List<Map<String, dynamic>>>(
-                      future: UserService().getUsersByIds(List<String>.from(widget.data['participants'] ?? [])),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return SizedBox();
-                        }
+                        const SizedBox(height: 5),
 
-                        final users = snapshot.data!;
-                        final displayUsers = users.take(3).toList();
+                        Text(
+                          description,
+                          style: GoogleFonts.urbanist(
+                            fontSize: 17,
+                            color: AppColors.tertiary,
+                            height: 1.2
+                          ),
+                        ),
 
-                        return Row(
+                        const SizedBox(height: 20),
+
+                        LinearProgressIndicator(
+                          value: progressRatio,
+                          minHeight: 10,
+                          backgroundColor: AppColors.accent.withOpacity(
+                              0.6),
+                          color: AppColors.primary.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+
+                        const SizedBox(height: 5),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            SizedBox(
-                              width: 13*(displayUsers.length+1),
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: List.generate(displayUsers.length, (index) {
-                                  final user = displayUsers[index];
-                                  final avatar = Container(
-                                    width: 25,
-                                    height: 25,
-                                    decoration: ShapeDecoration(
-                                      shape: OvalBorder(
-                                        side: BorderSide(width: 1, color: AppColors.surface),
-                                      ),
-                                      image: DecorationImage(
-                                        image: user['photoUrl'] != null && user['photoUrl'] != ''
-                                            ? CachedNetworkImageProvider(user['photoUrl']) as ImageProvider
-                                            : AssetImage('lib/assets/images/avatar_default.png'),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  );
-
-                                  return index == 0
-                                      ? avatar
-                                      : Positioned(
-                                    left: index * 15,
-                                    child: avatar,
-                                  );
-                                }),
+                            Text("$progress / $target",
+                              style: GoogleFonts.urbanist(
+                                fontSize: 14,
+                                color: AppColors.tertiary,
+                                fontWeight: AppFontWeight.medium,
                               )
                             ),
 
-                            const SizedBox(width: 8),
-
-                            Expanded(
-                              child: Text(
-                                "$participants ${participants == 1 ? 'participant' : 'participants'}",
-                                style: GoogleFonts.urbanist(
-                                  fontSize: 14,
-                                  color: AppColors.secondary,
-                                  fontWeight: AppFontWeight.regular,
-                                ),
-                              ),
-                            ),
-
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Text.rich(
-                                TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: remainingTime == Duration.zero ? '' : startTime.isAfter(DateTime.now()) ? 'Start in ' : 'End in ',
-                                      style: GoogleFonts.urbanist(
-                                        fontSize: 14,
-                                        color: AppColors.secondary,
-                                        fontWeight: AppFontWeight.medium,
-                                      ),
-                                    ),
-
-                                    TextSpan(
-                                      text: _formatDuration(remainingTime),
-                                      style: GoogleFonts.urbanist(
-                                        fontSize: 14,
-                                        color: remainingTime == Duration.zero ? AppColors.tertiary : Color(0xFFC62828),
-                                        fontWeight: AppFontWeight.semiBold,
-                                      ),
-                                    ),
-                                  ]
-                                )
-                              ),
+                            Text("$percentage%",
+                              style: GoogleFonts.urbanist(
+                                fontSize: 14,
+                                color: AppColors.tertiary,
+                                fontWeight: AppFontWeight.medium,
+                              )
                             ),
                           ],
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        title,
-                        style: GoogleFonts.urbanist(
-                          fontSize: 42,
-                          fontWeight: AppFontWeight.semiBold,
-                          color: AppColors.primary,
-                          height: 1.2
                         ),
-                      ),
-                    ),
 
-                    const SizedBox(height: 5),
+                        const SizedBox(height: 10),
 
-                    Text(
-                      description,
-                      style: GoogleFonts.urbanist(
-                        fontSize: 17,
-                        color: AppColors.tertiary,
-                        height: 1.2
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    LinearProgressIndicator(
-                      value: progressRatio,
-                      minHeight: 10,
-                      backgroundColor: AppColors.accent.withOpacity(0.6),
-                      color: AppColors.primary.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-
-                    const SizedBox(height: 5),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("$progress / $target",
-                          style: GoogleFonts.urbanist(
-                            fontSize: 14,
-                            color: AppColors.tertiary,
-                            fontWeight: AppFontWeight.medium,
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Text(
+                              "🎁  $reward points for successful completion",
+                              style: GoogleFonts.urbanist(
+                                fontWeight: AppFontWeight.medium,
+                                fontSize: 14,
+                                color: AppColors.secondary,
+                              )
+                            ),
                           )
                         ),
 
-                        Text("$percentage%",
-                          style: GoogleFonts.urbanist(
-                            fontSize: 14,
-                            color: AppColors.tertiary,
-                            fontWeight: AppFontWeight.medium,
-                          )
-                        ),
-                      ],
-                    ),
+                        const SizedBox(height: 20),
 
-                    const SizedBox(height: 10),
-
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: Text("🎁  $reward points for successful completion",
-                          style: GoogleFonts.urbanist(
-                            fontWeight: AppFontWeight.medium,
-                            fontSize: 14,
-                            color: AppColors.secondary,
-                          )
-                        ),
-                      )
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    StreamBuilder<bool>(
-                      stream: ChallengeService().isUserJoined(widget.challengeId, userId),
-                      builder: (context, snapshot) {
-                        final isJoined = snapshot.data ?? false;
-
-                        return FutureBuilder<DocumentSnapshot>(
-                          future: FirebaseFirestore.instance.collection('challenges').doc(widget.challengeId).get(),
-                          builder: (context, challengeSnap) {
-                            if (!challengeSnap.hasData) return CircularProgressIndicator();
-
-                            final data = challengeSnap.data!.data() as Map<String, dynamic>;
-                            final startDate = (data['startDate'] as Timestamp).toDate();
-                            final endDate = (data['endDate'] as Timestamp).toDate();
-                            final subtype = data['subtype'] as String? ?? '';
-                            final now = DateTime.now();
-                            final question = data['question'] as String? ?? '';
-                            final progress = data['progress'] ?? 0;
-                            final target = data['targetValue'] ?? 100;
-                            final rewardedUsers = List<String>.from(data['rewardedUsers'] ?? []);
+                        StreamBuilder<bool>(
+                          stream: ChallengeService().isUserJoined(widget.challengeId, userId),
+                          builder: (context, snapshot) {
+                            final isJoined = snapshot.data ?? false;
                             final claimedReward = rewardedUsers.contains(userId);
-
-                            final isComingSoon = now.isBefore(startDate);
-                            final isExpired = now.isAfter(endDate);
-                            final isActive = !isComingSoon && !isExpired;
 
                             if (!isJoined) {
                               if (isComingSoon || isExpired) {
-                                String label = isComingSoon ? 'Coming Soon' : 'This challenge is no longer available';
+                                String label = isComingSoon
+                                    ? 'Coming Soon'
+                                    : 'This challenge is no longer available';
                                 return _buildLabel(label);
                               }
 
@@ -407,45 +410,62 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                             }
 
                             if (!isActive) {
-                              return _buildLabel("This challenge is no longer available");
+                              return _buildLabel(
+                                  "This challenge is no longer available");
                             }
 
                             if (progress == target) {
                               return FutureBuilder<bool>(
-                                future: ChallengeService().hasUserContributedToChallenge(widget.challengeId, userId),
+                                future: ChallengeService()
+                                    .hasUserContributedToChallenge(
+                                    widget.challengeId, userId),
                                 builder: (context, contribSnapshot) {
                                   if (!contribSnapshot.hasData) {
                                     return const CircularProgressIndicator();
                                   }
 
-                                  final hasContributed = contribSnapshot.data!;
+                                  final hasContributed = contribSnapshot
+                                      .data!;
 
                                   return ElevatedButton(
                                     onPressed: claimedReward
                                         ? null
                                         : () async {
                                       if (!hasContributed) {
-                                        _showSnackBar('Cannot claim without contribution', isError: true);
+                                        _showSnackBar(
+                                            'Cannot claim without contribution',
+                                            isError: true);
                                         return;
                                       }
 
-                                      await ChallengeService().rewardChallengeContributors(widget.challengeId, userId);
-                                      _showSnackBar('Reward claimed successfully!');
+                                      await ChallengeService()
+                                          .rewardChallengeContributors(
+                                          widget.challengeId, userId);
+                                      _showSnackBar(
+                                          'Reward claimed successfully!');
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: claimedReward ? AppColors.accent : AppColors.primary,
-                                      foregroundColor: AppColors.surface,
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      backgroundColor: claimedReward
+                                          ? AppColors.accent
+                                          : AppColors.primary,
+                                      foregroundColor: AppColors
+                                          .surface,
+                                      padding: const EdgeInsets
+                                          .symmetric(vertical: 14),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius
+                                            .circular(12),
                                       ),
                                       minimumSize: const Size(200, 0),
                                     ),
                                     child: Text(
-                                      claimedReward ? 'Claimed' : 'Claim',
+                                      claimedReward
+                                          ? 'Claimed'
+                                          : 'Claim',
                                       style: GoogleFonts.urbanist(
                                         fontSize: 16,
-                                        fontWeight: AppFontWeight.bold,
+                                        fontWeight: AppFontWeight
+                                            .bold,
                                       ),
                                     ),
                                   );
@@ -455,28 +475,33 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
 
                             switch (subtype) {
                               case 'form':
-                                return _buildFormSubmitButton(question);
+                                return _buildFormSubmitButton(
+                                    question);
                               case 'streak':
                                 return _buildStreakButton();
                               case 'evidence':
-                                return _buildNavigationButton(UploadScreen(), "Start challenge");
+                                return _buildNavigationButton(
+                                    UploadScreen(),
+                                    "Start challenge");
                               case 'tree':
-                                return _buildNavigationButton(VirtualTreeScreen(), "Start challenge");
+                                return _buildNavigationButton(
+                                    VirtualTreeScreen(),
+                                    "Start challenge");
                               default:
-                                return _buildLabel("Unknown challenge type");
+                                return _buildLabel(
+                                    "Unknown challenge type");
                             }
                           },
-                        );
-                      },
-                    ),
-                  ],
-                )
-              )
-            ],
-          ),
-        )
-      )
-
+                        ),
+                      ],
+                    )
+                  )
+                ],
+              ),
+            )
+          )
+        );
+      }
     );
   }
 

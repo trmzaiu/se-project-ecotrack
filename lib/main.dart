@@ -79,9 +79,8 @@ class MyApp extends StatelessWidget {
       navigatorObservers: [myObserver],
       routes: {
         '/notification': (context) => NotificationScreen(),
-        '/': (context) => SplashScreen(),
       },
-      initialRoute: '/',
+      home: SplashScreen(),
     );
   }
 }
@@ -99,11 +98,6 @@ class _MainScreenState extends State<MainScreen> {
   final PageController _pageController = PageController();
   final DraggableScrollableController _sheetController = DraggableScrollableController();
   bool _isFullyOpened = false;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   void _onItemTapped(int index) {
     if (index == _currentIndex) return;
@@ -173,22 +167,14 @@ class _MainScreenState extends State<MainScreen> {
             builder: (context, scrollController) {
               return NotificationListener<DraggableScrollableNotification>(
                 onNotification: (notification) {
-                  if (notification.extent >= 0.8 && !_isFullyOpened) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (_sheetController.isAttached) {
-                        _sheetController.animateTo(
-                          maxChildSize,
-                          duration: Duration(milliseconds: 50),
-                          curve: Curves.easeInOut,
-                        );
-                      }
-                    });
-                  }
                   if (notification.extent >= maxChildSize && !_isFullyOpened) {
                     setState(() {
                       _isFullyOpened = true;
                     });
-                    _sheetController.jumpTo(maxChildSize);
+                  } else if (notification.extent < maxChildSize && _isFullyOpened) {
+                    setState(() {
+                      _isFullyOpened = false;
+                    });
                   }
                   return true;
                 },

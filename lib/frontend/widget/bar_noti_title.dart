@@ -11,10 +11,10 @@ class BarNotiTitle extends StatelessWidget {
   final String title_big;
 
   const BarNotiTitle({
-    Key? key,
     required this.title_small,
     required this.title_big,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

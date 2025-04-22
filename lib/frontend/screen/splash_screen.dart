@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'package:wastesortapp/main.dart';
@@ -76,21 +75,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       ),
     );
   }
-
-  // Future<void> _checkLoginStatus() async {
-  //   await Future.delayed(Duration(seconds: 0));
-  //
-  //   User? user = FirebaseAuth.instance.currentUser;
-  //   if (mounted) {
-  //     Future.microtask(() {
-  //       Navigator.of(context).pushReplacement(
-  //         moveUpRoute(
-  //           user != null ? MainScreen() : OpeningScreen(),
-  //         ),
-  //       );
-  //     });
-  //   }
-  // }
 
   @override
   void dispose() {

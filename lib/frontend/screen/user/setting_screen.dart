@@ -132,19 +132,13 @@ class _SettingScreenState extends State<SettingScreen> {
         selectedImage = cropped;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Uploading avatar...")),
-      );
+      _showSnackBar('Uploading avatar...');
 
       try {
-        await UserService().updateUserAvatar(userId, cropped);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Avatar updated successfully")),
-        );
+        await UserService().updateUserProfile(userId, image: cropped);
+        _showSnackBar('Avatar updated successfully');
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e")),
-        );
+        _showSnackBar('Error: $e');
       }
     }
   }
@@ -207,23 +201,23 @@ class _SettingScreenState extends State<SettingScreen> {
                             value: selectedMonth,
                             isExpanded: true,
                             customButton: Container(
-                                padding: EdgeInsets.only(left: 15),
-                                decoration: BoxDecoration(
-                                  color: AppColors.background,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      DateFormat.MMMM().format(DateTime(0, selectedMonth)),
-                                      style: GoogleFonts.urbanist(
-                                        fontSize: 18,
-                                        fontWeight: AppFontWeight.medium,
-                                        color: AppColors.primary,
-                                      ),
+                              padding: EdgeInsets.only(left: 15),
+                              decoration: BoxDecoration(
+                                color: AppColors.background,
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    DateFormat.MMMM().format(DateTime(0, selectedMonth)),
+                                    style: GoogleFonts.urbanist(
+                                      fontSize: 18,
+                                      fontWeight: AppFontWeight.medium,
+                                      color: AppColors.primary,
                                     ),
-                                    Icon(Icons.arrow_drop_down, color: AppColors.primary),
-                                  ],
-                                )
+                                  ),
+                                  Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                                ],
+                              )
                             ),
                             iconStyleData: IconStyleData(
                               icon: SizedBox.shrink(),
@@ -289,43 +283,43 @@ class _SettingScreenState extends State<SettingScreen> {
                             value: selectedYear,
                             isExpanded: true,
                             customButton: Container(
-                                padding: EdgeInsets.only(right: 10),
-                                decoration: BoxDecoration(
-                                  color: AppColors.background,
+                              padding: EdgeInsets.only(right: 10),
+                              decoration: BoxDecoration(
+                                color: AppColors.background,
+                              ),
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      selectedYear.toString(),
+                                      style: GoogleFonts.urbanist(
+                                        fontSize: 16,
+                                        fontWeight: AppFontWeight.medium,
+                                        color: AppColors.primary,
+                                      )
+                                    ),
+                                    Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                                  ],
                                 ),
-                                child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        selectedYear.toString(),
-                                        style: GoogleFonts.urbanist(
-                                          fontSize: 16,
-                                          fontWeight: AppFontWeight.medium,
-                                          color: AppColors.primary,
-                                        )
-                                      ),
-                                      Icon(Icons.arrow_drop_down, color: AppColors.primary),
-                                    ],
-                                  ),
-                                )
+                              )
                             ),
                             iconStyleData: IconStyleData(
                               icon: SizedBox.shrink(),
                             ),
                             dropdownStyleData: DropdownStyleData(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: AppColors.surface,
-                                ),
-                                elevation: 0,
-                                maxHeight: 200,
-                                scrollbarTheme: ScrollbarThemeData(
-                                  thumbColor: MaterialStateProperty.all(AppColors.board2),
-                                  thickness: MaterialStateProperty.all(2),
-                                ),
-                                isOverButton: true
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: AppColors.surface,
+                              ),
+                              elevation: 0,
+                              maxHeight: 200,
+                              scrollbarTheme: ScrollbarThemeData(
+                                thumbColor: MaterialStateProperty.all(AppColors.board2),
+                                thickness: MaterialStateProperty.all(2),
+                              ),
+                              isOverButton: true
                             ),
                             menuItemStyleData: MenuItemStyleData(
                               height: 30,
@@ -430,7 +424,7 @@ class _SettingScreenState extends State<SettingScreen> {
                           dateController.text = DateFormat("dd/MM/yyyy").format(selectedDay);
                         });
 
-                        await UserService().updateUserDob(userId, selectedDOB!);
+                        await UserService().updateUserProfile(userId, dob: selectedDOB!);
 
                         _showSnackBar('Date of birth updated successfully!');
                         Navigator.pop(context);
@@ -487,8 +481,7 @@ class _SettingScreenState extends State<SettingScreen> {
       ),
       onSelect: (Country country) async {
         selectedCountryNotifier.value = country;
-        await UserService().updateUserCountry(userId, country.name);
-
+        await UserService().updateUserProfile(userId, country: country.name);
         _showSnackBar('Country updated successfully!');
       },
     );
@@ -517,7 +510,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
               if (newValue.isNotEmpty && newValue != hintText) {
                 try {
-                  await UserService().updateUserName(userId, newValue);
+                  await UserService().updateUserProfile(userId, name: newValue);
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -612,14 +605,18 @@ class _SettingScreenState extends State<SettingScreen> {
                               'country': ''
                             };
 
-                            if (user['dob'] != null && user['dob'].isNotEmpty) {
-                              selectedDOB = DateTime.tryParse(user['dob']);
-                              dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
+                            if (user['dob'] != null && user['dob'].toString().isNotEmpty) {
+                              try {
+                                selectedDOB = DateFormat('dd/MM/yyyy').parse(user['dob']);
+                              } catch (e) {
+                                print('❌ Error parsing DOB: $e');
+                                selectedDOB = DateTime.now();
+                              }
                             } else {
                               selectedDOB = DateTime.now();
-                              dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
                             }
 
+                            dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
                             if (user['country'] != null && user['country'].isNotEmpty) {
                               selectedCountryNotifier.value = Country.tryParse(user['country']);
                             }

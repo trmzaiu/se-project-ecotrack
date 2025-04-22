@@ -84,8 +84,8 @@ class NotificationBell extends StatelessWidget {
             // Only show the badge if there's at least one unread notification.
             if (count > 0)
               Positioned(
-                left: 20,
-                top: 6,
+                left: 21,
+                top: 5,
                 child: Container(
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(

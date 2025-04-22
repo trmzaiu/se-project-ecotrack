@@ -221,20 +221,29 @@ class ChallengeService {
 
     // Only initialize if user's current weekLog is different
     if (userData == null || userData['weekLog'] != weekLog) {
-      final challengeTasks = challenge['weekTasks'] as List<dynamic>? ?? [];
+      final challengeTasks = (challenge['tasks'] as List)
+          .map((e) => e as Map<String, dynamic>)
+          .toList();
 
-      // Create initial task progress list
-      final userTasks = challengeTasks.map((task) => {
-        'taskId': task['index'],
-        'completed': false,
-        'progressTask': 0,
-        'subtype': task['subtype'] ?? ''
-      }).toList();
+      print('Challenge tasks: $challengeTasks');
+
+      final tasksLength = challengeTasks.length;
+
+      final userTasks = List.generate(tasksLength, (index) {
+        final task = challengeTasks[index];
+
+        return {
+          'taskId': index,
+          'completed': false,
+          'progressTask': 0,
+          'subtype': task['subtype'] ?? ''
+        };
+      });
 
       // Save progress to user document
       await userRef.set({
         'weekLog': weekLog,
-        'tasks': userTasks,
+        'weekTasks': userTasks,
         'weekProgress': 0,
         'completedWeekly': false
       }, SetOptions(merge: true));
@@ -487,11 +496,11 @@ class ChallengeService {
 
   // --- Community Challenges ---
   /// Load all challenges by type
-  Future<List<QueryDocumentSnapshot>> loadChallenges(String type) async {
+  Future<List<QueryDocumentSnapshot>> loadCommunityChallenges() async {
     // Fetch the challenges based on the type
     final snapshot = await _firestore
         .collection('challenges')
-        .where('type', isEqualTo: type)
+        .where('type', isEqualTo: 'community')
         .get();
 
     final docs = snapshot.docs;
@@ -504,6 +513,11 @@ class ChallengeService {
     });
 
     return docs;
+  }
+
+  /// Get information of challenge by id
+  Stream<DocumentSnapshot> getChallengeById(String challengeId) {
+    return _firestore.collection('challenges').doc(challengeId).snapshots();
   }
 
   /// Load all challenges user joined
@@ -868,7 +882,4 @@ class ChallengeService {
 
     return submittedList.any((entry) => entry['userId'] == userId);
   }
-
-
-
 }

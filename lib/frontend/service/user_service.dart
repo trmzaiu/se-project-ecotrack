@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../database/CloudinaryConfig.dart';
@@ -61,138 +62,65 @@ class UserService {
   // Get current user data
   Future<Map<String, dynamic>> getCurrentUserFuture(String userId) async {
     final snapshot = await _db.collection('users').doc(userId).get();
-
-    if (!snapshot.exists) {
-      return {
-        'photoUrl': '',
-        'name': userId.substring(0, 10),
-        'email': '',
-        'dob': DateTime.now().toString(),
-        'country': ''
-      };
-    }
-
-    final data = snapshot.data() ?? {};
-
-    return {
-      'photoUrl': data['photoUrl'] ?? '',
-      'name': data['name'] ?? userId.substring(0, 10),
-      'email': data['email'] ?? '',
-      'dob': data['dob'] ?? DateTime.now().toString(),
-      'country': data['country'] ?? ''
-    };
+    return snapshot.data() ?? {};
   }
 
   Stream<Map<String, dynamic>> getCurrentUser(String userId) {
     return _db.collection('users').doc(userId).snapshots().map((snapshot) {
-      if (!snapshot.exists) {
-        return {
-          'photoUrl': '',
-          'name': userId.substring(0, 10),
-          'email': '',
-          'dob': DateTime.now().toString(),
-          'country': ''
-        };
-      }
-
-      final data = snapshot.data() ?? {};
-
-      return {
-        'photoUrl': data['photoUrl'] ?? '',
-        'name': data['name'] ?? userId.substring(0, 10),
-        'email': data['email'] ?? '',
-        'dob': data['dob'] ?? DateTime.now().toString(),
-        'country': data['country'] ?? ''
-      };
+      return snapshot.data() ?? {};
     });
   }
 
+  // Update user profile
+  Future<void> updateUserProfile(String userId, {
+    String? name,
+    DateTime? dob,
+    String? country,
+    File? image
+  }) async {
+    final Map<String, dynamic> updates = {};
 
-  // Update user name
-  Future<void> updateUserName(String userId, String newName) async {
-    try {
-      await _db.collection('users').doc(userId).update({'name': newName});
-    } catch (e) {
-      throw Exception('Failed to update name: $e');
+    if (name != null) updates['name'] = name;
+
+    if (dob != null) {
+      final formattedDob = DateFormat('dd/MM/yyyy').format(dob);
+      updates['dob'] = formattedDob;
     }
-  }
 
-  Future<void> updateUserDob(String userId, DateTime dob) async {
-    String dobString = dob.toIso8601String();
+    if (country != null) updates['country'] = country;
 
-    try {
-      await _db.collection('users')
-          .doc(userId)
-          .update({'dob': dobString}
-      );
-      print("User DOB updated: $dobString");
-    } catch (e) {
-      print("Failed to update DOB: $e");
-      throw Exception('Failed to update DOB');
-    }
-  }
-
-  Future<void> updateUserCountry(String userId, String country) async {
-    try {
-      await _db.collection('users')
-          .doc(userId)
-          .update({'country': country});
-      print("User country updated: $country");
-    } catch (e) {
-      print("Failed to update country: $e");
-      throw Exception('Failed to update country');
-    }
-  }
-
-  Future<void> updateUserAvatar(String userId, File image) async {
-    try {
+    if (image != null) {
       String? photoUrl = await CloudinaryConfig().uploadImage(image);
+      updates['photoUrl'] = photoUrl;
+    }
 
-      await _db.collection('users')
-          .doc(userId)
-          .update({'photoUrl': photoUrl});
+    if (updates.isEmpty) {
+      print("⚠️ No fields provided to update");
+      return;
+    }
 
-      print("User photoUrl updated: $photoUrl");
+    try {
+      await _db.collection('users').doc(userId).update(updates);
+      print("✅ User profile updated: $updates");
     } catch (e) {
-      print("Failed to update photoUrl for userId: $userId. Error: $e");
-
-      throw Exception('Failed to update photoUrl');
+      print("❌ Failed to update profile for $userId: $e");
+      throw Exception('Failed to update profile');
     }
   }
+
 
   Stream<int> getUserStreak(String userId) {
-    return FirebaseFirestore.instance
+    return _db
         .collection('users')
         .doc(userId)
         .snapshots()
         .map((snapshot) => snapshot.data()?['streak'] ?? 0);
   }
 
-  Future<int> checkUserStreakFuture(String userId) async {
-    try {
-      final docSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .get();
-
-      if (docSnapshot.exists) {
-        final data = docSnapshot.data();
-        if (data != null && data.containsKey('streak')) {
-          return data['streak'] as int;
-        }
-      }
-
-      return 0; // Default streak if not found
-    } catch (e) {
-      print('Error fetching user streak: $e');
-      return 0;
-    }
-  }
-
   Future<List<Map<String, dynamic>>> getUsersByIds(List<String> userIds) async {
     if (userIds.isEmpty) return [];
 
-    final usersRef = FirebaseFirestore.instance.collection('users');
+    final usersRef = _db.collection('users');
     final List<Map<String, dynamic>> users = [];
 
     final batches = <List<String>>[];

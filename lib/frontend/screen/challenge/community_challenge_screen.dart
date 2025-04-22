@@ -155,7 +155,7 @@ class _CommunityChallengeScreenState extends State<CommunityChallengeScreen> wit
 
 Widget _buildAllCommunityContent() {
   return FutureBuilder<List<QueryDocumentSnapshot>>(
-      future: ChallengeService().loadChallenges('community'),
+      future: ChallengeService().loadCommunityChallenges(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(
@@ -191,7 +191,7 @@ Widget _buildAllCommunityContent() {
               onTap: () {
                 Navigator.of(context).push(
                   scaleRoute(
-                    ChallengeDetailScreen(data: data, challengeId: data['id']),
+                    ChallengeDetailScreen(challengeId: data['id']),
                   ),
                 );
               },
@@ -241,7 +241,7 @@ Widget _buildActiveCommunityContent() {
                 onTap: () {
                   Navigator.of(context).push(
                     scaleRoute(
-                      ChallengeDetailScreen(data: data, challengeId: data['id']),
+                      ChallengeDetailScreen(challengeId: data['id']),
                     ),
                   );
                 },
@@ -292,7 +292,7 @@ Widget _buildUseJoinedContent(String userId) {
               onTap: () {
                 Navigator.of(context).push(
                   scaleRoute(
-                    ChallengeDetailScreen(data: data, challengeId: data['id']),
+                    ChallengeDetailScreen(challengeId: data['id']),
                   ),
                 );
               },

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
+import '../../service/user_service.dart';
 
 class WeeklyChallengeProgressCard extends StatelessWidget {
   final String userId;
@@ -27,14 +28,14 @@ class WeeklyChallengeProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('users').doc(userId).snapshots(),
+    return StreamBuilder<Map<String, dynamic>>(
+      stream: UserService().getCurrentUser(userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || !snapshot.data!.exists) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text('User not found'));
         }
 
@@ -45,15 +46,14 @@ class WeeklyChallengeProgressCard extends StatelessWidget {
 
         return Container(
           margin: EdgeInsets.symmetric(horizontal: margin),
-          padding: EdgeInsets.all(15),
+          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title + Progress text
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

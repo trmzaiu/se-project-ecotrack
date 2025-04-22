@@ -24,7 +24,7 @@ class NotificationService {
     required String body,
     required String type,
   }) async {
-    final userDoc = await FirebaseFirestore.instance
+    final userDoc = await _db
         .collection('users')
         .doc(receiverUserId)
         .get();

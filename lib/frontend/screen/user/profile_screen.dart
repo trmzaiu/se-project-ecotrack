@@ -67,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 30),
+              padding: EdgeInsets.symmetric(horizontal: 25),
               scrollDirection: Axis.vertical,
               child: Column(
                 children: [
@@ -86,20 +86,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       return Column(
                         children: [
-                          Container(
-                            width: 125,
-                            height: 125,
-                            decoration: ShapeDecoration(
-                              image: DecorationImage(
-                                image: user['photoUrl'] != '' ? CachedNetworkImageProvider(user['photoUrl']) : AssetImage('lib/assets/images/avatar_default.png'),
-                                fit: BoxFit.cover,
-                              ),
-                              shape: OvalBorder(
-                                side: BorderSide(
-                                  width: 5,
-                                  color: AppColors.tertiary.withOpacity(0.8),
-                                )
-                              )
+                          CircleAvatar(
+                            radius: 62.5,
+                            backgroundColor: AppColors.tertiary.withOpacity(0.5),
+                            child: CircleAvatar(
+                              radius: 59,
+                              backgroundImage: user['photoUrl'] != ''
+                                  ? CachedNetworkImageProvider(user['photoUrl']) as ImageProvider
+                                  : AssetImage('lib/assets/images/avatar_default.png'),
+                              backgroundColor: Colors.transparent,
                             ),
                           ),
 
@@ -127,7 +122,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     }
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 25),
 
                   ElevatedButton(
                     onPressed: () {
@@ -220,6 +215,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
 
+                  const SizedBox(height: 10),
+
+                  // Align(
+                  //   alignment: Alignment.centerLeft,
+                  //   child: Text(
+                  //     'Weekly Goal',
+                  //     textAlign: TextAlign.left,
+                  //     style: GoogleFonts.urbanist(
+                  //       color: AppColors.secondary,
+                  //       fontSize: 20,
+                  //       fontWeight: AppFontWeight.semiBold,
+                  //     ),
+                  //   ),
+                  // ),
+                  //
+                  // const SizedBox(height: 10),
+
+                  FutureBuilder<Map<String, dynamic>>(
+                    future: _weeklyChallengeFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return SizedBox();
+                      } else if (snapshot.hasError) {
+                        return SizedBox();
+                      } else if (!snapshot.hasData || snapshot.data == null || snapshot.data!.containsKey('error')) {
+                        final error = snapshot.data?['error'] ?? 'Unknown error';
+                        return SizedBox();
+                      } else {
+                        final weeklyChallenge = snapshot.data!;
+                        final goalPoints = weeklyChallenge['target'] ?? 7;
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              moveLeftRoute(
+                                  WeeklyChallengeScreen()
+                              ),
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.accent,
+                                  offset: Offset(0, 0),
+                                  blurRadius: 3
+                                ),
+                              ],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: WeeklyChallengeProgressCard(
+                              userId: userId,
+                              goalPoints: goalPoints,
+                              margin: 0,
+                              padding: 25,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+
                   const SizedBox(height: 25),
 
                   Row(
@@ -289,7 +346,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ],
                           ),
 
-                          SizedBox(height: phoneWidth - phoneWidth * 0.405 * 2 - 60),
+                          SizedBox(height: phoneWidth - phoneWidth * 0.405 * 2 - 50),
 
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -315,138 +372,79 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 25),
 
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Weekly Goal',
-                      textAlign: TextAlign.left,
-                      style: GoogleFonts.urbanist(
-                        color: AppColors.secondary,
-                        fontSize: 20,
-                        fontWeight: AppFontWeight.semiBold,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  FutureBuilder<Map<String, dynamic>>(
-                    future: _weeklyChallengeFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text("Error loading weekly challenge"));
-                      } else if (!snapshot.hasData || snapshot.data == null || snapshot.data!.containsKey('error')) {
-                        final error = snapshot.data?['error'] ?? 'Unknown error';
-                        return Center(child: Text("Error: $error"));
-                      } else {
-                        final weeklyChallenge = snapshot.data!;
-                        final goalPoints = weeklyChallenge['target'] ?? 7;
-                        final currentPoints = weeklyChallenge['currentPoints'] ?? 0;
-
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              moveLeftRoute(
-                                  WeeklyChallengeScreen()
-                              ),
-                            );
-                          },
-                          child: WeeklyChallengeProgressCard(
-                            userId: userId,
-                            goalPoints: goalPoints,
-                            margin: 0,
-                            padding: 30,
-                          ),
-                        );
-                      }
-                    },
-                  ),
-
-                  const SizedBox(height: 25),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Your Challenges',
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.secondary,
-                          fontSize: 20,
-                          fontWeight: AppFontWeight.semiBold,
-                        ),
-                      ),
-
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).push(
-                            moveLeftRoute(
-                                CommunityChallengeScreen(index: 2)
-                            ),
-                          );
-                        },
-                        child: Text(
-                          'See more',
-                          style: GoogleFonts.urbanist(
-                            color: AppColors.tertiary,
-                            fontSize: 13,
-                            fontWeight: AppFontWeight.regular,
-                          ),
-                        ),
-                      )
-                    ]
-                  ),
-                  const SizedBox(height: 10),
-
                   FutureBuilder<List<QueryDocumentSnapshot>>(
                     future: ChallengeService().loadChallengesUserJoined(userId),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
-                        return Center(
-                          child: CircularProgressIndicator(),
-                        );
+                        return SizedBox();
                       }
 
                       if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return Center(
-                          child: Text(
-                            'You haven\'t joined any challenges yet',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.urbanist(
-                              color: AppColors.secondary,
-                              fontSize: 16,
-                              fontWeight: AppFontWeight.medium,
-                            ),
-                          ),
-                        );
+                        return SizedBox();
                       }
 
                       final challenges = snapshot.data!;
                       final limitedChallenges = challenges.take(2).toList();
 
-                      return ListView.builder(
-                        padding: EdgeInsets.all(0),
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: limitedChallenges.length,
-                        itemBuilder: (context, index) {
-                          final doc = challenges[index];
-                          final data = doc.data() as Map<String, dynamic>;
-                          data['id'] = doc.id;
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ChallengeDetailScreen(data: data, challengeId: data['id']),
+                      return Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Your Challenges',
+                                style: GoogleFonts.urbanist(
+                                  color: AppColors.secondary,
+                                  fontSize: 20,
+                                  fontWeight: AppFontWeight.semiBold,
                                 ),
+                              ),
+
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    moveLeftRoute(
+                                        CommunityChallengeScreen(index: 2)
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  'See more',
+                                  style: GoogleFonts.urbanist(
+                                    color: AppColors.tertiary,
+                                    fontSize: 13,
+                                    fontWeight: AppFontWeight.regular,
+                                  ),
+                                ),
+                              )
+                            ]
+                          ),
+                          const SizedBox(height: 10),
+
+                          ListView.builder(
+                            padding: EdgeInsets.all(0),
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: limitedChallenges.length,
+                            itemBuilder: (context, index) {
+                              final doc = challenges[index];
+                              final data = doc.data() as Map<String, dynamic>;
+                              data['id'] = doc.id;
+                              return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ChallengeDetailScreen(challengeId: data['id']),
+                                      ),
+                                    );
+                                  },
+                                  child: CommunityChallengeCard(data: data)
                               );
                             },
-                              child: CommunityChallengeCard(data: data)
-                          );
-                        },
+                          )
+                        ],
                       );
                     },
                   ),
@@ -515,9 +513,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     double paddingSize = phoneWidth * 0.04;
 
     return Container(
-      width: phoneWidth * 0.405,
-      height: phoneWidth * 0.405,
-      padding: EdgeInsets.all(paddingSize * 0.9),
+      width: phoneWidth * 0.41,
+      height: phoneWidth * 0.41,
+      padding: EdgeInsets.all(paddingSize),
       decoration: ShapeDecoration(
         color: Color(0x80EBDCD6),
         shape: RoundedRectangleBorder(

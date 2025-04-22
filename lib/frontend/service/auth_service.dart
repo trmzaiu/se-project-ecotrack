@@ -12,10 +12,6 @@ class AuthenticationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TreeService _treeService = TreeService();
 
-  // Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
-  //
-  // String? get userId => _firebaseAuth.currentUser?.uid;
-
   // Function sign in with email & password
   Future<void> signIn({required String email, required String password}) async {
     try {
@@ -84,7 +80,7 @@ class AuthenticationService {
   // Function sign in with Facebook
   Future<void> signInWithFacebook() async {
     try {
-      final LoginResult loginResult = await FacebookAuth.instance.login();
+      final LoginResult loginResult = await _facebookAuth.login();
       if (loginResult.status != LoginStatus.success || loginResult.accessToken == null) {
         throw FirebaseAuthException(code: 'sign-in-cancelled', message: 'Facebook Sign-In was cancelled.');
       }
@@ -97,7 +93,7 @@ class AuthenticationService {
       User? user = userCredential.user;
 
       if (user != null) {
-        final userData = await FacebookAuth.instance.getUserData();
+        final userData = await _facebookAuth.getUserData();
         await saveUserInformation(
           userId: user.uid,
           name: userData['name'] ?? user.uid.substring(0, 10),
@@ -136,7 +132,6 @@ class AuthenticationService {
 
     await userDocRef.set(
       {
-        'userId': userId,
         'name': name,
         'email': email,
         'dob': DateTime.now().toIso8601String(),
@@ -164,7 +159,7 @@ class AuthenticationService {
     final token = await FirebaseMessaging.instance.getToken();
 
     if (token != null) {
-      await FirebaseFirestore.instance.collection('users').doc(userId).set({
+      await _firestore.collection('users').doc(userId).set({
         'fcmToken': token,
       }, SetOptions(merge: true));
 

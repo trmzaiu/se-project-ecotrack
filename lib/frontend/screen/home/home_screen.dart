@@ -74,6 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _handleStreakCheck() async {
     await ChallengeService().checkMissedDay(userId);
     await ChallengeService().updateWeeklyProgressForTasks(userId, 'streak');
+    await ChallengeService().loadWeeklyChallenge(userId);
   }
 
   bool _isUserLoggedIn() {
@@ -109,24 +110,28 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: EdgeInsets.only(left: 20),
         color: AppColors.background,
         child: Column(
-          children: [userId.isEmpty
-              ? const BarNotiTitle(title_small: "Hello", title_big: 'Guest')
-              : StreamBuilder<Map<String, dynamic>>(
-                stream: UserService().getCurrentUser(userId),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const BarNotiTitle(title_small: "Hello", title_big: 'Guest');
+          children: [
+            Padding(
+              padding: EdgeInsets.only(right: 20),
+              child: userId.isEmpty
+                  ? const BarNotiTitle(title_small: 'Hello', title_big: 'Guest')
+                  : StreamBuilder<Map<String, dynamic>>(
+                  stream: UserService().getCurrentUser(userId),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const BarNotiTitle(title_small: 'Hello', title_big: 'Guest');
+                    }
+
+                    final user = snapshot.data ?? {
+                      'photoUrl': '',
+                      'name': userId.length >= 10 ? userId.substring(0, 10) : userId,
+                      'email': '',
+                    };
+
+                    return BarNotiTitle(title_small: 'Hello', title_big: user['name'] ?? 'Guest');
                   }
-
-                  final user = snapshot.data ?? {
-                    'photoUrl': '',
-                    'name': userId.length >= 10 ? userId.substring(0, 10) : userId,
-                    'email': '',
-                  };
-
-                  return BarNotiTitle(title_small: "Hello", title_big: user['name'] ?? 'Guest');
-                }
               ),
+            ),
 
             const SizedBox(height: 25),
 
@@ -365,9 +370,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         return Text(
                                                           '$streak ${streak == 1 ? "day" : "days"} streak',
                                                           style: GoogleFonts.urbanist(
-                                                              fontWeight: AppFontWeight.medium,
-                                                              fontSize: 14,
-                                                              color: AppColors.surface
+                                                            fontWeight: AppFontWeight.medium,
+                                                            fontSize: 14,
+                                                            color: AppColors.surface
                                                           ),
                                                         );
                                                       },
@@ -395,68 +400,58 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 25),
                           ],
 
-                          TextRow(
-                            text: 'Challenges',
-                            onTap: () {
-                              Navigator.of(context).push(
-                                moveUpRoute(
-                                  CommunityChallengeScreen(),
-                                ),
-                              );
-                            },
-                          ),
-
-                          const SizedBox(height: 10),
-
                           FutureBuilder<List<QueryDocumentSnapshot>>(
-                            future: ChallengeService().loadChallenges('community'),
+                            future: ChallengeService().loadCommunityChallenges(),
                             builder: (context, snapshot) {
                               if (!snapshot.hasData) {
-                                return Center(
-                                  child: CircularProgressIndicator(),
-                                );
+                                return SizedBox();
                               }
 
                               if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                                return Center(
-                                  child: Text(
-                                    'No community challenges available.',
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.urbanist(
-                                      color: AppColors.secondary,
-                                      fontSize: 16,
-                                      fontWeight: AppFontWeight.medium,
-                                    ),
-                                  ),
-                                );
+                                return SizedBox();
                               }
 
                               final challenges = snapshot.data!;
-
                               final limitedChallenges = challenges.take(3).toList();
 
+                              return Column(
+                                children: [
+                                  TextRow(
+                                    text: 'Challenges',
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                        moveUpRoute(
+                                          CommunityChallengeScreen(),
+                                        ),
+                                      );
+                                    },
+                                  ),
 
-                              return ListView.builder(
-                                shrinkWrap: true,
-                                physics: NeverScrollableScrollPhysics(),
-                                padding: const EdgeInsets.only(top: 0),
-                                itemCount: limitedChallenges.length,
-                                itemBuilder: (context, index) {
-                                  final doc = challenges[index];
-                                  final data = doc.data() as Map<String, dynamic>;
-                                  data['id'] = doc.id;
-                                  return GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => ChallengeDetailScreen(data: data, challengeId: data['id']),
-                                          ),
-                                        );
-                                      },
-                                      child: CommunityChallengeCard(data: data)
-                                  );
-                                },
+                                  const SizedBox(height: 10),
+
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    padding: const EdgeInsets.only(top: 0),
+                                    itemCount: limitedChallenges.length,
+                                    itemBuilder: (context, index) {
+                                      final doc = challenges[index];
+                                      final data = doc.data() as Map<String, dynamic>;
+                                      data['id'] = doc.id;
+                                      return GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => ChallengeDetailScreen(challengeId: data['id']),
+                                            ),
+                                          );
+                                        },
+                                        child: CommunityChallengeCard(data: data)
+                                      );
+                                    },
+                                  )
+                                ],
                               );
                             },
                           ),
