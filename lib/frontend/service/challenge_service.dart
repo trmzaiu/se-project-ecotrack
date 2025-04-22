@@ -5,8 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
 
+import 'notification_service.dart';
+
 class ChallengeService {
   final _firestore = FirebaseFirestore.instance;
+  final treeService = TreeService();
+  final notificationService = NotificationService();
 
   ChallengeService();
 
@@ -117,6 +121,14 @@ class ChallengeService {
 
       // Check and update progressTask
       await updateWeeklyProgressForTasks(userId, 'daily');
+
+      await notificationService.sendNotificationToUser(
+        notificationId: 'daily-${DateFormat('yyyy-MM-dd').format(today)}',
+        receiverUserId: userId,
+        title: 'Daily Challenge Completed!',
+        body: 'Great job! You\'ve completed your daily challenge and earned points.',
+        type: 'challenge',
+      );
 
     } catch (e) {
       print("Error completing daily challenge: $e");
@@ -367,6 +379,17 @@ class ChallengeService {
       await _firestore.collection('users').doc(userId).update({
         'completedWeekly': status,
       });
+
+      if (status) {
+        // Send notification when weekly challenge is completed
+        await notificationService.sendNotificationToUser(
+          notificationId: 'weekly-${getCurrentWeekLog()}',
+          receiverUserId: userId,
+          title: 'Weekly Challenge Completed!',
+          body: 'Congratulations! You\'ve successfully completed this week\'s challenge.',
+          type: 'challenge',
+        );
+      }
     } catch (e) {
       print('Error updating completedWeekly: $e');
     }
@@ -547,9 +570,26 @@ class ChallengeService {
   /// Add the user to a specific challenge
   Future<void> joinChallenge(String challengeId, String userId) async {
     final ref = _firestore.collection('challenges').doc(challengeId);
+    final challengeDoc = await ref.get();
+
     await ref.update({
       'participants': FieldValue.arrayUnion([userId])
     });
+
+    if (challengeDoc.exists) {
+      final challengeData = challengeDoc.data() as Map<String, dynamic>?;
+      final challengeTitle = challengeData?['title'] ?? 'Community Challenge';
+
+      // Send notification when user joins a challenge
+      await notificationService.sendNotificationToUser(
+        notificationId: 'join-$challengeId',
+        receiverUserId: userId,
+        title: 'Challenge Joined',
+        body: 'You\'ve successfully joined the "$challengeTitle" challenge. Good luck!',
+        type: 'challenge',
+      );
+    }
+
   }
 
   Future<bool> isUserJoinedFuture(String challengeId, String userId) async {
@@ -798,6 +838,14 @@ class ChallengeService {
     if (participants.contains(userId) && hasContributed && !rewardedUsers.contains(userId)) {
       await TreeService().increaseDrops(userId, rewardPoint);
       rewardedUsers.add(userId);
+
+      await notificationService.sendNotificationToUser(
+        notificationId: challengeId,
+        receiverUserId: userId,
+        title: 'Challenge Completed!',
+        body: 'You have been rewarded $rewardPoint points for completing the challenge.',
+        type: 'challenge',
+      );
 
       await challengeRef.update({
         'rewardedUsers': rewardedUsers,
