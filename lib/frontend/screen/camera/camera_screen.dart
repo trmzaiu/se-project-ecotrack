@@ -276,7 +276,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                     showCamera = false;
                   });
 
-                  await Navigator.of(context).push(
+                  Navigator.of(context).push(
                     moveLeftRoute(
                       ScanScreen(imagePath: single.file?.path ?? ""),
                       settings: const RouteSettings(name: "ScanScreen"),

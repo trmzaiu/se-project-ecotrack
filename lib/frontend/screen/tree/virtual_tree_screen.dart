@@ -248,7 +248,7 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
                 Navigator.of(context).pop();
 
                 _treeService.updateTree(userId, _trees);
-                ChallengeService().updateChallengeProgress('tree', totalTrees);
+                ChallengeService().updateChallengeProgress(subtype: 'tree', value: totalTrees);
 
                 for (int i = 0; i < totalTrees; i++) {
                   ChallengeService().updateWeeklyProgressForTasks(userId, 'tree');

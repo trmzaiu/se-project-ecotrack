@@ -106,7 +106,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
     super.dispose();
   }
 
-  void _showSnackBar(String message) {
+  void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Center(
@@ -119,7 +119,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
             ),
           ),
         ),
-        backgroundColor: AppColors.board2,
+        backgroundColor: !isError ? AppColors.board2 : AppColors.board1,
         duration: Duration(seconds: 2),
       ),
     );
@@ -411,28 +411,45 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                             }
 
                             if (progress == target) {
-                              return ElevatedButton(
-                                onPressed: claimedReward
-                                    ? null
-                                    : () async {
+                              return FutureBuilder<bool>(
+                                future: ChallengeService().hasUserContributedToChallenge(widget.challengeId, userId),
+                                builder: (context, contribSnapshot) {
+                                  if (!contribSnapshot.hasData) {
+                                    return const CircularProgressIndicator();
+                                  }
+
+                                  final hasContributed = contribSnapshot.data!;
+
+                                  return ElevatedButton(
+                                    onPressed: claimedReward
+                                        ? null
+                                        : () async {
+                                      if (!hasContributed) {
+                                        _showSnackBar('Cannot claim without contribution', isError: true);
+                                        return;
+                                      }
+
                                       await ChallengeService().rewardChallengeContributors(widget.challengeId, userId);
+                                      _showSnackBar('Reward claimed successfully!');
                                     },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: claimedReward ? AppColors.accent : AppColors.primary,
-                                  foregroundColor: AppColors.surface,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  minimumSize: Size(200, 0),
-                                ),
-                                child: Text(
-                                  claimedReward ? 'Claimed' : 'Claim',
-                                  style: GoogleFonts.urbanist(
-                                    fontSize: 16,
-                                    fontWeight: AppFontWeight.bold,
-                                  ),
-                                ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: claimedReward ? AppColors.accent : AppColors.primary,
+                                      foregroundColor: AppColors.surface,
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      minimumSize: const Size(200, 0),
+                                    ),
+                                    child: Text(
+                                      claimedReward ? 'Claimed' : 'Claim',
+                                      style: GoogleFonts.urbanist(
+                                        fontSize: 16,
+                                        fontWeight: AppFontWeight.bold,
+                                      ),
+                                    ),
+                                  );
+                                },
                               );
                             }
 
@@ -545,7 +562,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
               if (confirm != true) return;
 
               await ChallengeService().submitChallenge(widget.challengeId, userId);
-              await ChallengeService().updateFormChallengeProgress(widget.challengeId);
+              await ChallengeService().updateChallengeProgress(subtype: 'form', challengeId: widget.challengeId);
 
               _showSnackBar('Pledge submitted successfully!');
             },

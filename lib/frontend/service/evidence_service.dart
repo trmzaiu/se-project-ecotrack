@@ -90,7 +90,10 @@ class EvidenceService{
 
       Navigator.of(context).pushAndRemoveUntil(
         moveLeftRoute(EvidenceScreen(), settings: RouteSettings(name: "EvidenceScreen")),
-            (route) => route.settings.name != "UploadScreen" && route.settings.name != "EvidenceScreen" || route.isFirst,
+  (route) =>
+          route.settings.name != "UploadScreen" &&
+          route.settings.name != "EvidenceScreen" ||
+          route.isFirst
       );
 
       await _db.collection('evidences')
@@ -177,7 +180,7 @@ class EvidenceService{
 
         // Update challenge progress for "evidence" and the weekly task progress
         await Future.wait([
-          ChallengeService().updateChallengeProgress('evidence', evidence.point),
+          ChallengeService().updateChallengeProgress(subtype:'evidence', value: evidence.point),
           ChallengeService().updateWeeklyProgressForTasks(evidence.userId, 'evidence', category: evidence.category.toLowerCase())
         ]);
 
@@ -211,7 +214,7 @@ class EvidenceService{
       Map<String, int> categoryCount = {};
 
       for (var doc in querySnapshot.docs) {
-        var data = doc.data() as Map<String, dynamic>;
+        var data = doc.data();
         String category = data['category'];
 
         categoryCount[category] = (categoryCount[category] ?? 0) + 1;

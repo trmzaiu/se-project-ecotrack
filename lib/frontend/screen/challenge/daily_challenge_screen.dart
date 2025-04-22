@@ -32,9 +32,9 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
     }
   }
 
-  Future<void> completeChallenge() async {
+  Future<void> completeChallenge(int value) async {
     try {
-      await ChallengeService().completeChallenge(userId);
+      await ChallengeService().completeChallenge(userId, value);
       print("Challenge completed successfully.");
     } catch (e) {
       print("Error in completeChallenge: $e");
@@ -163,7 +163,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                         child: InkWell(
                           onTap: answered
                               ? null
-                              : () {
+                              : () async {
                             setLocalState(() {
                               selectedIndex = index;
                             });
@@ -177,9 +177,12 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                             _showResultDialog(selectedIndex == correct);
 
                             if (selectedIndex == correct) {
-                              getChallenge();
-                              completeChallenge();
+                              await getChallenge();
+                              await completeChallenge(1);
+                            } else {
+                              await completeChallenge(0);
                             }
+
                           },
                           child: Center(
                             child: Text(
@@ -300,7 +303,9 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
 
                         if (allCorrect) {
                           await getChallenge();
-                          await completeChallenge();
+                          await completeChallenge(1);
+                        } else {
+                          await completeChallenge(0);
                         }
                       }
                     }
