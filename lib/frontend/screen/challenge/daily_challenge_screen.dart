@@ -20,7 +20,6 @@ class DailyChallengeScreen extends StatefulWidget {
 }
 
 class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
-  Map<String, dynamic>? _challengeData;
   final Map<String, bool> _itemDragged = {};
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
 
@@ -46,7 +45,6 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      backgroundColor: Colors.transparent,
       body: Container(
       color: AppColors.secondary,
         child: Column(
@@ -58,30 +56,47 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
             Expanded(
               child: Container(
                 width: double.infinity,
-                height: getPhoneHeight(context) - 100,
                 color: AppColors.background,
-                child: Center(
+                child: SingleChildScrollView(
                   child: FutureBuilder<DailyChallenge?>(
                     future: ChallengeService().loadDailyChallenge(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
+                        return Container(
+                          margin: const EdgeInsets.only(top: 60),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
                       } else if (snapshot.hasError || !snapshot.hasData) {
                         return const Center(child: Text('Failed to load challenge.'));
                       } else {
                         final challenge = snapshot.data!;
                         if (challenge is DailyQuizChallenge) {
-                          return Padding(
+                          return Container(
                             padding: const EdgeInsets.all(30),
+                            margin: const EdgeInsets.only(top: 60),
                             child: _buildQuiz(challenge),
                           );
                         } else if (challenge is DailyDragDropChallenge) {
-                          return Padding(
+                          return Container(
                             padding: const EdgeInsets.all(30),
+                            margin: const EdgeInsets.only(top: 30),
                             child: _buildDragDropGame(challenge),
                           );
                         } else {
-                          return const Center(child: Text('Unsupported challenge type.'));
+                          return Container(
+                            margin: const EdgeInsets.only(top: 60),
+                            child: Center(
+                              child: Text(
+                                'Unsupported challenge type.',
+                                style: GoogleFonts.urbanist(
+                                  fontSize: 16,
+                                  fontWeight: AppFontWeight.medium,
+                                  color: AppColors.secondary,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          );
                         }
                       }
                     },

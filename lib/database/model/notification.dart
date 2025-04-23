@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Notification {
+class Notifications {
   final String notificationId;
   final String userId;
   final String title;
@@ -10,7 +10,7 @@ class Notification {
   final DateTime time;
   final String token;
 
-  Notification({
+  Notifications({
     required this.notificationId,
     required this.userId,
     required this.title,
@@ -36,8 +36,8 @@ class Notification {
   }
 
   // Converts Firestore document data to Notification object
-  static Notification fromMap(Map<String, dynamic> data, String id) {
-    return Notification(
+  static Notifications fromMap(Map<String, dynamic> data, String id) {
+    return Notifications(
       notificationId: id,
       userId: data['userId'],
       title: data['title'],

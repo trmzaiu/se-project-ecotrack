@@ -21,7 +21,7 @@ import 'community_challenge_card.dart';
 class CommunityChallengeScreen extends StatefulWidget {
   final int index;
 
-  CommunityChallengeScreen({super.key, this.index = 0});
+  CommunityChallengeScreen({this.index = 0});
 
   @override
   _CommunityChallengeScreenState createState() => _CommunityChallengeScreenState();
@@ -194,7 +194,7 @@ Widget _buildAllCommunityContent() {
                   ),
                 );
               },
-              child: CommunityChallengeCard(data: challenge.toMap())
+              child: CommunityChallengeCard(challenge: challenge)
             );
           },
         );
@@ -242,7 +242,7 @@ Widget _buildActiveCommunityContent() {
                     ),
                   );
                 },
-                child: CommunityChallengeCard(data: challenge.toMap())
+                child: CommunityChallengeCard(challenge: challenge)
             );
           },
         );
@@ -291,7 +291,7 @@ Widget _buildUseJoinedContent(String userId) {
                   ),
                 );
               },
-              child: CommunityChallengeCard(data: challenge.toMap())
+              child: CommunityChallengeCard(challenge: challenge)
             );
           },
         );

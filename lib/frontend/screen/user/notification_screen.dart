@@ -10,7 +10,7 @@ import 'package:wastesortapp/frontend/service/notification_service.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
-import '../../../database/model/evidence.dart';
+import '../../../database/model/notification.dart';
 import '../../utils/format_time.dart';
 import '../../utils/route_transition.dart';
 import '../../widget/bar_title.dart';
@@ -25,7 +25,7 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   final NotificationService _notificationService = NotificationService();
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
-  late final Stream<List<Map<String, dynamic>>> _notificationsStream;
+  late final Stream<List<Notifications>> _notificationsStream;
 
   @override
   void initState() {
@@ -33,40 +33,24 @@ class _NotificationScreenState extends State<NotificationScreen> {
     _notificationsStream = _notificationService.fetchNotifications(userId);
   }
 
-  Widget buildNotificationItem(
-      BuildContext context,
-      String notificationId,
-      String type,
-      String title,
-      String body,
-      bool isRead,
-      String time
-  ) {
+  Widget buildNotificationItem(Notifications notification) {
     EvidenceService evidenceService = EvidenceService(context);
 
     return GestureDetector(
       onTap: () async {
-        if (type == 'water') {
+        if (notification.type == 'water') {
           Navigator.of(context).push(moveUpRoute(VirtualTreeScreen()));
-        } else if (type == 'evidence') {
-          final evidence = await evidenceService.getEvidenceById(notificationId);
+        } else if (notification.type == 'evidence') {
+          final evidence = await evidenceService.getEvidenceById(notification.notificationId);
           print("Evidence details: ${evidence!.toMap()}");
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EvidenceDetailScreen(
-                category: evidence.category,
-                status: evidence.status,
-                description: '${evidence.description}',
-                date: formatDate(evidence.date),
-                point: evidence.point,
-                imagePaths: evidence.imagesUrl,
-              ),
+          Navigator.of(context).push(
+            moveLeftRoute(
+                EvidenceDetailScreen(evidence: evidence)
             ),
           );
         }
-        await NotificationService().markNotificationAsRead(notificationId);
-        print("Notification $notificationId marked as read.");
+        await NotificationService().markNotificationAsRead(notification.notificationId);
+        print("Notification $notification.notificationId marked as read.");
       },
       child: Padding(
         padding: const EdgeInsets.only(top: 10),
@@ -99,7 +83,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      notification.title,
                       style: GoogleFonts.urbanist(
                         color: AppColors.secondary,
                         fontSize: 14,
@@ -107,7 +91,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ),
                     ),
                     Text(
-                      body,
+                      notification.body,
                       style: GoogleFonts.urbanist(
                         color: AppColors.tertiary,
                         fontSize: 14,
@@ -117,20 +101,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   ],
                 ),
               ),
-              Container(
+              SizedBox(
                 height: 50,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      time,
+                      formatDate(notification.time, type: 'time'),
                       style: GoogleFonts.urbanist(
                         color: AppColors.tertiary,
                         fontSize: 12,
                         fontWeight: AppFontWeight.regular,
                       ),
                     ),
-                    if (isRead)
+                    if (notification.isRead)
                       Container(
                         width: 25,
                         height: 25,
@@ -246,7 +230,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           Expanded(
             child: Container(
               color: AppColors.background,
-              child: StreamBuilder<List<Map<String, dynamic>>>(
+              child: StreamBuilder<List<Notifications>>(
                 stream: _notificationsStream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -265,7 +249,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   }
 
                   final grouped = groupFromRawList(snapshot.data!);
-                  print("Notification Data: ${snapshot.data}");
                   return SingleChildScrollView(
                     child: Container(
                       width: double.infinity,
@@ -278,20 +261,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: grouped.map((group) {
                             final date = group['date'];
-                            final items = group['items'] as List<Map<String, dynamic>>;
-                            final children = items.map((item) {
-                              return buildNotificationItem(
-                                context,
-                                item['notificationId'],
-                                item['type'],
-                                item['title'],
-                                item['body'],
-                                item['isRead'],
-                                item['time'],
-                              );
+                            final List<Notifications> items = group['items'];
+                            final item = items.map((item) {
+                              return buildNotificationItem(item);
                             }).toList();
 
-                            return buildNotificationCard(date, children);
+                            return buildNotificationCard(date, item);
                           }).toList()
                         )
                       )

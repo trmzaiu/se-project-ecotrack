@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../../../database/model/challenge.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
+import '../../utils/format_time.dart';
 
 class CommunityChallengeCard extends StatefulWidget {
-  final Map<String, dynamic> data;
+  final CommunityChallenge challenge;
 
-  const CommunityChallengeCard({super.key, required this.data});
+  const CommunityChallengeCard({required this.challenge});
 
   @override
   State<CommunityChallengeCard> createState() => _CommunityChallengeCardState();
@@ -19,13 +21,13 @@ class _CommunityChallengeCardState extends State<CommunityChallengeCard> {
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.data['title'] ?? '';
-    final image = widget.data['image'] ?? '';
-    final progress = (widget.data['progress'] ?? 0);
-    final target = (widget.data['targetValue'] ?? 1000);
-    final participants = (widget.data['participants'] as List?)?.length ?? 0;
-    final startDate =  DateFormat('dd MMM, yy').format(widget.data['startDate'].toDate());
-    final endDate =  DateFormat('dd MMM, yy').format(widget.data['endDate'].toDate());
+    final title = widget.challenge.title;
+    final image = widget.challenge.image;
+    final progress = widget.challenge.progress;
+    final target = widget.challenge.targetValue;
+    final participants = widget.challenge.participants.length;
+    final startDate =  formatDate(widget.challenge.startDate.toDate(), type: 'compactShort');
+    final endDate =  formatDate(widget.challenge.endDate.toDate(), type: 'compactShort');
 
     final progressRatio = (progress / target).clamp(0.0, 1.0);
     final percentage = (progressRatio * 100).toStringAsFixed(2);

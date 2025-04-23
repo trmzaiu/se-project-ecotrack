@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
 
 import '../../database/model/challenge.dart';
+import '../utils/format_time.dart';
 import 'notification_service.dart';
 
 class ChallengeService {
@@ -18,7 +19,7 @@ class ChallengeService {
   // --- Daily Challenges ---
   /// Load the daily challenge for today
   Future<DailyChallenge> loadDailyChallenge() async {
-    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
+    final now = DateTime.now();
     final today = DateFormat('yyyy-MM-dd').format(now);
     final yesterday = DateFormat('yyyy-MM-dd').format(now.subtract(const Duration(days: 1)));
 
@@ -115,7 +116,7 @@ class ChallengeService {
       if (timestamp == null) return false;
 
       final completedDailyDate = timestamp.toDate();
-      final today = DateTime.now().toUtc().add(const Duration(hours: 7));
+      final today = DateTime.now();
 
       return _isSameDay(completedDailyDate, today);
     });
@@ -132,7 +133,7 @@ class ChallengeService {
 
   /// Complete the daily challenge and update streak
   Future<void> completeChallenge(String userId, int value) async {
-    final today = DateTime.now().toUtc().add(const Duration(hours: 7));
+    final today = DateTime.now();
 
     try {
       final userRef = _firestore.collection('users').doc(userId);
@@ -174,7 +175,7 @@ class ChallengeService {
         return;
       }
 
-      final today = DateTime.now().toUtc().add(const Duration(hours: 7));
+      final today = DateTime.now();
       final yesterday = today.subtract(Duration(days: 1));
 
       final missedYesterday = !_isSameDay(lastCompletedDailyDate, yesterday) &&
@@ -279,7 +280,7 @@ class ChallengeService {
 
   /// Generate a string key for the current year-week (e.g., 2025-16)
   String getCurrentWeekLog() {
-    final now = DateTime.now().toUtc().add(Duration(hours: 7));
+    final now = DateTime.now();
     final firstDayOfYear = DateTime(now.year, 1, 1);
     final daysSinceFirstDay = now.difference(firstDayOfYear).inDays;
 
@@ -557,7 +558,6 @@ class ChallengeService {
       }
 
       final data = snapshot.data() as Map<String, dynamic>;
-      final challengeType = data['type'] as String;
 
       return CommunityChallenge.fromMap(data, snapshot.id);
     });
@@ -696,7 +696,7 @@ class ChallengeService {
     final endTimestamp = doc.data()?['endDate'] as Timestamp?;
     if (endTimestamp == null) return true;
 
-    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
+    final now = DateTime.now();
     final endDate = endTimestamp.toDate();
 
     return now.isAfter(endDate);
@@ -716,7 +716,7 @@ class ChallengeService {
 
     if (startTimestamp == null || endTimestamp == null) return false;
 
-    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
+    final now = DateTime.now();
     final startDate = startTimestamp.toDate();
     final endDate = endTimestamp.toDate();
 
@@ -727,7 +727,7 @@ class ChallengeService {
   /// Submit the user's form for a challenge
   Future<void> submitChallenge(String challengeId, String userId) async {
     String formattedDate = DateFormat('dd-MM-yyyy')
-        .format(DateTime.now().toUtc().add(const Duration(hours: 7)));
+        .format(DateTime.now());
 
     final challengeDoc = await _firestore
         .collection('challenges')
@@ -769,9 +769,7 @@ class ChallengeService {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return Stream.value(false);
 
-    String formattedDate = DateFormat('dd-MM-yyyy').format(
-      DateTime.now().toUtc().add(const Duration(hours: 7)),
-    );
+    String formattedDate = formatDate(DateTime.now(), type: 'dashed');
 
     return _firestore.collection('challenges')
         .doc(challengeId)
@@ -884,16 +882,17 @@ class ChallengeService {
 
     if (!challengeDoc.exists) return;
 
-    final data = challengeDoc.data()!;
-    final int progress = data['progress'] ?? 0;
-    final int target = data['target'] ?? 0;
-    final Timestamp? endTimestamp = data['endDate'];
-    final int rewardPoint = data['rewardPoints'] ?? 0;
-    final List<String> participants = List<String>.from(data['participants'] ?? []);
-    final List<String> rewardedUsers = List<String>.from(data['rewardedUsers'] ?? []);
+    final CommunityChallenge challenge = CommunityChallenge.fromMap(challengeDoc.data()!, challengeId);
 
-    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
-    if (progress < target || (endTimestamp != null && now.isAfter(endTimestamp.toDate()))) {
+    final int progress = challenge.progress;
+    final int target = challenge.targetValue;
+    final Timestamp endDate = challenge.endDate;
+    final int rewardPoint = challenge.rewardPoints;
+    final List<String> participants = challenge.participants;
+    final List<String> rewardedUsers = challenge.rewardedUsers;
+
+    final now = DateTime.now();
+    if (progress < target || (now.isAfter(endDate.toDate()))) {
       print("Challenge not completed or expired.");
       return;
     }

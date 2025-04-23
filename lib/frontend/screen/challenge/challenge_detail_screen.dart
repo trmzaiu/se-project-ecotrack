@@ -16,6 +16,7 @@ import '../../../main.dart';
 import '../../../theme/colors.dart';
 import '../../service/challenge_service.dart';
 import '../../service/user_service.dart';
+import '../../utils/format_time.dart';
 import '../auth/login_screen.dart';
 import '../../widget/custom_dialog.dart';
 import '../../utils/route_transition.dart';
@@ -70,14 +71,6 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
         }
       });
     });
-  }
-
-  String _formatDuration(Duration d) {
-    if (d == Duration.zero) return "Challenge ended";
-    if (d.inDays >= 1) return "${d.inDays} ${d.inDays == 1 ? 'day' : 'days'}";
-    if (d.inHours >= 1) return "${d.inHours} ${d.inHours == 1 ? 'hour' : 'hours'}";
-    if (d.inMinutes >= 1) return "${d.inMinutes} ${d.inMinutes == 1 ? 'minute' : 'minutes'}";
-    return "${d.inSeconds} ${d.inSeconds == 1 ? 'second' : 'seconds'}";
   }
 
   @override
@@ -306,7 +299,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                                           ),
                                         ),
                                         TextSpan(
-                                          text: _formatDuration(remainingTime),
+                                          text: formatDuration(remainingTime, 'Challenge ended'),
                                           style: GoogleFonts.urbanist(
                                             fontSize: 14,
                                             color: remainingTime == Duration.zero

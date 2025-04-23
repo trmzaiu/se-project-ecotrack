@@ -15,6 +15,7 @@ import 'package:wastesortapp/theme/fonts.dart';
 import '../../../database/model/evidence.dart';
 import '../../../theme/colors.dart';
 import '../../service/evidence_service.dart';
+import '../../utils/format_time.dart';
 import '../../widget/bar_title.dart';
 
 class EvidenceScreen extends StatefulWidget {
@@ -269,17 +270,10 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
             return GestureDetector(
               onTap: () {
                 preloadImages(filteredList, context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EvidenceDetailScreen(
-                      category: item.category,
-                      status: item.status,
-                      point: item.point,
-                      date: DateFormat('dd MMM, yyyy').format(item.date),
-                      description: item.description,
-                      imagePaths: item.imagesUrl,
-                    )),
+                Navigator.of(context).push(
+                  moveLeftRoute(
+                    EvidenceDetailScreen(evidence: item)
+                  ),
                 );
               },
               child:  Container(
@@ -327,7 +321,8 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
                               letterSpacing: 0.5,
                             ),
                           ),
-                          Text(DateFormat('dd MMM, yyyy').format(item.date),
+                          Text(
+                            formatDate(item.date, type: 'compactLong'),
                             style: GoogleFonts.urbanist(
                               fontSize: 12,
                               color: AppColors.tertiary,

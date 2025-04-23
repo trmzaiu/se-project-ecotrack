@@ -456,7 +456,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                           );
                                         },
-                                        child: CommunityChallengeCard(data:  challenge.toMap())
+                                        child: CommunityChallengeCard(challenge: challenge)
                                       );
                                     },
                                   )

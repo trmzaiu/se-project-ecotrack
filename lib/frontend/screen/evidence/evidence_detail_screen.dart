@@ -4,28 +4,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wastesortapp/database/model/evidence.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
+import '../../utils/format_time.dart';
 import '../../widget/bar_title.dart';
 
 class EvidenceDetailScreen extends StatefulWidget {
-  final String category;
-  final String status;
-  final int point;
-  final String date;
-  final String? description;
-  final List<String> imagePaths;
+  final Evidences evidence;
 
-  EvidenceDetailScreen({
-    required this.category,
-    required this.status,
-    required this.point,
-    required this.date,
-    required this.description,
-    required this.imagePaths,
-  });
+  EvidenceDetailScreen({super.key, required this.evidence});
 
   @override
   _EvidenceScreenState createState() => _EvidenceScreenState();
@@ -69,7 +59,7 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                           height: phoneWidth - 60,
                           child: PageView.builder(
                             controller: _pageController,
-                            itemCount: widget.imagePaths.length,
+                            itemCount: widget.evidence.imagesUrl.length,
                             onPageChanged: (index) {
                               setState(() {
                                 _currentIndex = index;
@@ -79,7 +69,7 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(20),
                                 child: CachedNetworkImage(
-                                  imageUrl: widget.imagePaths[index],
+                                  imageUrl: widget.evidence.imagesUrl[index],
                                   useOldImageOnUrlChange: true,
                                   width: phoneWidth - 60,
                                   height: phoneWidth - 60,
@@ -94,29 +84,29 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                           right: 10,
                           top: 10,
                           child: Container(
-                              width: 45,
-                              height: 25,
-                              decoration: ShapeDecoration(
-                                color: Colors.black.withOpacity(0.3),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
+                            width: 45,
+                            height: 25,
+                            decoration: ShapeDecoration(
+                              color: Colors.black.withOpacity(0.3),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: AnimatedSwitcher(
+                              duration: Duration(milliseconds: 200),
+                              child: Text(
+                                '${_currentIndex + 1}/${widget.evidence.imagesUrl.length}',
+                                key: ValueKey(_currentIndex),
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.urbanist(
+                                  color: AppColors.surface,
+                                  fontSize: 12,
+                                  fontWeight: AppFontWeight.bold,
+                                  letterSpacing: 0.25,
                                 ),
                               ),
-                              alignment: Alignment.center,
-                              child: AnimatedSwitcher(
-                                duration: Duration(milliseconds: 200),
-                                child: Text(
-                                  '${_currentIndex + 1}/${widget.imagePaths.length}',
-                                  key: ValueKey(_currentIndex),
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.urbanist(
-                                    color: AppColors.surface,
-                                    fontSize: 12,
-                                    fontWeight: AppFontWeight.bold,
-                                    letterSpacing: 0.25,
-                                  ),
-                                ),
-                              )
+                            )
                           ),
                         ),
 
@@ -149,7 +139,7 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
 
                         Positioned(
                           right: 10,
-                          child: _currentIndex < widget.imagePaths.length - 1
+                          child: _currentIndex < widget.evidence.imagesUrl.length - 1
                               ? GestureDetector(
                             onTap: () {
                               _pageController.nextPage(
@@ -182,7 +172,7 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                   SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(widget.imagePaths.length, (index) {
+                    children: List.generate(widget.evidence.imagesUrl.length, (index) {
                       return AnimatedContainer(
                         duration: Duration(milliseconds: 300),
                         margin: EdgeInsets.symmetric(horizontal: 3),
@@ -195,37 +185,39 @@ class _EvidenceScreenState extends State<EvidenceDetailScreen> {
                       );
                     }),
                   ),
+
                   SizedBox(height: 60),
+
                   SizedBox(
                       width: phoneWidth - 60,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _infoColumn('Category', widget.category, (phoneWidth - 60) / 2),
-                          _infoColumn('Status', widget.status, (phoneWidth - 60) / 2)
-                        ],
-                      )
-                  ),
-                  SizedBox(height: 20),
-                  SizedBox(
-                      width: phoneWidth - 60,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _infoColumn('Points Earned', '${widget.point} pts', (phoneWidth - 60) / 2),
-                          _infoColumn('Date', widget.date, (phoneWidth - 60) / 2)
+                          _infoColumn('Category', widget.evidence.category, (phoneWidth - 60) / 2),
+                          _infoColumn('Status', widget.evidence.status, (phoneWidth - 60) / 2)
                         ],
                       )
                   ),
                   SizedBox(height: 20),
                   SizedBox(
                     width: phoneWidth - 60,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _infoColumn('Points Earned', '${widget.evidence.point} pts', (phoneWidth - 60) / 2),
+                        _infoColumn('Date', formatDate(widget.evidence.date, type: 'compactLong'), (phoneWidth - 60) / 2)
+                      ],
+                    )
+                  ),
+                  SizedBox(height: 20),
+                  SizedBox(
+                    width: phoneWidth - 60,
                     child:  _infoColumn(
-                        'Description',
-                        (widget.description != null && widget.description!.isNotEmpty)
-                            ? widget.description!
-                            : 'No description available',
-                        (phoneWidth - 60)),
+                    'Description',
+                    (widget.evidence.description!.isNotEmpty)
+                        ? widget.evidence.description!
+                        : 'No description',
+                    (phoneWidth - 60)),
                   )
                 ],
               ),

@@ -17,6 +17,7 @@ import 'package:wastesortapp/theme/colors.dart';
 import '../../../database/model/user.dart';
 import '../../../theme/fonts.dart';
 import '../../service/auth_service.dart';
+import '../../utils/format_time.dart';
 import '../../utils/phone_size.dart';
 import '../../widget/bar_title.dart';
 import '../../widget/input_dialog.dart';
@@ -169,7 +170,7 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   Future<void> showDatePicker(BuildContext context) async {
-    DateTime selectedDate = DateFormat("dd/MM/yyyy").parse(dateController.text);
+    DateTime selectedDate = parseDate(dateController.text, type: 'euroStyle');
     DateTime focusedDate = selectedDate;
     int selectedYear = selectedDate.year;
     int selectedMonth = selectedDate.month;
@@ -207,7 +208,7 @@ class _SettingScreenState extends State<SettingScreen> {
                               child: Row(
                                 children: [
                                   Text(
-                                    DateFormat.MMMM().format(DateTime(0, selectedMonth)),
+                                    getMonthName(selectedMonth),
                                     style: GoogleFonts.urbanist(
                                       fontSize: 18,
                                       fontWeight: AppFontWeight.medium,
@@ -242,7 +243,7 @@ class _SettingScreenState extends State<SettingScreen> {
                                 value: monthValue,
                                 enabled: !isDisabled,
                                 child: Text(
-                                  DateFormat.MMMM().format(DateTime(0, index + 1)),
+                                  getMonthName(index + 1),
                                   style: GoogleFonts.urbanist(
                                     fontSize: 16,
                                     fontWeight: AppFontWeight.medium,
@@ -420,7 +421,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       onDaySelected: (selectedDay, focusedDay) async {
                         setState(() {
                           selectedDOB = selectedDay;
-                          dateController.text = DateFormat("dd/MM/yyyy").format(selectedDay);
+                          dateController.text = formatDate(selectedDay, type: 'euroStyle');
                         });
 
                         await UserService().updateUserProfile(userId, dob: selectedDOB!);
@@ -597,7 +598,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
                           if (user.dob != null && user.dob.toString().isNotEmpty) {
                             try {
-                              selectedDOB = DateFormat('dd/MM/yyyy').parse(user.dob as String);
+                              selectedDOB = user.dob;
                             } catch (e) {
                               print('❌ Error parsing DOB: $e');
                               selectedDOB = DateTime.now();
@@ -606,7 +607,7 @@ class _SettingScreenState extends State<SettingScreen> {
                             selectedDOB = DateTime.now();
                           }
 
-                          dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
+                          dateController.text = formatDate(selectedDOB!, type: 'euroStyle');
                           if (user.country.isNotEmpty) {
                             selectedCountryNotifier.value = Country.tryParse(user.country);
                           }

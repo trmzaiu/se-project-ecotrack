@@ -430,7 +430,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ),
                                     );
                                   },
-                                  child: CommunityChallengeCard(data:  challenge.toMap())
+                                  child: CommunityChallengeCard(challenge: challenge)
                               );
                             },
                           )

@@ -8,8 +8,9 @@ import '../../database/model/notification.dart';
 import '../screen/user/notification_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class NotificationService {
-  // Singleton pattern
+  // Singleton pattern for shared instance
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
@@ -17,72 +18,81 @@ class NotificationService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  /// Sends a notification to a specific user and stores it in Firestore
   Future<void> sendNotificationToUser({
-    String notificationId ='',
+    String notificationId = '',
     required String receiverUserId,
     required String title,
     required String body,
     required String type,
   }) async {
-    final userDoc = await _db
-        .collection('users')
-        .doc(receiverUserId)
-        .get();
-
+    final userDoc = await _db.collection('users').doc(receiverUserId).get();
     final token = userDoc.data()?['fcmToken'];
 
+    // Generate a new notification ID unless it's for an 'evidence' update
     if (type != 'evidence') {
       notificationId = _db.collection('notifications').doc().id;
     }
 
     if (token != null) {
-      await _db.collection('notifications').doc(notificationId).set({
-        'notificationId': notificationId,
-        'title': title,
-        'body': body,
-        'type': type,
-        'time': DateTime.now(),
-        'userId': receiverUserId,
-        'token': token,
-        'isRead': false,
-      });
-    }
+      final notification = Notifications(
+        notificationId: notificationId,
+        userId: receiverUserId,
+        title: title,
+        body: body,
+        type: type,
+        isRead: false,
+        time: DateTime.now(),
+        token: token,
+      );
 
-    showNotification(title: title, body: body);
+      await _db
+          .collection('notifications')
+          .doc(notificationId)
+          .set(notification.toMap());
+
+      showNotification(title: title, body: body);
+    }
   }
 
-  Stream<List<Map<String, dynamic>>> fetchNotifications(String userId) {
+  /// Fetches real-time notifications for the current user
+  Stream<List<Notifications>> fetchNotifications(String userId) {
     return _db
         .collection('notifications')
         .where('userId', isEqualTo: userId)
         .orderBy('time', descending: true)
         .snapshots()
         .map((snapshot) {
-      final rawList = snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['notificationId'] = doc.id;
-        return data;
+      return snapshot.docs.map((doc) {
+        return Notifications.fromMap(doc.data(), doc.id);
       }).toList();
-
-      return rawList;
     });
   }
 
   static final FlutterLocalNotificationsPlugin _plugin =
   FlutterLocalNotificationsPlugin();
 
+  /// Initializes the local notification system
   static Future<void> init() async {
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const initSettings = InitializationSettings(android: androidInit);
-    await _plugin.initialize(initSettings,
-        onDidReceiveNotificationResponse: (response) {
-          if (response.payload == 'notification-page') {
-            navigatorKey.currentState?.pushNamed('/notification');
-          }
-        });
+
+    await _plugin.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: (response) {
+        // Navigate to notification page when clicked
+        if (response.payload == 'notification-page') {
+          navigatorKey.currentState?.pushNamed('/notification');
+        }
+      },
+    );
   }
 
-  static Future<void> showNotification({required String title, required String body}) async {
+  /// Displays a local notification
+  static Future<void> showNotification({
+    required String title,
+    required String body,
+  }) async {
     const androidDetails = AndroidNotificationDetails(
       'default_channel',
       'User Notifications',
@@ -90,6 +100,7 @@ class NotificationService {
       priority: Priority.high,
       playSound: true,
     );
+
     const details = NotificationDetails(android: androidDetails);
 
     await _plugin.show(
@@ -101,6 +112,7 @@ class NotificationService {
     );
   }
 
+  /// Requests notification permissions from the user
   static Future<void> requestNotificationPermission() async {
     final status = await Permission.notification.status;
     if (!status.isGranted) {
@@ -108,6 +120,7 @@ class NotificationService {
     }
   }
 
+  /// Returns the number of unread notifications for the current user
   Stream<int> countUnreadNotifications() {
     final userId = _auth.currentUser?.uid;
     if (userId == null) return Stream.value(0);
@@ -120,6 +133,8 @@ class NotificationService {
         .map((snapshot) => snapshot.docs.length);
   }
 
+
+  /// Marks all notifications as read for the current user
   Future<void> markAllNotificationsAsRead() async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) return;
@@ -137,10 +152,16 @@ class NotificationService {
     await batch.commit();
   }
 
+
+  /// Marks a specific notification as read
   Future<void> markNotificationAsRead(String notificationId) async {
-    await _db.collection('notifications').doc(notificationId).update({'isRead': true});
+    await _db
+        .collection('notifications')
+        .doc(notificationId)
+        .update({'isRead': true});
   }
 
+  /// Deletes all notifications for the current user
   Future<bool> deleteAllNotifications() async {
     try {
       final userId = _auth.currentUser?.uid;
