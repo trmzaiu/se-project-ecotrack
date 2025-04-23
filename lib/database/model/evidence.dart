@@ -1,9 +1,8 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Evidences {
-  final String userId;
   final String evidenceId;
+  final String userId;
   final String category;
   final List<String> imagesUrl;
   final String? description;
@@ -12,8 +11,8 @@ class Evidences {
   final int point;
 
   Evidences({
-    required this.userId,
     required this.evidenceId,
+    required this.userId,
     required this.category,
     required this.imagesUrl,
     this.description,
@@ -22,33 +21,30 @@ class Evidences {
     required this.point,
   });
 
-  // Convert User object to a Map for Firestore
-  // Use to store date to Firestore
+  // Convert to Map for Firestore storage
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,
-      'evidenceId': evidenceId,
       'category': category,
       'imagesUrl': imagesUrl,
       'description': description,
-      'date':  Timestamp.fromDate(date),
+      'date': Timestamp.fromDate(date),
       'status': status,
       'point': point,
     };
   }
 
-  factory Evidences.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-
+  // Create an Evidence instance from Firestore data + document ID
+  factory Evidences.fromMap(Map<String, dynamic> map, String documentId) {
     return Evidences(
-      userId: data['userId'],
-      evidenceId: doc.id,
-      category: data['category'],
-      imagesUrl: List<String>.from(data['imagesUrl']),
-      description: data['description'] ?? '',
-      date: (data['date'] as Timestamp).toDate(),
-      status: data['status'],
-      point: data['point'],
+      evidenceId: documentId,
+      userId: map['userId'] ?? '',
+      category: map['category'] ?? '',
+      imagesUrl: List<String>.from(map['imagesUrl'] ?? []),
+      description: map['description'] ?? '',
+      date: (map['date'] as Timestamp).toDate(),
+      status: map['status'] ?? '',
+      point: map['point'] ?? 0,
     );
   }
 }

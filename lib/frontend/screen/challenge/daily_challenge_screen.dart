@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
+import '../../../database/model/challenge.dart';
 import '../../../theme/colors.dart';
 import '../../service/challenge_service.dart';
 import '../../service/tree_service.dart';
@@ -60,7 +61,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                 height: getPhoneHeight(context) - 100,
                 color: AppColors.background,
                 child: Center(
-                  child: FutureBuilder<Map<String, dynamic>>(
+                  child: FutureBuilder<DailyChallenge?>(
                     future: ChallengeService().loadDailyChallenge(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -68,16 +69,16 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                       } else if (snapshot.hasError || !snapshot.hasData) {
                         return const Center(child: Text('Failed to load challenge.'));
                       } else {
-                        _challengeData = snapshot.data!;
-                        if (_challengeData!['type'] == 'daily' && _challengeData!['subtype'] == 'quiz') {
+                        final challenge = snapshot.data!;
+                        if (challenge is DailyQuizChallenge) {
                           return Padding(
                             padding: const EdgeInsets.all(30),
-                            child: _buildQuiz(),
+                            child: _buildQuiz(challenge),
                           );
-                        } else if (_challengeData!['type'] == 'daily' && _challengeData!['subtype'] == 'dragdrop') {
+                        } else if (challenge is DailyDragDropChallenge) {
                           return Padding(
                             padding: const EdgeInsets.all(30),
-                            child: _buildDragDropGame(),
+                            child: _buildDragDropGame(challenge),
                           );
                         } else {
                           return const Center(child: Text('Unsupported challenge type.'));
@@ -95,10 +96,10 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
   }
 
   /// QUIZ QUESTION
-  Widget _buildQuiz() {
-    String question = _challengeData!['question'];
-    List<String> options = List<String>.from(_challengeData!['options']);
-    int correct = _challengeData!['correct'];
+  Widget _buildQuiz(DailyQuizChallenge challenge) {
+    String question = challenge.question;
+    List<String> options = challenge.options;
+    int correct = challenge.correct;
 
     int? selectedIndex = -1;
     bool answered = false;
@@ -174,7 +175,9 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                               });
                             });
 
-                            _showResultDialog(selectedIndex == correct);
+                            await Future.delayed(Duration(seconds: 2), () {
+                              _showResultDialog(selectedIndex == correct);
+                            });
 
                             if (selectedIndex == correct) {
                               await getChallenge();
@@ -208,9 +211,9 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
   }
 
   /// DRAG & DROP GAME: ORGANIC VS INORGANIC
-  Widget _buildDragDropGame() {
-    String question = _challengeData!['question'];
-    List<dynamic> items = List.from(_challengeData!['items'])..shuffle(Random());
+  Widget _buildDragDropGame(DailyDragDropChallenge challenge) {
+    String question = challenge.question;
+    List<dynamic> items = List.from(challenge.items)..shuffle(Random());
 
     List bins = [ 'recyclable', 'organic', 'hazardous', 'general'];
 
@@ -280,9 +283,6 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                     onAccept: (data) async {
                       var parts = data.split('::');
                       String label = parts[0];
-                      String correctBin = parts[1];
-
-                      bool isCorrect = binType == correctBin;
 
                       setLocalState(() {
                         _itemDragged[label] = true;
@@ -299,7 +299,9 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                             break;
                           }
                         }
-                        _showResultDialog(allCorrect);
+                        await Future.delayed(Duration(seconds: 2), () {
+                          _showResultDialog(allCorrect);
+                        });
 
                         if (allCorrect) {
                           await getChallenge();

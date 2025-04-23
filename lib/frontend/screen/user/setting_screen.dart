@@ -14,7 +14,9 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:wastesortapp/frontend/service/user_service.dart';
 import 'package:wastesortapp/theme/colors.dart';
 
+import '../../../database/model/user.dart';
 import '../../../theme/fonts.dart';
+import '../../service/auth_service.dart';
 import '../../utils/phone_size.dart';
 import '../../widget/bar_title.dart';
 import '../../widget/input_dialog.dart';
@@ -26,9 +28,7 @@ class SettingScreen extends StatefulWidget {
 
 class _SettingScreenState extends State<SettingScreen> {
   final TextEditingController dateController = TextEditingController();
-  final TextEditingController currentPasswordController = TextEditingController();
 
-  final String currentEmail = FirebaseAuth.instance.currentUser?.email ?? "";
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
 
   ValueNotifier<Country?> selectedCountryNotifier = ValueNotifier<Country?>(null);
@@ -36,7 +36,6 @@ class _SettingScreenState extends State<SettingScreen> {
   Map<String, dynamic>? user;
   bool _isDialogOpen = false;
   bool isDataInitialized = false;
-  Country? selectedCountry;
   DateTime? selectedDOB;
   File? selectedImage;
 
@@ -71,7 +70,7 @@ class _SettingScreenState extends State<SettingScreen> {
     }
 
     try {
-      await UserService().updateUserPassword(newPassword);
+      await AuthenticationService().updateUserPassword(newPassword);
       _showSnackBar('Password updated successfully');
     } catch (e) {
       print('Failed to update password: $e');
@@ -587,7 +586,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     children: [
                       SizedBox(height: 30),
 
-                      StreamBuilder<Map<String, dynamic>>(
+                      StreamBuilder<Users?>(
                         stream: UserService().getCurrentUser(userId),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting && !_isDialogOpen) {
@@ -596,40 +595,30 @@ class _SettingScreenState extends State<SettingScreen> {
 
                           final user = snapshot.data!;
 
-                          if (!_isDialogOpen && !isDataInitialized) {
-                            final user = snapshot.data ?? {
-                              'photoUrl': '',
-                              'name': userId.substring(0, 10),
-                              'email': '',
-                              'dob': '',
-                              'country': ''
-                            };
-
-                            if (user['dob'] != null && user['dob'].toString().isNotEmpty) {
-                              try {
-                                selectedDOB = DateFormat('dd/MM/yyyy').parse(user['dob']);
-                              } catch (e) {
-                                print('❌ Error parsing DOB: $e');
-                                selectedDOB = DateTime.now();
-                              }
-                            } else {
+                          if (user.dob != null && user.dob.toString().isNotEmpty) {
+                            try {
+                              selectedDOB = DateFormat('dd/MM/yyyy').parse(user.dob as String);
+                            } catch (e) {
+                              print('❌ Error parsing DOB: $e');
                               selectedDOB = DateTime.now();
                             }
-
-                            dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
-                            if (user['country'] != null && user['country'].isNotEmpty) {
-                              selectedCountryNotifier.value = Country.tryParse(user['country']);
-                            }
-                            isDataInitialized = true;
+                          } else {
+                            selectedDOB = DateTime.now();
                           }
+
+                          dateController.text = DateFormat('dd/MM/yyyy').format(selectedDOB!);
+                          if (user.country.isNotEmpty) {
+                            selectedCountryNotifier.value = Country.tryParse(user.country);
+                          }
+                          isDataInitialized = true;
 
                           return Column(
                             children: [
-                              _avatarTile(user['photoUrl'] ?? ''),
-                              _informationTile('Name', user['name'] ?? '', () {
-                                _showDialogName(context, user['name'] ?? '');
+                              _avatarTile(user.photoUrl),
+                              _informationTile('Name', user.name, () {
+                                _showDialogName(context, user.name);
                               }),
-                              _informationTile('Email', user['email'] ?? '', () {}),
+                              _informationTile('Email', user.email ?? '', () {}),
                               _informationTile('Password', '••••••••••••', () {
                                 _showDialogPassword(context);
                               }),

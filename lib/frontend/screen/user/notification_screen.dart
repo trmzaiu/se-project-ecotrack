@@ -43,15 +43,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
       String time
   ) {
     EvidenceService evidenceService = EvidenceService(context);
-    Evidences evidence;
 
     return GestureDetector(
       onTap: () async {
         if (type == 'water') {
           Navigator.of(context).push(moveUpRoute(VirtualTreeScreen()));
         } else if (type == 'evidence') {
-          evidence = await evidenceService.getEvidenceById(notificationId);
-          print("Evidence details: ${evidence.toMap()}");
+          final evidence = await evidenceService.getEvidenceById(notificationId);
+          print("Evidence details: ${evidence!.toMap()}");
           Navigator.push(
             context,
             MaterialPageRoute(

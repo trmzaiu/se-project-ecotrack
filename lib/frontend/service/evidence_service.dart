@@ -29,6 +29,7 @@ class EvidenceService{
 
   EvidenceService(this.context);
 
+  /// Submit new evidence with image upload and description
   Future<void> submitData({
     required List<File> selectedImages,
     required String selectedCategory,
@@ -46,7 +47,7 @@ class EvidenceService{
     }
 
     try {
-      // Upload images concurrently
+      // Upload all selected images concurrently to Cloudinary
       List<String> uploadedImageUrls = await Future.wait(
         selectedImages.map((image) async => await CloudinaryConfig().uploadImage(image)),
       ).then((urls) => urls.whereType<String>().toList());
@@ -56,7 +57,7 @@ class EvidenceService{
         return;
       }
 
-      // Points calculation
+      // Calculate points based on image count and description length
       if (uploadedImageUrls.length == 5) {
         totalPoint += 10;
       } else if (uploadedImageUrls.length > 2) {
@@ -70,6 +71,7 @@ class EvidenceService{
         totalPoint += 5;
       }
 
+      // Create evidence object and save it to Firestore
       String evidenceId = _db.collection('evidences').doc().id;
 
       Evidences evidence = Evidences(
@@ -83,29 +85,27 @@ class EvidenceService{
         point: totalPoint,
       );
 
-      // Save evidence in Firestore
       await _db.collection('evidences').doc(evidenceId).set(evidence.toMap());
 
       _showSnackBar("Upload successful!", success: true);
 
+      // Navigate to Evidence screen after submission
       Navigator.of(context).pushAndRemoveUntil(
         moveLeftRoute(EvidenceScreen(), settings: RouteSettings(name: "EvidenceScreen")),
             (route) => route.settings.name != "UploadScreen" && route.settings.name != "EvidenceScreen" || route.isFirst,
       );
 
-      await _db.collection('evidences')
-          .doc(evidenceId)
-          .set(evidence.toMap());
-
-      // Schedule verification after delay
+      // Start auto-verification after delay
       Future.delayed(Duration(seconds: 5), () async {
         await verifyEvidence(evidence);
       });
+
     } catch (e) {
       _showSnackBar("Error uploading: $e");
     }
   }
 
+  /// Show a snackbar message
   void _showSnackBar(String message, {bool success = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -125,16 +125,24 @@ class EvidenceService{
     );
   }
 
-  Stream<List<Evidences>> fetchEvidences(String userId) {
-    return _db.collection('evidences')
+  /// Stream evidence list by userId, sorted by points
+  Stream<List<Evidences>> getEvidencesByUserId(String userId) {
+    return FirebaseFirestore.instance
+        .collection('evidences')
         .where('userId', isEqualTo: userId)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-        .map((doc) => Evidences.fromFirestore(doc))
-        .toList()
-      ..sort((a, b) => b.date.compareTo(a.date)));
+        .map((snapshot) {
+      final list = snapshot.docs.map((doc) {
+        return Evidences.fromMap(doc.data(), doc.id);
+      }).toList();
+
+      list.sort((a, b) => b.date.compareTo(a.date));
+
+      return list;
+    });
   }
 
+  /// Automatically verify an evidence using AI image classification
   Future<void> verifyEvidence(Evidences evidence) async {
     try {
       bool allMatched = true;
@@ -189,6 +197,7 @@ class EvidenceService{
     }
   }
 
+  /// Helper function to download image file from URL
   Future<File> _downloadImage(String imageUrl) async {
     final response = await http.get(Uri.parse(imageUrl));
     if (response.statusCode == 200) {
@@ -202,6 +211,7 @@ class EvidenceService{
     }
   }
 
+  /// Get number of accepted evidences by category for a user
   Stream<Map<String, int>> getTotalEachAcceptedCategory(String userId) {
     return _db.collection('evidences')
         .where('userId', isEqualTo: userId)
@@ -211,7 +221,7 @@ class EvidenceService{
       Map<String, int> categoryCount = {};
 
       for (var doc in querySnapshot.docs) {
-        var data = doc.data() as Map<String, dynamic>;
+        var data = doc.data();
         String category = data['category'];
 
         categoryCount[category] = (categoryCount[category] ?? 0) + 1;
@@ -221,6 +231,7 @@ class EvidenceService{
     });
   }
 
+  /// Get total number of accepted evidences for a user
   Stream<int> getTotalEvidences(String userId) {
     return _db.collection('evidences')
         .where('userId', isEqualTo: userId)
@@ -229,16 +240,21 @@ class EvidenceService{
         .map((querySnapshot) => querySnapshot.size);
   }
 
-  Future<Evidences> getEvidenceById(String evidenceId) async {
-    return _db.collection('evidences')
-        .doc(evidenceId)
-        .get()
-        .then((doc) {
-      if (doc.exists) {
-        return Evidences.fromFirestore(doc);
+  /// Get a specific evidence by ID
+  Future<Evidences?> getEvidenceById(String evidenceId) async {
+    try {
+      final doc = await _db
+          .collection('evidences')
+          .doc(evidenceId)
+          .get();
+
+      if (doc.exists && doc.data() != null) {
+        return Evidences.fromMap(doc.data()!, doc.id);
       } else {
-        throw Exception("Evidence not found");
+        return null;
       }
-    });
+    } catch (e) {
+      throw Exception("Evidence not found");
+    }
   }
 }

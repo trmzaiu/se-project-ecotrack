@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+
 class Users {
   final String userId;
   final String name;
@@ -6,7 +9,12 @@ class Users {
   final String photoUrl;
   final String country;
   final DateTime? completedDailyDate;
+  final bool completedWeekly;
   final int streak;
+  final String weekLog;
+  final int weekProgress;
+  final List<Map<String, dynamic>> weekTasks;
+  final String fcmToken;
 
   Users({
     required this.userId,
@@ -16,39 +24,64 @@ class Users {
     this.photoUrl = "",
     this.country = "",
     this.completedDailyDate,
+    this.completedWeekly = false,
     this.streak = 0,
+    this.weekLog = "",
+    this.weekProgress = 0,
+    this.weekTasks = const [],
+    this.fcmToken = "",
   });
 
+  // Convert to Map for Firestore storage
   Map<String, dynamic> toMap() {
     return {
-      'userId': userId,
       'name': name,
       'email': email,
-      'dob': dob?.toIso8601String(),
+      'dob': dob != null ? DateFormat('dd/MM/yyyy').format(dob!) : null,
       'photoUrl': photoUrl,
       'country': country,
-      'completedDailyDate': completedDailyDate?.toIso8601String(),
+      'completedDailyDate': completedDailyDate != null
+          ? Timestamp.fromDate(completedDailyDate!)
+          : null,
+      'completedWeekly': completedWeekly,
       'streak': streak,
+      'weekLog': weekLog,
+      'weekProgress': weekProgress,
+      'weekTasks': weekTasks,
+      'fcmToken': fcmToken,
     };
   }
 
-  factory Users.fromMap(Map<String, dynamic> map) {
-    final String userId = map['userId'] ?? '';
+  // Create a User instance from Firestore data + document ID
+  factory Users.fromMap(Map<String, dynamic> map, String documentId) {
+    DateTime? completedDailyDate;
+    if (map['completedDailyDate'] != null) {
+      completedDailyDate = (map['completedDailyDate'] as Timestamp).toDate();
+    }
+
+    DateTime? dob;
+    if (map['dob'] != null && map['dob'].toString().isNotEmpty) {
+      try {
+        dob = DateFormat('dd/MM/yyyy').parse(map['dob']);
+      } catch (e) {
+        dob = null;
+      }
+    }
 
     return Users(
-      userId: userId,
-      name: map['name'] ?? userId.substring(0, 10),
+      userId: documentId,
+      name: map['name'] ?? '',
       email: map['email'] ?? '',
-      dob: (map['dob'] != null && map['dob'].toString().isNotEmpty)
-          ? DateTime.tryParse(map['dob'])
-          : null,
+      dob: dob,
       photoUrl: map['photoUrl'] ?? "",
       country: map['country'] ?? "",
-      completedDailyDate: (map['completedDailyDate'] != null &&
-          map['completedDailyDate'].toString().isNotEmpty)
-          ? DateTime.tryParse(map['completedDailyDate'])
-          : null,
+      completedDailyDate: completedDailyDate,
+      completedWeekly: map['completedWeekly'] ?? false,
       streak: map['streak'] ?? 0,
+      weekLog: map['weekLog'] ?? "",
+      weekProgress: map['weekProgress'] ?? 0,
+      weekTasks: List<Map<String, dynamic>>.from(map['weekTasks'] ?? []),
+      fcmToken: map['fcmToken'] ?? "",
     );
   }
 }

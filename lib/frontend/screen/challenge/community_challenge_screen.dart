@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/screen/challenge/weekly_challenge_screen.dart';
 import 'package:wastesortapp/frontend/service/challenge_service.dart';
 
+import '../../../database/model/challenge.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
 import '../../utils/phone_size.dart';
@@ -154,7 +155,7 @@ class _CommunityChallengeScreenState extends State<CommunityChallengeScreen> wit
 }
 
 Widget _buildAllCommunityContent() {
-  return FutureBuilder<List<QueryDocumentSnapshot>>(
+  return FutureBuilder<List<CommunityChallenge>>(
       future: ChallengeService().loadCommunityChallenges(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
@@ -184,18 +185,16 @@ Widget _buildAllCommunityContent() {
           padding: const EdgeInsets.all(20),
           itemCount: challenges.length,
           itemBuilder: (context, index) {
-            final doc = challenges[index];
-            final data = doc.data() as Map<String, dynamic>;
-            data['id'] = doc.id;
+            final challenge = challenges[index];
             return GestureDetector(
               onTap: () {
                 Navigator.of(context).push(
                   scaleRoute(
-                    ChallengeDetailScreen(challengeId: data['id']),
+                    ChallengeDetailScreen(challengeId: challenge.id),
                   ),
                 );
               },
-              child: CommunityChallengeCard(data: data)
+              child: CommunityChallengeCard(data: challenge.toMap())
             );
           },
         );
@@ -204,7 +203,7 @@ Widget _buildAllCommunityContent() {
 }
 
 Widget _buildActiveCommunityContent() {
-  return FutureBuilder<List<QueryDocumentSnapshot>>(
+  return FutureBuilder<List<CommunityChallenge>>(
       future: ChallengeService().loadChallengesActive(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
@@ -234,18 +233,16 @@ Widget _buildActiveCommunityContent() {
           padding: const EdgeInsets.all(20),
           itemCount: challenges.length,
           itemBuilder: (context, index) {
-            final doc = challenges[index];
-            final data = doc.data() as Map<String, dynamic>;
-            data['id'] = doc.id;
+            final challenge = challenges[index];
             return GestureDetector(
                 onTap: () {
                   Navigator.of(context).push(
                     scaleRoute(
-                      ChallengeDetailScreen(challengeId: data['id']),
+                      ChallengeDetailScreen(challengeId: challenge.id),
                     ),
                   );
                 },
-                child: CommunityChallengeCard(data: data)
+                child: CommunityChallengeCard(data: challenge.toMap())
             );
           },
         );
@@ -254,7 +251,7 @@ Widget _buildActiveCommunityContent() {
 }
 
 Widget _buildUseJoinedContent(String userId) {
-    return FutureBuilder<List<QueryDocumentSnapshot>>(
+    return FutureBuilder<List<CommunityChallenge>>(
       future: ChallengeService().loadChallengesUserJoined(userId),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
@@ -285,18 +282,16 @@ Widget _buildUseJoinedContent(String userId) {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           itemCount: challenges.length,
           itemBuilder: (context, index) {
-            final doc = challenges[index];
-            final data = doc.data() as Map<String, dynamic>;
-            data['id'] = doc.id;
+            final challenge = challenges[index];
             return GestureDetector(
               onTap: () {
                 Navigator.of(context).push(
                   scaleRoute(
-                    ChallengeDetailScreen(challengeId: data['id']),
+                    ChallengeDetailScreen(challengeId: challenge.id),
                   ),
                 );
               },
-              child: CommunityChallengeCard(data: data)
+              child: CommunityChallengeCard(data: challenge.toMap())
             );
           },
         );

@@ -15,11 +15,9 @@ class Trees {
     this.progress
   });
 
-  // Convert User object to a Map for Firestore
-  // Use to store date to Firestore
+  // Convert to Map for Firestore storage
   Map<String, dynamic> toMap() {
     return {
-      'treeId': treeId,
       'userId': userId,
       'drops': drops,
       'trees': trees,
@@ -28,9 +26,10 @@ class Trees {
     };
   }
 
-  factory Trees.fromMap(Map<String, dynamic> map) {
+  // Create a Tree instance from Firestore data + document ID
+  factory Trees.fromMap(Map<String, dynamic> map, String documentId) {
     return Trees(
-      treeId: map['treeId'] ?? '',
+      treeId: documentId,
       userId: map['userId'] ?? '',
       drops: map['drops'],
       trees: map['trees'],

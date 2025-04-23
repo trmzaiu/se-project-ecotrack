@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wastesortapp/database/model/leaderboard.dart';
 import 'package:wastesortapp/frontend/service/user_service.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/colors.dart';
@@ -16,7 +17,6 @@ class LeaderboardScreen extends StatefulWidget {
 }
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
-  final UserService _userService = UserService();
   final ValueNotifier<bool> _isCurrentUserVisibleNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _isScrollingUpNotifier = ValueNotifier<bool>(false);
   late ScrollController _scrollController;
@@ -44,8 +44,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final users = await _userService.leaderboardStream().first;
-      final currentUserIndex = users.indexWhere((user) => user['userId'] == currentUserId);
+      final users = await UserService().showLeaderboard().first;
+      final currentUserIndex = users.indexWhere((user) => user.userId == currentUserId);
 
       if (currentUserIndex != -1 && currentUserIndex < 10) {
         _isCurrentUserVisibleNotifier.value = true;
@@ -65,35 +65,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: _userService.leaderboardStream(),
+      body: StreamBuilder<List<Leaderboard>>(
+        stream: UserService().showLeaderboard(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error loading leaderboard',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.urbanist(
-                  color: AppColors.secondary,
-                  fontSize: 16,
-                  fontWeight: AppFontWeight.medium,
-                ),
-              )
-            );
+            return Center(child: Text('Error loading leaderboard'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
-              child: Text(
-                'No users found',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.urbanist(
-                  color: AppColors.secondary,
-                  fontSize: 16,
-                  fontWeight: AppFontWeight.medium,
-                ),
-              )
-            );
+            return Center(child: Text('No leaderboard data available'));
           }
 
           final users = snapshot.data!;
@@ -129,6 +109,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   ),
                 ),
               ),
+
               Expanded(
                 child: NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification scrollInfo) {
@@ -136,7 +117,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     if (scrollInfo is ScrollUpdateNotification) {
                       int currentUserIndex = -1;
                       for (int i = 3; i < users.length; i++) {
-                        if (users[i]['userId'] == currentUserId) {
+                        if (users[i].userId == currentUserId) {
                           currentUserIndex = i;
                           break;
                         }
@@ -174,7 +155,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 valueListenable: _isCurrentUserVisibleNotifier,
                 builder: (context, isVisible, _) {
                   final shouldShowCurrentUser = !isVisible &&
-                      users.any((user) => user['userId'] == currentUserId && user['rank'] > 3);
+                      users.any((user) => user.userId == currentUserId && user.rank > 3);
 
                   if (!shouldShowCurrentUser) {
                     return SizedBox.shrink();
@@ -183,7 +164,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   return Padding(
                     padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
                     child: _buildUserTile(
-                      users.firstWhere((user) => user['userId'] == currentUserId),
+                      users.firstWhere((user) => user.userId  == currentUserId),
                     ),
                   );
                 },
@@ -195,7 +176,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 
-  Widget _buildTopThree(List<Map<String, dynamic>> users) {
+  Widget _buildTopThree(List<Leaderboard> users) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -221,8 +202,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 
-  Widget _buildTopUser(Map<String, dynamic> user, Color color, double avatarSize) {
-    bool isCurrentUser = user['userId'] == currentUserId;
+  Widget _buildTopUser(Leaderboard user, Color color, double avatarSize) {
+    bool isCurrentUser = user.userId == currentUserId;
 
     return Column(
       children: [
@@ -236,7 +217,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 border: Border.all(color: isCurrentUser ? AppColors.secondary : AppColors.surface, width: 3),
               ),
               child: CircleAvatar(
-                backgroundImage: user['image'] != '' ? CachedNetworkImageProvider(user['image']) : AssetImage('lib/assets/images/avatar_default.png'),
+                backgroundImage: user.photoUrl != '' ? CachedNetworkImageProvider(user.photoUrl) : AssetImage('lib/assets/images/avatar_default.png'),
                 radius: avatarSize / 2,
               ),
             ),
@@ -259,7 +240,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  user['rank'].toString(),
+                  user.rank.toString(),
                   style: GoogleFonts.urbanist(
                     fontSize: 16,
                     fontWeight: AppFontWeight.bold,
@@ -275,7 +256,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         SizedBox(
           width: 100,
           child: Text(
-            user['name'],
+            user.name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
@@ -290,7 +271,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              user['trees'].toString(),
+              user.trees.toString(),
               style: GoogleFonts.urbanist(
                 fontSize: 16,
                 fontWeight: AppFontWeight.bold,
@@ -305,8 +286,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 
-  Widget _buildUserTile(Map<String, dynamic> user) {
-    bool isCurrentUser = user['userId'] == currentUserId;
+  Widget _buildUserTile(Leaderboard user) {
+    bool isCurrentUser = user.userId == currentUserId;
 
     return Container(
       height: 55,
@@ -328,10 +309,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       child: Row(
         children: [
           Container(
-            width: 20,
+            width: 25,
             alignment: Alignment.center,
             child: Text(
-              user['rank'].toString(),
+              user.rank.toString(),
               style: GoogleFonts.urbanist(
                 fontSize: 18,
                 fontWeight: AppFontWeight.bold,
@@ -343,7 +324,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           SizedBox(width: 10),
 
           CircleAvatar(
-            backgroundImage: user['image'] != '' ? CachedNetworkImageProvider(user['image']) : AssetImage('lib/assets/images/avatar_default.png'),
+            backgroundImage: user.photoUrl != '' ? CachedNetworkImageProvider(user.photoUrl) : AssetImage('lib/assets/images/avatar_default.png'),
             radius: 20,
           ),
 
@@ -351,7 +332,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
           Expanded(
             child: Text(
-              user['name'],
+              user.name,
               style: GoogleFonts.urbanist(
                 fontSize: 16,
                 fontWeight: AppFontWeight.semiBold,
@@ -362,7 +343,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           Row(
             children: [
               Text(
-                user['trees'].toString(),
+                user.trees.toString(),
                 style: GoogleFonts.urbanist(
                   fontSize: 16,
                   fontWeight: AppFontWeight.bold,

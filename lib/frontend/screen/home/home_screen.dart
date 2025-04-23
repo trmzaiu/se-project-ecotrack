@@ -8,6 +8,8 @@ import 'package:wastesortapp/frontend/widget/bar_noti_title.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
+import '../../../database/model/challenge.dart';
+import '../../../database/model/user.dart';
 import '../../service/challenge_service.dart';
 import '../../service/user_service.dart';
 import '../../utils/phone_size.dart';
@@ -115,20 +117,20 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: EdgeInsets.only(right: 20),
               child: userId.isEmpty
                   ? const BarNotiTitle(title_small: 'Hello', title_big: 'Guest')
-                  : StreamBuilder<Map<String, dynamic>>(
+                  : StreamBuilder<Users?>(
                   stream: UserService().getCurrentUser(userId),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const BarNotiTitle(title_small: 'Hello', title_big: 'Guest');
                     }
 
-                    final user = snapshot.data ?? {
-                      'photoUrl': '',
-                      'name': userId.length >= 10 ? userId.substring(0, 10) : userId,
-                      'email': '',
-                    };
+                    if (!snapshot.hasData || snapshot.data == null) {
+                      return const BarNotiTitle(title_small: 'Hello', title_big: 'Guest');
+                    }
 
-                    return BarNotiTitle(title_small: 'Hello', title_big: user['name'] ?? 'Guest');
+                    final user = snapshot.data!;
+
+                    return BarNotiTitle(title_small: 'Hello', title_big: user.name);
                   }
               ),
             ),
@@ -231,10 +233,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: GestureDetector(
                                     onTap: () {
                                       if (_isUserLoggedIn()) {
-                                        Navigator.of(context).push(
-                                          moveUpRoute(
+                                        Navigator.of(context).pushAndRemoveUntil(
+                                          moveLeftRoute(
                                             UploadScreen(),
+                                            settings: RouteSettings(name: "UploadScreen"),
                                           ),
+                                              (route) => route.settings.name != "ScanScreen" || route.isFirst,
                                         );
                                       } else {
                                         _showErrorDialog(context);
@@ -363,10 +367,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       size: 20,
                                                     ),
                                                     const SizedBox(width: 4),
-                                                    StreamBuilder<int>(
-                                                      stream: UserService().getUserStreak(userId),
-                                                      builder: (context, streakSnap) {
-                                                        final streak = streakSnap.data ?? 0;
+                                                    StreamBuilder<Users?>(
+                                                      stream: UserService().getCurrentUser(userId),
+                                                      builder: (context, snapshot) {
+                                                        if (snapshot.connectionState == ConnectionState.waiting) {
+                                                          return const SizedBox();
+                                                        }
+
+                                                        if (!snapshot.hasData || snapshot.data == null) {
+                                                          return const SizedBox();
+                                                        }
+
+                                                        final streak = snapshot.data!.streak;
                                                         return Text(
                                                           '$streak ${streak == 1 ? "day" : "days"} streak',
                                                           style: GoogleFonts.urbanist(
@@ -400,10 +412,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 25),
                           ],
 
-                          FutureBuilder<List<QueryDocumentSnapshot>>(
+                          FutureBuilder<List<CommunityChallenge>>(
                             future: ChallengeService().loadCommunityChallenges(),
                             builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
                                 return SizedBox();
                               }
 
@@ -435,19 +447,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                     padding: const EdgeInsets.only(top: 0),
                                     itemCount: limitedChallenges.length,
                                     itemBuilder: (context, index) {
-                                      final doc = challenges[index];
-                                      final data = doc.data() as Map<String, dynamic>;
-                                      data['id'] = doc.id;
+                                      final challenge = limitedChallenges[index];
                                       return GestureDetector(
                                         onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => ChallengeDetailScreen(challengeId: data['id']),
+                                          Navigator.of(context).push(
+                                            scaleRoute(
+                                              ChallengeDetailScreen(challengeId: challenge.id),
                                             ),
                                           );
                                         },
-                                        child: CommunityChallengeCard(data: data)
+                                        child: CommunityChallengeCard(data:  challenge.toMap())
                                       );
                                     },
                                   )

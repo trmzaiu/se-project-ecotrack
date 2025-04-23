@@ -52,7 +52,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        _authService.addToken(user.uid);
         _navigateToMainScreen(context);
       }
     } on FirebaseAuthException catch (e) {
@@ -70,7 +69,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        _authService.addToken(user.uid);
         _navigateToMainScreen(context);
       } else {
         _showErrorDialog(context, "Google Sign-In failed.");
@@ -90,7 +88,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        _authService.addToken(user.uid);
         _navigateToMainScreen(context);
       } else {
         _showErrorDialog(context, "Facebook Sign-In failed.");

@@ -6,10 +6,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wastesortapp/database/model/challenge.dart';
 import 'package:wastesortapp/frontend/screen/evidence/upload_evidence_screen.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
+import '../../../database/model/user.dart';
 import '../../../main.dart';
 import '../../../theme/colors.dart';
 import '../../service/challenge_service.dart';
@@ -129,7 +131,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
+    return StreamBuilder<CommunityChallenge>(
       stream: ChallengeService().getChallengeById(widget.challengeId),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
@@ -137,32 +139,32 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
               body: Center(child: CircularProgressIndicator()));
         }
 
-        final data = snapshot.data!.data() as Map<String, dynamic>;
+        final challenge = snapshot.data!;
 
         if (!_timerInitialized) {
-          final start = (data['startDate'] as Timestamp).toDate();
-          final end = (data['endDate'] as Timestamp).toDate();
+          final start = (challenge.startDate).toDate();
+          final end = (challenge.endDate).toDate();
           _initTimer(start, end);
         }
 
-        final image = data['image'] ?? '';
-        final title = data['title'] ?? 'No title';
-        final description = data['description'] ?? 'No description';
-        final reward = data['rewardPoints'] ?? 0;
-        final target = data['targetValue'] ?? 0;
-        final progress = data['progress'] ?? 0;
-        final subtype = data['subtype'] ?? '';
-        final question = data['question'] ?? '';
-        final participantsList = (data['participants'] as List?) ?? [];
+        final image = challenge.image;
+        final title = challenge.title;
+        final description = challenge.description;
+        final reward = challenge.rewardPoints;
+        final target = challenge.targetValue;
+        final progress = challenge.progress;
+        final subtype = challenge.subtype;
+        final question = challenge.question;
+        final participantsList = challenge.participants;
         final participants = participantsList.length;
-        final rewardedUsers = List<String>.from(data['rewardedUsers'] ?? []);
+        final rewardedUsers = List<String>.from(challenge.rewardedUsers);
 
         final progressRatio = (progress / target).clamp(0.0, 1.0);
         final percentage = (progressRatio * 100).toStringAsFixed(2);
 
         final now = DateTime.now();
-        final isComingSoon = now.isBefore(data['startDate']);
-        final isExpired = now.isAfter(data['endDate']);
+        final isComingSoon = now.isBefore(challenge.startDate.toDate());
+        final isExpired = now.isAfter(challenge.endDate.toDate());
         final isActive = !isComingSoon && !isExpired;
 
         return Scaffold(
@@ -207,11 +209,27 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                     padding: EdgeInsets.all(20),
                     child: Column(
                       children: [
-                        FutureBuilder<List<Map<String, dynamic>>>(
+                        FutureBuilder<List<Users?>>(
                           future: UserService().getUsersByIds(List<String>.from(participantsList)),
                           builder: (context, snapshot) {
-                            if (!snapshot.hasData) {
-                              return SizedBox();
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              if (!snapshot.hasData) {
+                                return const SizedBox(height: 25,);
+                              }
+                            }
+
+                            if (!snapshot.hasData || snapshot.data == null) {
+                              return Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'No participant',
+                                  style: GoogleFonts.urbanist(
+                                    fontSize: 14,
+                                    color: AppColors.secondary,
+                                    fontWeight: AppFontWeight.regular,
+                                  ),
+                                ),
+                              );
                             }
 
                             final users = snapshot.data!;
@@ -237,13 +255,9 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                                             ),
                                           ),
                                           image: DecorationImage(
-                                            image: user['photoUrl'] !=
-                                                null &&
-                                                user['photoUrl'] != ''
-                                                ? CachedNetworkImageProvider(
-                                                user['photoUrl']) as ImageProvider
-                                                : AssetImage(
-                                                'lib/assets/images/avatar_default.png'),
+                                            image: user!.photoUrl != ''
+                                                ? CachedNetworkImageProvider(user.photoUrl) as ImageProvider
+                                                : AssetImage('lib/assets/images/avatar_default.png'),
                                             fit: BoxFit.cover,
                                           ),
                                         ),
@@ -263,7 +277,9 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
 
                                 Expanded(
                                   child: Text(
-                                    "$participants ${participants == 1 ? 'participant' : 'participants'}",
+                                    participants == 0
+                                        ? 'No participant'
+                                        : '$participants ${participants == 1 ? 'participant' : 'participants'}',
                                     style: GoogleFonts.urbanist(
                                       fontSize: 14,
                                       color: AppColors.secondary,
@@ -475,21 +491,15 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
 
                             switch (subtype) {
                               case 'form':
-                                return _buildFormSubmitButton(
-                                    question);
+                                return _buildFormSubmitButton(question!);
                               case 'streak':
                                 return _buildStreakButton();
                               case 'evidence':
-                                return _buildNavigationButton(
-                                    UploadScreen(),
-                                    "Start challenge");
+                                return _buildNavigationButton(UploadScreen(), "Start challenge", settings: RouteSettings(name: "UploadScreen"));
                               case 'tree':
-                                return _buildNavigationButton(
-                                    VirtualTreeScreen(),
-                                    "Start challenge");
+                                return _buildNavigationButton(VirtualTreeScreen(), "Start challenge");
                               default:
-                                return _buildLabel(
-                                    "Unknown challenge type");
+                                return _buildLabel("Unknown challenge type");
                             }
                           },
                         ),
@@ -647,12 +657,23 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
     );
   }
 
-  Widget _buildNavigationButton(Widget screen, String label) {
+  Widget _buildNavigationButton(Widget screen, String label, {RouteSettings? settings}) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
-          Navigator.of(context).push(scaleRoute(screen));
+          if (settings != null) {
+            Navigator.of(context).push(
+              scaleRoute(
+                screen,
+                settings: settings,
+              ),
+            );
+          } else {
+            Navigator.of(context).push(
+              scaleRoute(screen),
+            );
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,

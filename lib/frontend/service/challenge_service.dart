@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:wastesortapp/frontend/service/tree_service.dart';
 
+import '../../database/model/challenge.dart';
 import 'notification_service.dart';
 
 class ChallengeService {
@@ -16,7 +17,7 @@ class ChallengeService {
 
   // --- Daily Challenges ---
   /// Load the daily challenge for today
-  Future<Map<String, dynamic>> loadDailyChallenge() async {
+  Future<DailyChallenge> loadDailyChallenge() async {
     final now = DateTime.now().toUtc().add(const Duration(hours: 7));
     final today = DateFormat('yyyy-MM-dd').format(now);
     final yesterday = DateFormat('yyyy-MM-dd').format(now.subtract(const Duration(days: 1)));
@@ -29,8 +30,20 @@ class ChallengeService {
         .get();
 
     if (loggedTodayQuery.docs.isNotEmpty) {
-      print('Found daily challenge for today');
-      return loggedTodayQuery.docs.first.data();
+      print('Found ${loggedTodayQuery.docs.length} daily challenge for today');
+      final doc = loggedTodayQuery.docs.first;
+      final data = doc.data();
+      final subtype = data['subtype'] ?? '';
+      print('Subtype for today: $subtype');
+
+      switch (subtype) {
+        case 'quiz':
+          return DailyQuizChallenge.fromMap(data, doc.id);
+        case 'dragdrop':
+          return DailyDragDropChallenge.fromMap(data, doc.id);
+        default:
+          return DailyChallenge.fromMap(data, doc.id);
+      }
     }
 
     // Step 2: Check if any challenge has dateLog == yesterday (avoid repeat)
@@ -67,7 +80,17 @@ class ChallengeService {
 
     print('Selected challenge ID: $selectedId');
 
-    return selectedDoc.data();
+    String subtype = selectedDoc['subtype'] ?? '';
+    print('Subtype loaded: $subtype');
+
+    switch (subtype) {
+      case 'quiz':
+        return DailyQuizChallenge.fromMap(selectedDoc.data(), selectedDoc.id);
+      case 'dragdrop':
+        return DailyDragDropChallenge.fromMap(selectedDoc.data(), selectedDoc.id);
+      default:
+        return DailyChallenge.fromMap(selectedDoc.data(), selectedDoc.id);
+    }
   }
 
   /// Check if two dates are the same day
@@ -104,6 +127,7 @@ class ChallengeService {
       'completedDailyDate': Timestamp.fromDate(today),
       'streak': FieldValue.increment(value),
     });
+    await TreeService().increaseDrops(userRef.id, 5);
   }
 
   /// Complete the daily challenge and update streak
@@ -167,7 +191,7 @@ class ChallengeService {
 
   // --- Weekly Challenges ---
   /// Load the weekly challenge for week
-  Future<Map<String, dynamic>> loadWeeklyChallenge(String userId) async {
+  Future<WeeklyChallenge> loadWeeklyChallenge(String userId) async {
     final weekLog = getCurrentWeekLog();
     final userRef = _firestore.collection('users').doc(userId);
 
@@ -180,12 +204,13 @@ class ChallengeService {
 
     if (existingChallengeQuery.docs.isNotEmpty) {
       print('✅ Found weekly challenge for this week');
-      final selectedChallenge = existingChallengeQuery.docs.first.data();
+      final doc = existingChallengeQuery.docs.first;
+      final challenge = WeeklyChallenge.fromMap(doc.data(), doc.id);
 
       // Ensure user data is in sync
-      await setupUserWeeklyChallenge(userRef, selectedChallenge, weekLog);
+      await setupUserWeeklyChallenge(userRef, challenge, weekLog);
 
-      return selectedChallenge;
+      return challenge;
     }
 
     // Step 2: Pick a random challenge from unassigned ones
@@ -195,11 +220,11 @@ class ChallengeService {
         .get();
 
     if (allTemplatesQuery.docs.isEmpty) {
-      return {'error': 'No weekly challenge templates available'};
+      throw Exception('No weekly challenge templates available');
     }
 
     final randomDoc = allTemplatesQuery.docs[Random().nextInt(allTemplatesQuery.docs.length)];
-    final selectedChallenge = randomDoc.data();
+    final challenge = WeeklyChallenge.fromMap(randomDoc.data(), randomDoc.id);
 
     // Step 3: Mark the selected challenge as assigned for this week
     await _firestore.collection('challenges').doc(randomDoc.id).update({
@@ -209,19 +234,19 @@ class ChallengeService {
     print('🎯 Random weekly challenge assigned for week $weekLog');
 
     // Step 4: Setup user progress
-    await setupUserWeeklyChallenge(userRef, selectedChallenge, weekLog);
+    await setupUserWeeklyChallenge(userRef, challenge, weekLog);
 
-    return selectedChallenge;
+    return challenge;
   }
 
   /// Setup user's weekly challenge progress if not already set
-  Future<void> setupUserWeeklyChallenge(DocumentReference userRef, Map<String, dynamic> challenge, String weekLog) async {
+  Future<void> setupUserWeeklyChallenge(DocumentReference userRef, WeeklyChallenge challenge, String weekLog) async {
     final userDoc = await userRef.get();
     final userData = userDoc.data() as Map<String, dynamic>?;
 
     // Only initialize if user's current weekLog is different
     if (userData == null || userData['weekLog'] != weekLog) {
-      final challengeTasks = (challenge['tasks'] as List)
+      final challengeTasks = (challenge.tasks as List)
           .map((e) => e as Map<String, dynamic>)
           .toList();
 
@@ -496,7 +521,7 @@ class ChallengeService {
 
   // --- Community Challenges ---
   /// Load all challenges by type
-  Future<List<QueryDocumentSnapshot>> loadCommunityChallenges() async {
+  Future<List<CommunityChallenge>> loadCommunityChallenges() async {
     // Fetch the challenges based on the type
     final snapshot = await _firestore
         .collection('challenges')
@@ -505,23 +530,41 @@ class ChallengeService {
 
     final docs = snapshot.docs;
 
+    // Convert each document to a CommunityChallenge
+    final communityChallenges = docs.map((doc) {
+      return CommunityChallenge.fromMap(doc.data(), doc.id);
+    }).toList();
+
     // Sort the challenges based on the start date in descending order
-    docs.sort((a, b) {
-      final aDate = (a['startDate'] as Timestamp).toDate();
-      final bDate = (b['startDate'] as Timestamp).toDate();
+    communityChallenges.sort((a, b) {
+      final aDate = a.startDate.toDate();
+      final bDate = b.startDate.toDate();
       return bDate.compareTo(aDate);
     });
 
-    return docs;
+    return communityChallenges;
   }
 
   /// Get information of challenge by id
-  Stream<DocumentSnapshot> getChallengeById(String challengeId) {
-    return _firestore.collection('challenges').doc(challengeId).snapshots();
+  Stream<CommunityChallenge> getChallengeById(String challengeId) {
+    return _firestore
+        .collection('challenges')
+        .doc(challengeId)
+        .snapshots()
+        .map((snapshot) {
+      if (!snapshot.exists) {
+        throw Exception('Challenge not found');
+      }
+
+      final data = snapshot.data() as Map<String, dynamic>;
+      final challengeType = data['type'] as String;
+
+      return CommunityChallenge.fromMap(data, snapshot.id);
+    });
   }
 
   /// Load all challenges user joined
-  Future<List<QueryDocumentSnapshot>> loadChallengesUserJoined(String userId) async {
+  Future<List<CommunityChallenge>> loadChallengesUserJoined(String userId) async {
     // Fetch challenges where the user is a participant and the type is "community"
     final snapshot = await _firestore
         .collection('challenges')
@@ -535,16 +578,20 @@ class ChallengeService {
     final ongoingChallenges = await Future.wait(docs.map((doc) async {
       final challengeId = doc.id;
       final isOngoing = await isOngoingChallenge(challengeId);
-      return isOngoing ? doc : null;
+      if (isOngoing) {
+        return CommunityChallenge.fromMap(doc.data(), doc.id);
+      } else {
+        return null;
+      }
     }));
 
     // Remove null values from the list of ongoing challenges
-    final filteredChallenges = ongoingChallenges.whereType<QueryDocumentSnapshot>().toList();
+    final filteredChallenges = ongoingChallenges.whereType<CommunityChallenge>().toList();
 
     // Sort challenges by start date in descending order
     filteredChallenges.sort((a, b) {
-      final aDate = (a['startDate'] as Timestamp).toDate();
-      final bDate = (b['startDate'] as Timestamp).toDate();
+      final aDate = a.startDate.toDate();
+      final bDate = b.startDate.toDate();
       return bDate.compareTo(aDate);
     });
 
@@ -552,7 +599,7 @@ class ChallengeService {
   }
 
   /// Load active challenges
-  Future<List<QueryDocumentSnapshot>> loadChallengesActive() async {
+  Future<List<CommunityChallenge>> loadChallengesActive() async {
     // Fetch challenges where the user is a participant and the type is "community"
     final snapshot = await _firestore
         .collection('challenges')
@@ -565,16 +612,20 @@ class ChallengeService {
     final ongoingChallenges = await Future.wait(docs.map((doc) async {
       final challengeId = doc.id;
       final isOngoing = await isOngoingChallenge(challengeId);
-      return isOngoing ? doc : null;
+      if (isOngoing) {
+        return CommunityChallenge.fromMap(doc.data(), doc.id);
+      } else {
+        return null;
+      }
     }));
 
     // Remove null values from the list of ongoing challenges
-    final filteredChallenges = ongoingChallenges.whereType<QueryDocumentSnapshot>().toList();
+    final filteredChallenges = ongoingChallenges.whereType<CommunityChallenge>().toList();
 
     // Sort challenges by start date in descending order
     filteredChallenges.sort((a, b) {
-      final aDate = (a['startDate'] as Timestamp).toDate();
-      final bDate = (b['startDate'] as Timestamp).toDate();
+      final aDate = a.startDate.toDate();
+      final bDate = b.startDate.toDate();
       return bDate.compareTo(aDate);
     });
 
@@ -591,7 +642,7 @@ class ChallengeService {
     });
 
     if (challengeDoc.exists) {
-      final challengeData = challengeDoc.data() as Map<String, dynamic>?;
+      final challengeData = challengeDoc.data();
       final challengeTitle = challengeData?['title'] ?? 'Community Challenge';
 
       // Send notification when user joins a challenge
@@ -692,7 +743,7 @@ class ChallengeService {
     final challengeData = challengeDoc.data() ?? {};
 
     final List<dynamic> submittedList =
-        (challengeData['submittedUser'] as List<dynamic>?) ?? [];
+        (challengeData['submittedUsers'] as List<dynamic>?) ?? [];
 
     final alreadySubmitted = submittedList.any((entry) =>
     entry['userId'] == userId && entry['submittedDate'] == formattedDate);
@@ -704,7 +755,7 @@ class ChallengeService {
       });
 
       await challengeRef.update({
-        'submittedUser': submittedList,
+        'submittedUsers': submittedList,
       });
 
       print("Submission saved.");
@@ -728,7 +779,7 @@ class ChallengeService {
         .map((docSnapshot) {
       if (!docSnapshot.exists) return false;
       final data = docSnapshot.data() ?? {};
-      final formSubmittedList = data['formSubmittedUser'] as List<dynamic>? ?? [];
+      final formSubmittedList = data['submittedUsers'] as List<dynamic>? ?? [];
       return formSubmittedList.any((entry) =>
       entry['userId'] == userId && entry['submittedDate'] == formattedDate);
     });
@@ -878,7 +929,7 @@ class ChallengeService {
     if (!challengeDoc.exists) return false;
 
     final data = challengeDoc.data()!;
-    final List<dynamic> submittedList = data['submittedUser'] ?? [];
+    final List<dynamic> submittedList = data['submittedUsers'] ?? [];
 
     return submittedList.any((entry) => entry['userId'] == userId);
   }

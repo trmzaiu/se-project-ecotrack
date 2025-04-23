@@ -101,8 +101,9 @@ Route fadeRoute(Widget page) {
 }
 
 /// Scale
-Route scaleRoute(Widget page) {
+Route scaleRoute(Widget page, {RouteSettings? settings}) {
   return PageRouteBuilder(
+    settings: settings,
     transitionDuration: const Duration(milliseconds: 500),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {

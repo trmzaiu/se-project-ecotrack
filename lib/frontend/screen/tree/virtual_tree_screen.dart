@@ -10,6 +10,7 @@ import 'package:wastesortapp/theme/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
+import '../../../database/model/tree.dart';
 import '../../service/challenge_service.dart';
 import '../../utils/route_transition.dart';
 import '../../widget/bar_title.dart';
@@ -57,17 +58,19 @@ class _VirtualTreeScreenState extends State<VirtualTreeScreen> with SingleTicker
   }
 
   void _loadTreeData() {
+    // Subscribe to the tree data stream for real-time updates
     _treeSubscription = _treeService.getTreeProgress(userId).listen((snapshot) {
       if (snapshot.exists) {
-        var data = snapshot.data() as Map<String, dynamic>;
+        Trees tree = Trees.fromMap(snapshot.data() as Map<String, dynamic>, snapshot.id);
 
         if (!mounted) return;
 
         setState(() {
-          _levelOfTree = (data['levelOfTree'] as int? ?? 0).clamp(0, 3);
-          _progress = (data['progress'] as num?)?.toDouble() ?? 0.0;
-          _drops = data['drops'] as int? ?? 0;
-          _trees = data['trees'] as int? ?? 0;
+          _levelOfTree = (tree.levelOfTree ?? 0).clamp(0, 3);
+          _progress = tree.progress ?? 0.0;
+          _drops = tree.drops ?? 0;
+          _trees = tree.trees ?? 0;
+
           leftDrops = getLeftDrops(_levelOfTree, _progress);
         });
       }

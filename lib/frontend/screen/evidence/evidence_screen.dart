@@ -190,11 +190,13 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
 
   Widget _buildTabContent(String category, String userId) {
     return StreamBuilder<List<Evidences>>(
-      stream: EvidenceService(context).fetchEvidences(userId),
+      stream: EvidenceService(context).getEvidencesByUserId(userId),
       builder: (context, snapshot) {
-        // if (snapshot.connectionState == ConnectionState.waiting) {
-        //   return Center(child: CircularProgressIndicator());
-        // }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          }
+        }
         if (snapshot.hasError) {
           return Center(
             child: Text(

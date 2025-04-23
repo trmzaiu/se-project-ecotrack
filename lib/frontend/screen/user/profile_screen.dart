@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wastesortapp/database/model/challenge.dart';
 import 'package:wastesortapp/frontend/screen/challenge/weekly_challenge_screen.dart';
 import 'package:wastesortapp/frontend/screen/user/setting_screen.dart';
 import 'package:wastesortapp/frontend/service/auth_service.dart';
@@ -14,6 +15,7 @@ import 'package:wastesortapp/frontend/widget/bar_title.dart';
 import 'package:wastesortapp/main.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
+import '../../../database/model/user.dart';
 import '../../service/challenge_service.dart';
 import '../../service/user_service.dart';
 
@@ -32,14 +34,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
-  late Future<Map<String, dynamic>> _weeklyChallengeFuture;
-  Map<String, dynamic>? user;
-
-  @override
-  void initState() {
-    super.initState();
-    _weeklyChallengeFuture = ChallengeService().loadWeeklyChallenge(userId);
-  }
 
   Future<void> _signOut(BuildContext context) async {
     await AuthenticationService().signOut();
@@ -71,18 +65,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               scrollDirection: Axis.vertical,
               child: Column(
                 children: [
-                  StreamBuilder<Map<String, dynamic>>(
+                  StreamBuilder<Users?>(
                     stream: UserService().getCurrentUser(userId),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());
                       }
 
-                      final user = snapshot.data ?? {
-                        'photoUrl': '',
-                        'name': userId.substring(0, 10),
-                        'email': '',
-                      };
+                      if (!snapshot.hasData || snapshot.data == null) {
+                        return const SizedBox();
+                      }
+
+                      final user = snapshot.data;
 
                       return Column(
                         children: [
@@ -91,8 +85,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             backgroundColor: AppColors.tertiary.withOpacity(0.5),
                             child: CircleAvatar(
                               radius: 59,
-                              backgroundImage: user['photoUrl'] != ''
-                                  ? CachedNetworkImageProvider(user['photoUrl']) as ImageProvider
+                              backgroundImage: user!.photoUrl != ''
+                                  ? CachedNetworkImageProvider(user.photoUrl) as ImageProvider
                                   : AssetImage('lib/assets/images/avatar_default.png'),
                               backgroundColor: Colors.transparent,
                             ),
@@ -101,7 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 5),
 
                           Text(
-                            user['name'],
+                            user.name,
                             style: GoogleFonts.urbanist(
                               color: AppColors.secondary,
                               fontSize: 24,
@@ -110,7 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
 
                           Text(
-                            user['email'],
+                            user.email,
                             style: GoogleFonts.urbanist(
                               color: AppColors.tertiary,
                               fontSize: 16,
@@ -232,19 +226,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   //
                   // const SizedBox(height: 10),
 
-                  FutureBuilder<Map<String, dynamic>>(
-                    future: _weeklyChallengeFuture,
+                  FutureBuilder<WeeklyChallenge>(
+                    future: ChallengeService().loadWeeklyChallenge(userId),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return SizedBox();
                       } else if (snapshot.hasError) {
                         return SizedBox();
-                      } else if (!snapshot.hasData || snapshot.data == null || snapshot.data!.containsKey('error')) {
-                        final error = snapshot.data?['error'] ?? 'Unknown error';
+                      } else if (!snapshot.hasData || snapshot.data == null) {
                         return SizedBox();
                       } else {
                         final weeklyChallenge = snapshot.data!;
-                        final goalPoints = weeklyChallenge['target'] ?? 7;
+                        final goalPoints = weeklyChallenge.target;
 
                         return GestureDetector(
                           onTap: () {
@@ -372,7 +365,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 25),
 
-                  FutureBuilder<List<QueryDocumentSnapshot>>(
+                  FutureBuilder<List<CommunityChallenge>>(
                     future: ChallengeService().loadChallengesUserJoined(userId),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
@@ -428,19 +421,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             physics: NeverScrollableScrollPhysics(),
                             itemCount: limitedChallenges.length,
                             itemBuilder: (context, index) {
-                              final doc = challenges[index];
-                              final data = doc.data() as Map<String, dynamic>;
-                              data['id'] = doc.id;
+                              final challenge = limitedChallenges[index];
                               return GestureDetector(
                                   onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => ChallengeDetailScreen(challengeId: data['id']),
+                                    Navigator.of(context).push(
+                                      scaleRoute(
+                                        ChallengeDetailScreen(challengeId: challenge.id),
                                       ),
                                     );
                                   },
-                                  child: CommunityChallengeCard(data: data)
+                                  child: CommunityChallengeCard(data:  challenge.toMap())
                               );
                             },
                           )

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/screen/challenge/weekly_challenge_progress_card.dart';
 import 'package:wastesortapp/frontend/service/challenge_service.dart';
 import 'package:wastesortapp/theme/fonts.dart';
+import '../../../database/model/challenge.dart';
 import '../../../theme/colors.dart';
 import '../../service/tree_service.dart';
 import '../../utils/phone_size.dart';
@@ -19,12 +20,6 @@ class WeeklyChallengeScreen extends StatefulWidget {
 class _WeeklyChallengeScreenState extends State<WeeklyChallengeScreen> {
   late Future<Map<String, dynamic>> _weeklyChallengeFuture;
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
-
-  @override
-  void initState() {
-    super.initState();
-    _weeklyChallengeFuture = ChallengeService().loadWeeklyChallenge(userId);
-  }
 
   DateTime _getNextSunday(DateTime currentDate) {
     int daysToSunday = DateTime.sunday - currentDate.weekday;
@@ -42,7 +37,7 @@ class _WeeklyChallengeScreenState extends State<WeeklyChallengeScreen> {
     final int remainingHours = remainingTime.inHours % 24;
     final int remainingMinutes = remainingTime.inMinutes % 60;
 
-    int? _rewardPoints;
+    int? rewardPoints;
 
     String remainingTimeString = '';
     if (remainingDays > 0) {
@@ -64,19 +59,19 @@ class _WeeklyChallengeScreenState extends State<WeeklyChallengeScreen> {
 
             const SizedBox(height: 30),
 
-            FutureBuilder<Map<String, dynamic>>(
-              future: _weeklyChallengeFuture,
+            FutureBuilder<WeeklyChallenge?>(
+              future: ChallengeService().loadWeeklyChallenge(userId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
                   return Center(child: Text("Error loading weekly challenge"));
-                } else if (!snapshot.hasData || snapshot.data == null || snapshot.data!.containsKey('error')) {
+                } else if (!snapshot.hasData || snapshot.data == null) {
                   return Center(child: Text("No weekly challenge available"));
                 } else {
                   final weeklyChallenge = snapshot.data!;
-                  final goalPoints = weeklyChallenge['target'] ?? 0;
-                  _rewardPoints = weeklyChallenge['rewardPoints'];
+                  final goalPoints = weeklyChallenge.target;
+                  rewardPoints = weeklyChallenge.rewardPoints;
 
                   return WeeklyChallengeProgressCard(
                     userId: userId,
@@ -131,18 +126,18 @@ class _WeeklyChallengeScreenState extends State<WeeklyChallengeScreen> {
                         border: Border.all(color: AppColors.tertiary, width: 2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: FutureBuilder<Map<String, dynamic>>(
-                        future: _weeklyChallengeFuture,
+                      child: FutureBuilder<WeeklyChallenge>(
+                        future: ChallengeService().loadWeeklyChallenge(userId),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return Center(child: CircularProgressIndicator());
                           } else if (snapshot.hasError) {
                             return Center(child: Text("Error loading weekly challenge"));
-                          } else if (!snapshot.hasData || snapshot.data == null || snapshot.data!.containsKey('error')) {
+                          } else if (!snapshot.hasData || snapshot.data == null) {
                             return Center(child: Text("No weekly challenge available"));
                           }
 
-                          final tasks = List<Map<String, dynamic>>.from(snapshot.data!['tasks'] ?? []);
+                          final tasks = List<Map<String, dynamic>>.from(snapshot.data!.tasks);
 
                           return Column(
                             children: List.generate(tasks.length, (index) {
@@ -170,7 +165,7 @@ class _WeeklyChallengeScreenState extends State<WeeklyChallengeScreen> {
                         return ElevatedButton(
                           onPressed: !isCompleted ? null : () async {
                             await ChallengeService().setWeeklyChallengeCompleted(userId, false);
-                            await TreeService().increaseDrops(userId, _rewardPoints ?? 0);
+                            await TreeService().increaseDrops(userId, rewardPoints ?? 0);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: !isCompleted ? AppColors.accent : AppColors.primary,

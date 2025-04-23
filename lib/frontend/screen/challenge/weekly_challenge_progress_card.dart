@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
+import '../../../database/model/user.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
 import '../../service/user_service.dart';
@@ -28,20 +29,20 @@ class WeeklyChallengeProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Map<String, dynamic>>(
+    return StreamBuilder<Users?>(
       stream: UserService().getCurrentUser(userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('User not found'));
+        final user = snapshot.data;
+
+        if (user == null) {
+          return const SizedBox();
         }
 
-        final userDoc = snapshot.data!;
-        final currentPoints = userDoc['weekProgress'] ?? 0;
-
+        final currentPoints = user.weekProgress;
         double progress = currentPoints / goalPoints;
 
         return Container(
