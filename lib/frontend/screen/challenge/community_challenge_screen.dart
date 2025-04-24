@@ -129,7 +129,7 @@ class _CommunityChallengeScreenState extends State<CommunityChallengeScreen> wit
                       ),
                     ),
 
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 20),
 
                     Expanded(
                       child: TabBarView(
@@ -180,9 +180,8 @@ Widget _buildAllCommunityContent() {
 
         final challenges = snapshot.data!;
 
-
         return ListView.builder(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
           itemCount: challenges.length,
           itemBuilder: (context, index) {
             final challenge = challenges[index];
@@ -228,9 +227,8 @@ Widget _buildActiveCommunityContent() {
 
         final challenges = snapshot.data!;
 
-
         return ListView.builder(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
           itemCount: challenges.length,
           itemBuilder: (context, index) {
             final challenge = challenges[index];
@@ -277,9 +275,7 @@ Widget _buildUseJoinedContent(String userId) {
         final challenges = snapshot.data!;
 
         return ListView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
           itemCount: challenges.length,
           itemBuilder: (context, index) {
             final challenge = challenges[index];

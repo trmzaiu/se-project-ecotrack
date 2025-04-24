@@ -568,6 +568,7 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
 
             Expanded(
               child: SingleChildScrollView(
+                clipBehavior: Clip.none,
                 controller: _scrollController,
                 scrollDirection: Axis.vertical,
                 child: Column(
@@ -681,16 +682,16 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                     SizedBox(height: 25),
 
                     Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Guidelines',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.urbanist(
-                            color: AppColors.secondary,
-                            fontSize: 20,
-                            fontWeight: AppFontWeight.semiBold,
-                          ),
-                        )
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Guidelines',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
+                          fontSize: 20,
+                          fontWeight: AppFontWeight.semiBold,
+                        ),
+                      )
                     ),
 
                     SizedBox(height: 10),

@@ -109,372 +109,364 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       body: Container(
-        padding: EdgeInsets.only(left: 20),
+        padding: EdgeInsets.symmetric(horizontal: 20),
         color: AppColors.background,
         child: Column(
           children: [
-            Padding(
-              padding: EdgeInsets.only(right: 20),
-              child: userId.isEmpty
-                  ? const BarNotiTitle(title_small: 'Hello', title_big: 'Guest')
-                  : StreamBuilder<Users?>(
-                  stream: UserService().getCurrentUser(userId),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const BarNotiTitle(title_small: 'Hello', title_big: 'Guest');
-                    }
-
-                    if (!snapshot.hasData || snapshot.data == null) {
-                      return const BarNotiTitle(title_small: 'Hello', title_big: 'Guest');
-                    }
-
-                    final user = snapshot.data!;
-
-                    return BarNotiTitle(title_small: 'Hello', title_big: user.name);
+            userId.isEmpty
+                ? const BarNotiTitle(title_small: 'Hello', title_big: 'Guest')
+                : StreamBuilder<Users?>(
+                stream: UserService().getCurrentUser(userId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const BarNotiTitle(title_small: 'Hello', title_big: 'Guest');
                   }
-              ),
+
+                  if (!snapshot.hasData || snapshot.data == null) {
+                    return const BarNotiTitle(title_small: 'Hello', title_big: 'Guest');
+                  }
+
+                  final user = snapshot.data!;
+
+                  return BarNotiTitle(title_small: 'Hello', title_big: user.name);
+                }
             ),
 
             const SizedBox(height: 25),
 
             Expanded(
               child: SingleChildScrollView(
+                clipBehavior: Clip.none,
                 controller: _scrollController,
                 scrollDirection: Axis.vertical,
                 child: Column(
                   children: [
-                    Container(
-                      padding: EdgeInsets.only(right: 20),
-                      child: Column(
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Stack(
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Stack(
-                              children: [
-                                Container(
-                                  width: phoneWidth - 40,
-                                  height: 170,
-                                  decoration: ShapeDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment(-1, -1),
-                                      end: Alignment(1, 1),
-                                      colors: [Color(0xFF2C6E49), Color(0xFF56725F)],
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                ),
+                          Container(
+                            width: phoneWidth - 40,
+                            height: 170,
+                            decoration: ShapeDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment(-1, -1),
+                                end: Alignment(1, 1),
+                                colors: [Color(0xFF2C6E49), Color(0xFF56725F)],
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
 
-                                Positioned(
-                                  bottom: -7,
-                                  right: -10,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.asset(
-                                      "lib/assets/images/img_home.png",
-                                      height: 170,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
+                          Positioned(
+                            bottom: -7,
+                            right: -10,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.asset(
+                                "lib/assets/images/img_home.png",
+                                height: 170,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
 
-                                Positioned(
-                                  top: 25,
-                                  left: 20,
-                                  child: Column(
-                                    children: [
-                                      RichText(
-                                        text: TextSpan(
-                                          style: GoogleFonts.urbanist(
-                                            color: AppColors.surface,
-                                            height: 1.2,
-                                          ),
-                                          children: [
-                                            TextSpan(
-                                              text: 'Have you sorted\n',
-                                              style: GoogleFonts.urbanist(
-                                                fontSize: phoneWidth * 0.043,
-                                                fontWeight: AppFontWeight.bold,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: 'waste today?\n',
-                                              style: GoogleFonts.urbanist(
-                                                fontSize: phoneWidth * 0.043,
-                                                fontWeight: AppFontWeight.bold,
-                                              ),
-                                            ),
-                                            TextSpan(text: '\n', style: TextStyle(fontSize: 6)),
-                                            TextSpan(
-                                              text: 'Upload your evidence\n',
-                                              style: GoogleFonts.urbanist(
-                                                fontSize: phoneWidth * 0.03,
-                                                fontWeight: AppFontWeight.regular,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: 'to get bonus point.',
-                                              style: GoogleFonts.urbanist(
-                                                fontSize: phoneWidth * 0.03,
-                                                fontWeight: AppFontWeight.regular,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                ),
-
-                                Positioned(
-                                  bottom: 20,
-                                  left: 20,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      if (_isUserLoggedIn()) {
-                                        Navigator.of(context).pushAndRemoveUntil(
-                                          moveLeftRoute(
-                                            UploadScreen(),
-                                            settings: RouteSettings(name: "UploadScreen"),
-                                          ),
-                                              (route) => route.settings.name != "ScanScreen" || route.isFirst,
-                                        );
-                                      } else {
-                                        _showErrorDialog(context);
-                                      }
-                                    },
-                                    child: Container(
-                                      width: 60,
-                                      height: 28,
-                                      padding: const EdgeInsets.all(5),
-                                      decoration: ShapeDecoration(
+                          Positioned(
+                              top: 25,
+                              left: 20,
+                              child: Column(
+                                children: [
+                                  RichText(
+                                    text: TextSpan(
+                                      style: GoogleFonts.urbanist(
                                         color: AppColors.surface,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(3),
-                                        ),
+                                        height: 1.2,
                                       ),
-                                      child: Center(
-                                        child: Text(
-                                          'Upload',
+                                      children: [
+                                        TextSpan(
+                                          text: 'Have you sorted\n',
                                           style: GoogleFonts.urbanist(
-                                            color: AppColors.primary,
-                                            fontSize: 11,
-                                            fontWeight: AppFontWeight.semiBold,
+                                            fontSize: phoneWidth * 0.043,
+                                            fontWeight: AppFontWeight.bold,
                                           ),
                                         ),
+                                        TextSpan(
+                                          text: 'waste today?\n',
+                                          style: GoogleFonts.urbanist(
+                                            fontSize: phoneWidth * 0.043,
+                                            fontWeight: AppFontWeight.bold,
+                                          ),
+                                        ),
+                                        TextSpan(text: '\n', style: TextStyle(fontSize: 6)),
+                                        TextSpan(
+                                          text: 'Upload your evidence\n',
+                                          style: GoogleFonts.urbanist(
+                                            fontSize: phoneWidth * 0.03,
+                                            fontWeight: AppFontWeight.regular,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: 'to get bonus point.',
+                                          style: GoogleFonts.urbanist(
+                                            fontSize: phoneWidth * 0.03,
+                                            fontWeight: AppFontWeight.regular,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              )
+                          ),
+
+                          Positioned(
+                              bottom: 20,
+                              left: 20,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (_isUserLoggedIn()) {
+                                    Navigator.of(context).pushAndRemoveUntil(
+                                      moveLeftRoute(
+                                        UploadScreen(),
+                                        settings: RouteSettings(name: "UploadScreen"),
+                                      ),
+                                          (route) => route.settings.name != "ScanScreen" || route.isFirst,
+                                    );
+                                  } else {
+                                    _showErrorDialog(context);
+                                  }
+                                },
+                                child: Container(
+                                  width: 60,
+                                  height: 28,
+                                  padding: const EdgeInsets.all(5),
+                                  decoration: ShapeDecoration(
+                                    color: AppColors.surface,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'Upload',
+                                      style: GoogleFonts.urbanist(
+                                        color: AppColors.primary,
+                                        fontSize: 11,
+                                        fontWeight: AppFontWeight.semiBold,
                                       ),
                                     ),
-                                  )
+                                  ),
                                 ),
-                              ],
-                            ),
+                              )
                           ),
+                        ],
+                      ),
+                    ),
 
-                          const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              "Categories",
-                              style: GoogleFonts.urbanist(
-                                color: AppColors.secondary,
-                                fontSize: 16,
-                                fontWeight: AppFontWeight.bold,
-                              ),
-                              textAlign: TextAlign.start,
-                            ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Categories",
+                        style: GoogleFonts.urbanist(
+                          color: AppColors.secondary,
+                          fontSize: 16,
+                          fontWeight: AppFontWeight.bold,
+                        ),
+                        textAlign: TextAlign.start,
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CategoryBox(image: 'lib/assets/icons/ic_recyclable.svg', text: 'Recyclable', slide: 0,),
+                        CategoryBox(image: 'lib/assets/icons/ic_organic.svg', text: 'Organic', slide: 1,),
+                        CategoryBox(image: 'lib/assets/icons/ic_hazardous.svg', text: 'Hazardous', slide: 2,),
+                        CategoryBox(image: 'lib/assets/icons/ic_general.svg', text: 'General', slide: 3,),
+                      ],
+                    ),
+
+                    const SizedBox(height: 25),
+
+                    if (_isUserLoggedIn()) ...[
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Your daily mission",
+                          style: GoogleFonts.urbanist(
+                            color: AppColors.secondary,
+                            fontSize: 16,
+                            fontWeight: AppFontWeight.bold,
                           ),
+                          textAlign: TextAlign.start,
+                        ),
+                      ),
 
-                          const SizedBox(height: 10),
+                      const SizedBox(height: 10),
+                      StreamBuilder<bool>(
+                        stream: ChallengeService().hasCompletedToday(userId),
+                        builder: (context, completedSnap) {
+                          final isCompleted = completedSnap.data ?? false;
 
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              CategoryBox(image: 'lib/assets/icons/ic_recyclable.svg', text: 'Recyclable', slide: 0,),
-                              CategoryBox(image: 'lib/assets/icons/ic_organic.svg', text: 'Organic', slide: 1,),
-                              CategoryBox(image: 'lib/assets/icons/ic_hazardous.svg', text: 'Hazardous', slide: 2,),
-                              CategoryBox(image: 'lib/assets/icons/ic_general.svg', text: 'General', slide: 3,),
-                            ],
-                          ),
-
-                          const SizedBox(height: 25),
-
-                          if (_isUserLoggedIn()) ...[
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                "Your daily mission",
-                                style: GoogleFonts.urbanist(
+                          return AbsorbPointer(
+                            absorbing: isCompleted,
+                            child: GestureDetector(
+                              onTap: isCompleted
+                                  ? null
+                                  : () {
+                                Navigator.of(context).push(
+                                  scaleRoute(DailyChallengeScreen()),
+                                );
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
                                   color: AppColors.secondary,
-                                  fontSize: 16,
-                                  fontWeight: AppFontWeight.bold,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
                                 ),
-                                textAlign: TextAlign.start,
-                              ),
-                            ),
-
-                            const SizedBox(height: 10),
-                            StreamBuilder<bool>(
-                              stream: ChallengeService().hasCompletedToday(userId),
-                              builder: (context, completedSnap) {
-                                final isCompleted = completedSnap.data ?? false;
-
-                                return AbsorbPointer(
-                                  absorbing: isCompleted,
-                                  child: GestureDetector(
-                                    onTap: isCompleted
-                                        ? null
-                                        : () {
-                                      Navigator.of(context).push(
-                                        scaleRoute(DailyChallengeScreen()),
-                                      );
-                                    },
-                                    child: Container(
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.secondary,
-                                        borderRadius: BorderRadius.circular(10),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black12,
-                                            blurRadius: 6,
-                                            offset: const Offset(0, 3),
-                                          ),
-                                        ],
-                                      ),
-                                      padding: const EdgeInsets.all(20),
-                                      child: Row(
+                                padding: const EdgeInsets.all(20),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Daily Challenge',
-                                                  style: GoogleFonts.urbanist(
-                                                    fontSize: 24,
-                                                    fontWeight: AppFontWeight.bold,
-                                                    color: AppColors.surface,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 5),
-                                                Row(
-                                                  children: [
-                                                    const Icon(
-                                                      Icons.local_fire_department,
-                                                      color: Colors.deepOrange,
-                                                      size: 20,
-                                                    ),
-                                                    const SizedBox(width: 4),
-                                                    StreamBuilder<Users?>(
-                                                      stream: UserService().getCurrentUser(userId),
-                                                      builder: (context, snapshot) {
-                                                        if (snapshot.connectionState == ConnectionState.waiting) {
-                                                          return const SizedBox();
-                                                        }
-
-                                                        if (!snapshot.hasData || snapshot.data == null) {
-                                                          return const SizedBox();
-                                                        }
-
-                                                        final streak = snapshot.data!.streak;
-                                                        return Text(
-                                                          '$streak ${streak == 1 ? "day" : "days"} streak',
-                                                          style: GoogleFonts.urbanist(
-                                                            fontWeight: AppFontWeight.medium,
-                                                            fontSize: 14,
-                                                            color: AppColors.surface
-                                                          ),
-                                                        );
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
+                                          Text(
+                                            'Daily Challenge',
+                                            style: GoogleFonts.urbanist(
+                                              fontSize: 24,
+                                              fontWeight: AppFontWeight.bold,
+                                              color: AppColors.surface,
                                             ),
                                           ),
-                                          Icon(
-                                              isCompleted
-                                                  ? Icons.check
-                                                  : Icons.arrow_forward_ios,
-                                              size: isCompleted ? 25 : 20,
-                                              color: AppColors.surface
+                                          const SizedBox(height: 5),
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.local_fire_department,
+                                                color: Colors.deepOrange,
+                                                size: 20,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              StreamBuilder<Users?>(
+                                                stream: UserService().getCurrentUser(userId),
+                                                builder: (context, snapshot) {
+                                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                                    return const SizedBox();
+                                                  }
+
+                                                  if (!snapshot.hasData || snapshot.data == null) {
+                                                    return const SizedBox();
+                                                  }
+
+                                                  final streak = snapshot.data!.streak;
+                                                  return Text(
+                                                    '$streak ${streak == 1 ? "day" : "days"} streak',
+                                                    style: GoogleFonts.urbanist(
+                                                        fontWeight: AppFontWeight.medium,
+                                                        fontSize: 14,
+                                                        color: AppColors.surface
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
                                     ),
+                                    Icon(
+                                      isCompleted
+                                          ? Icons.check
+                                          : Icons.arrow_forward_ios,
+                                      size: isCompleted ? 25 : 20,
+                                      color: AppColors.surface
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 25),
+                    ],
+
+                    FutureBuilder<List<CommunityChallenge>>(
+                      future: ChallengeService().loadCommunityChallenges(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return SizedBox();
+                        }
+
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return SizedBox();
+                        }
+
+                        final challenges = snapshot.data!;
+                        final limitedChallenges = challenges.take(3).toList();
+
+                        return Column(
+                          children: [
+                            TextRow(
+                              text: 'Challenges',
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  moveUpRoute(
+                                    CommunityChallengeScreen(),
                                   ),
                                 );
                               },
                             ),
 
-                            const SizedBox(height: 25),
+                            const SizedBox(height: 10),
+
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              padding: const EdgeInsets.only(top: 0),
+                              itemCount: limitedChallenges.length,
+                              itemBuilder: (context, index) {
+                                final challenge = limitedChallenges[index];
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      scaleRoute(
+                                        ChallengeDetailScreen(challengeId: challenge.id),
+                                      ),
+                                    );
+                                  },
+                                  child: CommunityChallengeCard(challenge: challenge)
+                                );
+                              },
+                            )
                           ],
-
-                          FutureBuilder<List<CommunityChallenge>>(
-                            future: ChallengeService().loadCommunityChallenges(),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return SizedBox();
-                              }
-
-                              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                                return SizedBox();
-                              }
-
-                              final challenges = snapshot.data!;
-                              final limitedChallenges = challenges.take(3).toList();
-
-                              return Column(
-                                children: [
-                                  TextRow(
-                                    text: 'Challenges',
-                                    onTap: () {
-                                      Navigator.of(context).push(
-                                        moveUpRoute(
-                                          CommunityChallengeScreen(),
-                                        ),
-                                      );
-                                    },
-                                  ),
-
-                                  const SizedBox(height: 10),
-
-                                  ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    padding: const EdgeInsets.only(top: 0),
-                                    itemCount: limitedChallenges.length,
-                                    itemBuilder: (context, index) {
-                                      final challenge = limitedChallenges[index];
-                                      return GestureDetector(
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                            scaleRoute(
-                                              ChallengeDetailScreen(challengeId: challenge.id),
-                                            ),
-                                          );
-                                        },
-                                        child: CommunityChallengeCard(challenge: challenge)
-                                      );
-                                    },
-                                  )
-                                ],
-                              );
-                            },
-                          ),
-
-                          const SizedBox(height: 5),
-
-                          TextRow(text: 'Good to know'),
-
-                          const SizedBox(height: 10),
-                        ],
-                      ),
+                        );
+                      },
                     ),
 
+                    const SizedBox(height: 5),
+
+                    TextRow(text: 'Good to know'),
+
+                    const SizedBox(height: 10),
+
                     SingleChildScrollView(
+                      clipBehavior: Clip.none,
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: List.generate(goodToKnowList.length, (index) {

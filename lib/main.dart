@@ -86,18 +86,40 @@ class MyApp extends StatelessWidget {
 }
 
 class MainScreen extends StatefulWidget {
+  final int index;
+  final bool fullOpened;
 
-  const MainScreen({super.key});
+  const MainScreen({super.key, this.index = 0, this.fullOpened = false});
 
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
+  late int _currentIndex;
   final PageController _pageController = PageController();
   final DraggableScrollableController _sheetController = DraggableScrollableController();
   bool _isFullyOpened = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.index;
+    _isFullyOpened = widget.fullOpened;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pageController.jumpToPage(_currentIndex);
+
+      if (_isFullyOpened) {
+        _sheetController.animateTo(
+          1.0,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
 
   void _onItemTapped(int index) {
     if (index == _currentIndex) return;
@@ -161,7 +183,7 @@ class _MainScreenState extends State<MainScreen> {
 
           DraggableScrollableSheet(
             controller: _sheetController,
-            initialChildSize: minChildSize,
+            initialChildSize: widget.fullOpened ? maxChildSize : minChildSize,
             maxChildSize: maxChildSize,
             minChildSize: minChildSize,
             builder: (context, scrollController) {
@@ -222,7 +244,7 @@ class _MainScreenState extends State<MainScreen> {
                               AnimatedSlide(
                                 duration: Duration(milliseconds: 50),
                                 curve: Curves.easeInOut,
-                                offset: _isFullyOpened ? Offset(0, 0) : Offset(0, 1),
+                                offset: (_isFullyOpened || _currentIndex == 2) ? Offset(0, 0) : Offset(0, 1),
                                 child: AnimatedOpacity(
                                   duration: Duration(milliseconds: 50),
                                   opacity: _isFullyOpened ? 1.0 : 0.0,
@@ -258,10 +280,10 @@ class _MainScreenState extends State<MainScreen> {
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    spreadRadius: 5,
-                    offset: Offset(0, -2)
+                  color: Colors.black12,
+                  blurRadius: 10,
+                  spreadRadius: 5,
+                  offset: Offset(0, -2)
                 ),
               ],
             ),

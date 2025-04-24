@@ -490,7 +490,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                               case 'evidence':
                                 return _buildNavigationButton(UploadScreen(), "Start challenge", settings: RouteSettings(name: "UploadScreen"));
                               case 'tree':
-                                return _buildNavigationButton(VirtualTreeScreen(), "Start challenge");
+                                return _buildNavigationButton(MainScreen(index: 2, fullOpened: true), "Start challenge");
                               default:
                                 return _buildLabel("Unknown challenge type");
                             }
