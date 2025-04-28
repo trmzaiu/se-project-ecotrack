@@ -8,11 +8,24 @@ import 'package:wastesortapp/frontend/service/tree_service.dart';
 import '../../database/model/user.dart';
 
 class AuthenticationService {
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
-  final FacebookAuth _facebookAuth = FacebookAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final TreeService _treeService = TreeService();
+  final FirebaseAuth _firebaseAuth;
+  final GoogleSignIn _googleSignIn;
+  final FacebookAuth _facebookAuth;
+  final FirebaseFirestore _firestore;
+
+  AuthenticationService()
+      : _firebaseAuth = FirebaseAuth.instance,
+        _googleSignIn = GoogleSignIn(),
+        _facebookAuth = FacebookAuth.instance,
+        _firestore = FirebaseFirestore.instance;
+
+  AuthenticationService.test({
+    required FirebaseAuth auth,
+    required FirebaseFirestore firestore,
+  })  : _firebaseAuth = auth,
+        _firestore = firestore,
+        _googleSignIn = GoogleSignIn(),
+        _facebookAuth = FacebookAuth.instance;
 
   /// Function sign in with email & password
   Future<void> signIn({required String email, required String password}) async {
@@ -42,7 +55,7 @@ class AuthenticationService {
 
       await addToken(userCredential.user!.uid);
 
-      await _treeService.createTree(userCredential.user!.uid);
+      await TreeService().createTree(userCredential.user!.uid);
     } on FirebaseAuthException {
       rethrow;
     } catch (_) {
@@ -78,7 +91,7 @@ class AuthenticationService {
         await addToken(user.uid);
       }
 
-      await _treeService.createTree(userCredential.user!.uid);
+      await TreeService().createTree(userCredential.user!.uid);
 
     } on FirebaseAuthException catch (e) {
       rethrow;
@@ -113,7 +126,7 @@ class AuthenticationService {
         await addToken(user.uid);
       }
 
-      await _treeService.createTree(userCredential.user!.uid);
+      await TreeService().createTree(userCredential.user!.uid);
 
     } on FirebaseAuthException catch (e) {
       rethrow;

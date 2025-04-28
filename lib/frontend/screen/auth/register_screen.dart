@@ -13,7 +13,6 @@ import '../../utils/route_transition.dart';
 import '../../widget/custom_dialog.dart';
 import '../../widget/my_button.dart';
 import '../../widget/my_textfield.dart';
-import 'package:wastesortapp/frontend/service/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override

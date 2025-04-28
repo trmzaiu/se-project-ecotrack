@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:wastesortapp/frontend/screen/evidence/evidence_detail_screen.dart';
 import 'package:wastesortapp/frontend/screen/evidence/upload_evidence_screen.dart';
 import 'package:wastesortapp/frontend/utils/phone_size.dart';
@@ -191,7 +190,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> with SingleTickerProvid
 
   Widget _buildTabContent(String category, String userId) {
     return StreamBuilder<List<Evidences>>(
-      stream: EvidenceService(context).getEvidencesByUserId(userId),
+      stream: EvidenceService().getEvidencesByUserId(userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           if (!snapshot.hasData) {

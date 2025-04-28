@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -10,10 +9,14 @@ import '../../database/model/leaderboard.dart';
 import '../../database/model/user.dart';
 
 class UserService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseFirestore _db;
 
-  UserService();
+  UserService()
+  : _db  = FirebaseFirestore.instance;
 
+  UserService.test({
+    required FirebaseFirestore firestore
+  }): _db = firestore;
   /// Stream the current user data in real time
   Stream<Users?> getCurrentUser(String userId) {
     return _db.collection('users').doc(userId).snapshots().map((snapshot) {

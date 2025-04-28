@@ -74,7 +74,8 @@ class _UploadScreenState extends State<UploadScreen> {
   void _submit() {
     setState(() => isUploading = true);
 
-    EvidenceService(context).submitData(
+    EvidenceService().submitData(
+      context: context,
       selectedImages: selectedImages,
       selectedCategory: selectedCategory!,
       descriptionController: descriptionController,

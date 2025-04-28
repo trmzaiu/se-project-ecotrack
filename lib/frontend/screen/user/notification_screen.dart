@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -34,7 +32,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   Widget buildNotificationItem(Notifications notification) {
-    EvidenceService evidenceService = EvidenceService(context);
+    EvidenceService evidenceService = EvidenceService();
 
     return GestureDetector(
       onTap: () async {

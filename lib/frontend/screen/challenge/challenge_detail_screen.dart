@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -20,7 +19,6 @@ import '../../utils/format_time.dart';
 import '../auth/login_screen.dart';
 import '../../widget/custom_dialog.dart';
 import '../../utils/route_transition.dart';
-import '../tree/virtual_tree_screen.dart';
 import 'daily_challenge_screen.dart';
 
 class ChallengeDetailScreen extends StatefulWidget {

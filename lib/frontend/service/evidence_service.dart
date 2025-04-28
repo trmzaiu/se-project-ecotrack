@@ -1,9 +1,7 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -21,28 +19,35 @@ import '../screen/evidence/evidence_screen.dart';
 import '../utils/route_transition.dart';
 
 class EvidenceService{
-  final BuildContext context;
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final TreeService _treeService = TreeService();
-  final _notificationService = NotificationService();
+  final FirebaseFirestore _db;
+  final FirebaseAuth _auth;
 
-  EvidenceService(this.context);
+  // EvidenceService(this.context);
+  EvidenceService()
+      : _db = FirebaseFirestore.instance,
+        _auth = FirebaseAuth.instance;
 
-  /// Submit new evidence with image upload and description
+  EvidenceService.test({
+    required FirebaseFirestore firestore,
+    required FirebaseAuth auth,
+  }) :  _db = firestore,
+        _auth = auth;
+
+  // Submit new evidence with image upload and description
   Future<void> submitData({
+    required BuildContext context,
     required List<File> selectedImages,
     required String selectedCategory,
     required TextEditingController descriptionController,
     int totalPoint = 5,
   }) async {
     if (selectedImages.isEmpty) {
-      _showSnackBar("No image selected");
+      _showSnackBar(context, "No image selected");
       return;
     }
 
     if (selectedCategory == '') {
-      _showSnackBar("Please select a category");
+      _showSnackBar(context, "Please select a category");
       return;
     }
 
@@ -53,7 +58,7 @@ class EvidenceService{
       ).then((urls) => urls.whereType<String>().toList());
 
       if (uploadedImageUrls.isEmpty) {
-        _showSnackBar("Image upload failed");
+        _showSnackBar(context, "Image upload failed");
         return;
       }
 
@@ -87,8 +92,7 @@ class EvidenceService{
 
       await _db.collection('evidences').doc(evidenceId).set(evidence.toMap());
 
-      _showSnackBar("Upload successful!", success: true);
-
+      _showSnackBar(context, "Upload successful!", success: true);
       // Navigate to Evidence screen after submission
       Navigator.of(context).pushAndRemoveUntil(
         moveLeftRoute(EvidenceScreen(), settings: RouteSettings(name: "EvidenceScreen")),
@@ -101,12 +105,12 @@ class EvidenceService{
       });
 
     } catch (e) {
-      _showSnackBar("Error uploading: $e");
+      _showSnackBar(context, "Error uploading: $e");
     }
   }
 
-  /// Show a snackbar message
-  void _showSnackBar(String message, {bool success = false}) {
+  // Show a snackbar message
+  void _showSnackBar(BuildContext context, String message, {bool success = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Center(
@@ -170,10 +174,10 @@ class EvidenceService{
         debugPrint("✅ Evidence accepted, starting point and progress update...");
 
         // Increase points for the user
-        await _treeService.increaseDrops(evidence.userId, evidence.point);
+        await TreeService().increaseDrops(evidence.userId, evidence.point);
 
         // Send notification to the user immediately (no need for delay)
-        await _notificationService.sendNotificationToUser(
+        await NotificationService().sendNotificationToUser(
           notificationId: evidence.evidenceId,
           receiverUserId: evidence.userId,
           title: 'Your Evidence Was Approved!',

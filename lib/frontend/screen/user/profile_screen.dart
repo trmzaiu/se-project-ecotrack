@@ -194,7 +194,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
 
                         StreamBuilder<int>(
-                          stream: EvidenceService(context).getTotalEvidences(userId),
+                          stream: EvidenceService().getTotalEvidences(userId),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               return _statistic('Evidences', '0');
@@ -307,7 +307,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 10),
 
                   StreamBuilder<Map<String, int>>(
-                    stream: EvidenceService(context).getTotalEachAcceptedCategory(userId),
+                    stream: EvidenceService().getTotalEachAcceptedCategory(userId),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return CircularProgressIndicator();

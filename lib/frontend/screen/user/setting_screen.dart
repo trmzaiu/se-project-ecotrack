@@ -5,11 +5,9 @@ import 'package:country_picker/country_picker.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:wastesortapp/frontend/service/user_service.dart';
 import 'package:wastesortapp/theme/colors.dart';
@@ -619,7 +617,7 @@ class _SettingScreenState extends State<SettingScreen> {
                               _informationTile('Name', user.name, () {
                                 _showDialogName(context, user.name);
                               }),
-                              _informationTile('Email', user.email ?? '', () {}),
+                              _informationTile('Email', user.email, () {}),
                               _informationTile('Password', '••••••••••••', () {
                                 _showDialogPassword(context);
                               }),

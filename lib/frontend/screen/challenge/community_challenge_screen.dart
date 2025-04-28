@@ -1,10 +1,6 @@
-import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wastesortapp/frontend/screen/challenge/weekly_challenge_screen.dart';
 import 'package:wastesortapp/frontend/service/challenge_service.dart';
 
 import '../../../database/model/challenge.dart';
@@ -13,8 +9,6 @@ import '../../../theme/fonts.dart';
 import '../../utils/phone_size.dart';
 import '../../utils/route_transition.dart';
 import '../../widget/bar_title.dart';
-import '../../widget/custom_dialog.dart';
-import '../auth/login_screen.dart';
 import 'challenge_detail_screen.dart';
 import 'community_challenge_card.dart';
 

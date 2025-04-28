@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wastesortapp/frontend/screen/user/notification_screen.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/fonts.dart';
 import 'notification_bell.dart';
