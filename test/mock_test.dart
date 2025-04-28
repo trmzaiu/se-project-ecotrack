@@ -10,9 +10,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:wastesortapp/ScanAI/processImage.dart';
-import 'package:wastesortapp/database/model/tree.dart';
-import 'package:wastesortapp/frontend/service/evidence_service.dart';
-import 'package:wastesortapp/frontend/service/notification_service.dart';
+import 'package:wastesortapp/models/tree.dart';
+import 'package:wastesortapp/services/evidence_service.dart';
+import 'package:wastesortapp/services/notification_service.dart';
 
 class TreeServiceTest {
   final FirebaseFirestore _db;
@@ -29,7 +29,7 @@ class TreeServiceTest {
     final docSnapshot = await treeDocRef.get();
 
     if (!docSnapshot.exists) {
-      Trees tree = Trees(
+      Tree tree = Tree(
         treeId: treeDocRef.id,
         userId: userId,
         progress: 0.0,

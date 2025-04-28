@@ -1,7 +1,7 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
-import 'package:wastesortapp/frontend/service/auth_service.dart';
+import 'package:wastesortapp/services/auth_service.dart';
 import 'package:google_sign_in_mocks/google_sign_in_mocks.dart';
 
 void main() {

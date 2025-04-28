@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wastesortapp/frontend/screen/home/home_screen.dart';
-import 'package:wastesortapp/frontend/screen/splash_screen.dart';
+import 'package:wastesortapp/screens/home/home_screen.dart';
+import 'package:wastesortapp/screens/splash_screen.dart';
 
 void main() {
   testWidgets('Splash screen navigates to Home screen', (WidgetTester tester) async {

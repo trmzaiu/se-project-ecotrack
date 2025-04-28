@@ -3,25 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wastesortapp/frontend/utils/route_transition.dart';
+import 'package:wastesortapp/utils/route_transition.dart';
 import 'package:wastesortapp/theme/colors.dart';
 import 'package:wastesortapp/theme/fonts.dart';
 
-import 'frontend/screen/auth/login_screen.dart';
-import 'frontend/screen/camera/camera_screen.dart';
-import 'frontend/screen/guide/guide_screen.dart';
-import 'frontend/screen/home/home_screen.dart';
-import 'frontend/screen/navigator_observer.dart';
-import 'frontend/screen/splash_screen.dart';
-import 'frontend/screen/tree/virtual_tree_screen.dart';
+import '/screens/auth/login_screen.dart';
+import '/screens/camera/camera_screen.dart';
+import '/screens/guide/guide_screen.dart';
+import '/screens/home/home_screen.dart';
+import '/screens/navigator_observer.dart';
+import '/screens/splash_screen.dart';
+import '/screens/tree/virtual_tree_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:wastesortapp/database/firebase_options.dart';
-import 'package:wastesortapp/frontend/screen/user/profile_screen.dart';
-
-import 'frontend/screen/user/notification_screen.dart';
-import 'frontend/service/notification_service.dart';
-import 'frontend/utils/phone_size.dart';
-import 'frontend/widget/custom_dialog.dart';
+import '/screens/user/profile_screen.dart';
+import '/screens/user/notification_screen.dart';
+import '/services/notification_service.dart';
+import '/utils/phone_size.dart';
+import '/widgets/custom_dialog.dart';
 
 void main() async{
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(

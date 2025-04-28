@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:wastesortapp/frontend/service/user_service.dart';
+import 'package:wastesortapp/services/user_service.dart';
 
 void main() {
   late UserService userService;

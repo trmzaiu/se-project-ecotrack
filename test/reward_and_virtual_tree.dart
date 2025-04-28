@@ -4,9 +4,9 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:wastesortapp/database/model/evidence.dart';
-import 'package:wastesortapp/frontend/service/evidence_service.dart';
-import 'package:wastesortapp/frontend/service/notification_service.dart';
+import 'package:wastesortapp/models/evidence.dart';
+import 'package:wastesortapp/services/evidence_service.dart';
+import 'package:wastesortapp/services/notification_service.dart';
 import 'mock_test.dart';
 
 class FakeNotificationService extends Mock implements NotificationService {}
@@ -38,7 +38,7 @@ void main() {
       );
     });
     test('verifyEvidence updates the status to Accepted if categories match', () async {
-      var evidence = Evidences(
+      var evidence = Evidence(
         userId: 'testuser',
         evidenceId: 'evidence1',
         category: 'Recyclable',
@@ -66,7 +66,7 @@ void main() {
 
     test('verifyEvidence updates the status to Rejected if categories do not match', () async {
       // Create a sample evidence object
-      var evidence = Evidences(
+      var evidence = Evidence(
         userId: 'testuser',
         evidenceId: 'evidence2',
         category: 'Recyclable',
