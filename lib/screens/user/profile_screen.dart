@@ -169,13 +169,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           stream: TreeService().getUserDropsAndTrees(userId),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
-                              return _statistic('Drops', '0');
+                              return _statistic('Points', '0');
                             }
 
                             Map<String, int> data = snapshot.data ?? {};
                             int drops = data['drops'] ?? 0;
 
-                            return _statistic('Drops', drops.toString());
+                            return _statistic('Points', drops.toString());
                           },
                         ),
 
