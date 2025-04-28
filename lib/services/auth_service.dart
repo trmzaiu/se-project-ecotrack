@@ -82,16 +82,20 @@ class AuthenticationService {
       User? user = userCredential.user;
 
       if (user != null) {
-        await saveUserInformation(
-          userId: user.uid,
-          name: user.displayName ?? user.uid.substring(0, 10),
-          email: user.email ?? "",
-        );
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+        if (!userDoc.exists) {
+          await saveUserInformation(
+            userId: user.uid,
+            name: user.displayName ?? user.uid.substring(0, 10),
+            email: user.email ?? "",
+          );
+
+          await TreeService().createTree(user.uid);
+        }
 
         await addToken(user.uid);
       }
-
-      await TreeService().createTree(userCredential.user!.uid);
 
     } on FirebaseAuthException catch (e) {
       rethrow;
@@ -116,17 +120,21 @@ class AuthenticationService {
       User? user = userCredential.user;
 
       if (user != null) {
-        final userData = await _facebookAuth.getUserData();
-        await saveUserInformation(
-          userId: user.uid,
-          name: userData['name'] ?? user.uid.substring(0, 10),
-          email: user.email ?? "",
-        );
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+        if (!userDoc.exists) {
+          final userData = await _facebookAuth.getUserData();
+          await saveUserInformation(
+            userId: user.uid,
+            name: userData['name'] ?? user.uid.substring(0, 10),
+            email: user.email ?? "",
+          );
+
+          await TreeService().createTree(user.uid);
+        }
 
         await addToken(user.uid);
       }
-
-      await TreeService().createTree(userCredential.user!.uid);
 
     } on FirebaseAuthException catch (e) {
       rethrow;
