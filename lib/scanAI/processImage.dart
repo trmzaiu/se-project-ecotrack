@@ -22,13 +22,13 @@ class ApiService {
             "Paper", "Newspaper", "Cardboard", "Magazine", "Brochure", "Wood",
             "Carton", "Paper Box", "Envelope", "Glass", "Glass Bottle", "Jar",
             "Metal", "Aluminum Can", "Tin Can", "Metal Lid", "Plastic Utensils",
-            "Cans", "Air Condition", "Furniture", "Ceramic", "Plastic Straw",
+            "Cans", "Furniture", "Ceramic", "Plastic Straw",
           ],
           "Hazardous": [
             "Electronic", "Smartphone", "Laptop", "Computer Mouse", "Game pad",
             "Broken TV", "Charger", "Circuit Board", "Medical", "Syringe", "Pill Bottle",
             "LED", "Fluorescent Bulb", "Batteries", "Chemical", "Bleach Bottle",
-            "Paint Can", "Toxic"
+            "Paint Can", "Toxic", "Air Condition"
           ],
           "General": [
             "Used Tissue", "Packaging", "Dirty Packaging", "Wrapper", "Food Wrapper", "Chip Bag",
