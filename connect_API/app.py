@@ -22,7 +22,7 @@ def classify():
         print(f"File saved at: {file_path}")
 
         # Correctly send image data to Hugging Face
-        client = Client("wasteapp/CLIP_classifier")  # Replace with your Hugging Face Space ID
+        client = Client("wasteapp/EcoTrack")  # Replace with your Hugging Face Space ID
         result = client.predict(
             image=handle_file(file_path),  #Convert file to required format
             api_name="/predict"
