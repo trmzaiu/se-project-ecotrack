@@ -7,9 +7,9 @@
 **Transform waste management with AI-powered classification and gamified sustainability!**
 
 ## 📱 Key Features
-- 🖼️ **Waste Classification with AI**: a key feature designed to help users easily identify the type of waste
-- 🌳 **Virtual Tree and Donation Mechanism**: encourages users to use their points for an environmental contribution.
-- 📸 **Upload Evidence Module**: verify whether users have correctly classified waste according to the app's classification guidelines.  
+- 🖼️ **Waste Classification with AI**: a key feature designed to help users easily identify the type of waste.
+- 📸 **Upload Evidence Module**: verify whether users have correctly classified waste according to the app's classification guidelines.
+- 🌳 **Virtual Tree and Donation Mechanism**: encourages users to use their points for an environmental contribution. 
 
 ## 🛠️ Core Technologies
 **Frontend Framework**  
