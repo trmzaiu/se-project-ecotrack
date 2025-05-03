@@ -11,18 +11,23 @@
 - 🌳 **Virtual Tree and Donation Mechanism**: encourages users to use their points for an environmental contribution.
 - 📸 **Upload Evidence Module**: verify whether users have correctly classified waste according to the app's classification guidelines.  
 
-## 🛠️ Technologies
-| Component       | Technology Stack |
-|----------------|------------------|
-| Frontend       | Flutter 3.13 (Dart) |
-| Backend        | Firebase (Auth, Firestore, Cloud Messaging) |
-| AI Model       | CLIP (Contrastive Language-Image Pretraining) |
-| Image Storage  | Cloudinary |
-| CI/CD          | GitHub Actions |
+## 🛠️ Core Technologies
+**Frontend Framework**  
+📱 Flutter - For cross-platform UI development and performance optimization
+
+**Backend Services**  
+🔥 Firebase:
+- **Authentication** - Secure user login and session management  
+- **Firestore** - Real-time database for user profiles, evidence, and challenges  
+- **Cloud Messaging** - Push notification delivery  
+
+**Media & AI**  
+☁️ Cloudinary - Secure image upload and storage  
+🧠 CLIP AI Model - Waste classification (Recyclable/Organic/Hazardous/General)
 
 ## 📥 Installation
 ### Option 1: Download APK
-[![QR Code](https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://github.com/trmzaiu/se-project-waste-sort-app/releases/download/EcoTrack/app-release.apk)](https://github.com/trmzaiu/se-project-waste-sort-app/releases/download/EcoTrack/app-release.apk)
+[![QR Code](https://res.cloudinary.com/dosqd0oni/image/upload/c_fill,w_200,h_200/v1746273015/qr-code_nw3qwr.png)](https://res.cloudinary.com/dosqd0oni/image/upload/c_fill,w_200,h_200/v1746273015/qr-code_nw3qwr.png)
 
 1. Scan the QR code or visit [[Latest Release]](https://github.com/trmzaiu/se-project-waste-sort-app/releases/download/EcoTrack/app-release.apk)
 2. Download `app-release.apk`
