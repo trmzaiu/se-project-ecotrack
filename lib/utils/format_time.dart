@@ -17,6 +17,8 @@ String formatDate(DateTime time, {String type = 'default'}) {
       return DateFormat("yyyy/MM/dd").format(time);
     case 'dashed': // 23-04-2025
       return DateFormat("dd-MM-yyyy").format(time);
+    case 'yearDashed':
+      return DateFormat("yyyy-MM-dd").format(time);
     case 'dotted': // 23.04.2025
       return DateFormat("dd.MM.yyyy").format(time);
     case 'yearMonth': // 2025-04

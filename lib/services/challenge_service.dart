@@ -20,8 +20,11 @@ class ChallengeService {
   /// Load the daily challenge for today
   Future<DailyChallenge> loadDailyChallenge() async {
     final now = DateTime.now();
-    final today = DateFormat('yyyy-MM-dd').format(now);
-    final yesterday = DateFormat('yyyy-MM-dd').format(now.subtract(const Duration(days: 1)));
+    final today = formatDate(now, type: 'yearDashed').toString();
+    final yesterday = formatDate(now.subtract(Duration(days: 1)), type: 'yearDashed').toString();
+
+    print('Today: $today');
+    print('Yesterday: $yesterday');
 
     // Step 1: Check if any challenge has dateLog == today
     final loggedTodayQuery = await _firestore
@@ -30,12 +33,14 @@ class ChallengeService {
         .where('dateLog', isEqualTo: today)
         .get();
 
+    print('Found ${loggedTodayQuery.docs.length} challenges with dateLog == today');
+
     if (loggedTodayQuery.docs.isNotEmpty) {
-      print('Found ${loggedTodayQuery.docs.length} daily challenge for today');
       final doc = loggedTodayQuery.docs.first;
       final data = doc.data();
       final subtype = data['subtype'] ?? '';
-      print('Subtype for today: $subtype');
+
+      print('Returning today\'s challenge: id=${doc.id}, subtype=$subtype');
 
       switch (subtype) {
         case 'quiz':
@@ -47,7 +52,7 @@ class ChallengeService {
       }
     }
 
-    // Step 2: Check if any challenge has dateLog == yesterday (avoid repeat)
+    // Step 2: Check if any challenge has dateLog == yesterday
     final loggedYesterdayQuery = await _firestore
         .collection('challenges')
         .where('type', isEqualTo: 'daily')
@@ -55,42 +60,51 @@ class ChallengeService {
         .get();
 
     final usedYesterdayChallengeIds = loggedYesterdayQuery.docs.map((doc) => doc.id).toList();
+    print('Used challenge IDs from yesterday: $usedYesterdayChallengeIds');
 
-    // Step 3: Get unused challenges
+    // Step 3: Get all daily challenges
     final querySnap = await _firestore
         .collection('challenges')
         .where('type', isEqualTo: 'daily')
         .get();
 
-    final unusedChallenges = querySnap.docs
-        .where((doc) => doc.data()['dateLog'] != today && !usedYesterdayChallengeIds.contains(doc.id))
-        .toList();
+    print('Total daily challenges found: ${querySnap.docs.length}');
+
+    final unusedChallenges = querySnap.docs.where((doc) {
+      final data = doc.data();
+      final challengeDateLog = data['dateLog'];
+      return challengeDateLog != today && !usedYesterdayChallengeIds.contains(doc.id);
+    }).toList();
+
+    print('Unused challenges available for today: ${unusedChallenges.length}');
 
     if (unusedChallenges.isEmpty) {
       throw Exception('No unused daily challenges available.');
     }
 
+    // Step 4: Pick random unused challenge
     final randomIndex = Random().nextInt(unusedChallenges.length);
     final selectedDoc = unusedChallenges[randomIndex];
     final selectedId = selectedDoc.id;
+    final selectedData = selectedDoc.data();
+    final subtype = selectedData['subtype'] ?? '';
 
-    // Step 4: Update dateLog to today (UTC+7)
+    print('Selected random challenge: id=$selectedId, subtype=$subtype');
+
+    // Update dateLog to today
     await _firestore.collection('challenges').doc(selectedId).update({
       'dateLog': today,
     });
 
-    print('Selected challenge ID: $selectedId');
-
-    String subtype = selectedDoc['subtype'] ?? '';
-    print('Subtype loaded: $subtype');
+    print('Updated challenge $selectedId with dateLog = $today');
 
     switch (subtype) {
       case 'quiz':
-        return DailyQuizChallenge.fromMap(selectedDoc.data(), selectedDoc.id);
+        return DailyQuizChallenge.fromMap(selectedData, selectedId);
       case 'dragdrop':
-        return DailyDragDropChallenge.fromMap(selectedDoc.data(), selectedDoc.id);
+        return DailyDragDropChallenge.fromMap(selectedData, selectedId);
       default:
-        return DailyChallenge.fromMap(selectedDoc.data(), selectedDoc.id);
+        return DailyChallenge.fromMap(selectedData, selectedId);
     }
   }
 

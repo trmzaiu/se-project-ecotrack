@@ -187,7 +187,7 @@ class DailyQuizChallenge extends DailyChallenge {
       dateLog: data['dateLog'] ?? '',
       question: data['question'] ?? '',
       options: List<String>.from(data['options'] ?? []),
-      correct: data['correct'] ?? '',
+      correct: data['correct'] ?? 0,
     );
   }
 
