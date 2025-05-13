@@ -97,6 +97,7 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
       playSound: true,
+      icon: 'ic_small',
     );
 
     const details = NotificationDetails(android: androidDetails);
